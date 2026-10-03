@@ -1,4 +1,4 @@
-"""Flask webhook + chat router (slices 1-5).
+"""Flask webhook + chat router (slices 1-6).
 
 Spec refs: Components (Webhook dan Chat Router; Kartu Teks, Klarifikasi
 Skip, dan Onboarding), Data Model (profile.json), Decisions and Open
@@ -17,6 +17,7 @@ import store
 import whatsapp
 from agent import FIELD_ORDER, GroqError, extract_report, missing_fields, new_note_id, render_card
 from prompts import SKIP_WORDS, clarify_question, t
+import scheduler
 
 app = Flask(__name__)
 store.ensure_data()
@@ -108,6 +109,17 @@ def _handle_message(msg: dict) -> None:
         whatsapp.send_text(sender, _refuse_message(profile))
         return
 
+    # Track the 24h free-message window + flush queued failure notices.
+    import datetime as _dt_seen
+
+    profile["last_sender"] = sender
+    seen = profile.get("last_seen") or {}
+    seen[sender] = _dt_seen.datetime.now().isoformat(timespec="seconds")
+    profile["last_seen"] = seen
+    store.save_profile(profile)
+    scheduler.flush_notices(sender, profile)
+    profile = store.load_profile()
+
     msg_type = msg.get("type", "")
     text = ""
     if msg_type == "text":
@@ -139,12 +151,12 @@ def _handle_message(msg: dict) -> None:
         whatsapp.send_text(sender, _greeting_for(profile, store.load_notes()))
         return
 
-    # Demo commands land in slice 6; hold until then.
-    if low in ("rekap sekarang", "cek follow-up", "cek follow up"):
-        if profile.get("language") == "en":
-            whatsapp.send_text(sender, "Recap/follow-up commands aren't active yet (slice 6).")
-        else:
-            whatsapp.send_text(sender, "Perintah rekap/follow-up belum aktif (slice 6).")
+    # Slice 6: demo commands call the same functions as the scheduler.
+    if low in ("rekap sekarang",):
+        scheduler.send_recap_to(profile, sender)
+        return
+    if low in ("cek follow-up", "cek follow up"):
+        scheduler.send_followups_to(profile, sender)
         return
 
     # An answer to pending clarification wins over a new report. To start
@@ -379,4 +391,5 @@ def _handle_settings_command(sender: str, text: str, profile: dict) -> bool:
 
 
 if __name__ == "__main__":
+    scheduler.start()
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))

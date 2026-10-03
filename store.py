@@ -22,6 +22,11 @@ DEFAULT_PROFILE = {
     "language": "id",
     "recap_time": "17:00",
     "onboarding_stage": "new",
+    "last_seen": {},
+    "last_sender": "",
+    "pending_notices": [],
+    "last_recap_date": "",
+    "last_followup_date": "",
 }
 
 

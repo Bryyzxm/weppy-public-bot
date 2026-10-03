@@ -53,7 +53,7 @@ Build mode: fast
   Learner check: Kirim voice note pendek (atau simulasi audio), lihat kartu yang sama seperti laporan teks muncul; coba simulasi suara kosong dan lihat agent meminta ulangi, bukan membuat kartu karangan.
   Commit: `Transcribe voice notes into the same report pipeline`
 
-- [ ] **5. Klarifikasi satu per satu dengan Skip**
+- [x] **5. Klarifikasi satu per satu dengan Skip**
   Becomes usable: Field yang kosong ditanya satu per satu di chat dengan tombol Skip; Skip = tetap kosong dan lanjut; akhir → catatan `saved` + konfirmasi singkat.
   Why now: Melengkapi janji scope (proaktif tapi tidak menghambat) tepat setelah kartu ada yang kosong — tanpa ini catatan parsial tidak bisa dilengkapi tanpa mengarang.
   PRD ref: `prd.md > 4. Klarifikasi chat satu per satu dengan Skip`, `prd.md > States and Boundaries` (Partial report, Skipped, Persists)
