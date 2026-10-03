@@ -63,7 +63,7 @@ Build mode: fast
   Learner check: Kirim laporan yang sengaja tidak lengkap (mis. tanpa nama kontak), jawab satu pertanyaan, Skip yang berikutnya, dan pastikan konfirmasi akhir + isi notes.json menunjukkan satu terisi satu kosong.
   Commit: `Ask missing fields one by one with Skip`
 
-- [ ] **6. Follow-up + rekap sore + siap direkam**
+- [x] **6. Follow-up + rekap sore + siap direkam**
   Becomes usable: Ketik `cek follow-up` / `rekap sekarang` langsung dapat pengingat + rekap per tahap deal + follow-up besok; penjadwal otomatis jalan di jam rekap; README + .env.example cukup agar orang lain bisa jalan + rekam demo.
   Why now: Terakhir karena butuh semua catatan + bahasa + jam rekap sudah benar; menutup loop core journey dan membuat POC bisa didemokan tanpa menunggu sore/tanggal tiba.
   PRD ref: `prd.md > 5. Pengingat follow-up dengan tanggal dari agent`, `prd.md > 6. Rekap pipeline harian sore hari`, `prd.md > States and Boundaries` (Boundary, Template-required)
@@ -95,4 +95,6 @@ Reflection: [offered/answered/declined/already covered — personal answer belon
 Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
 
 ## Revisions
+
+- Uji WA nomor nyata (+62) diblokir Meta error 130497 (akun uji dibatasi mengirim ke negara tertentu) — final review memakai simulasi webhook + stub Groq; wiring WA (verifikasi, subscription messages) terbukti benar dan jalur produksi (nomor sendiri + bisnis terverifikasi) tidak terdampak.
 
