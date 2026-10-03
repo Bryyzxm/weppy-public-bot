@@ -1,10 +1,12 @@
-"""Flask webhook + chat router (slice 1: ping proof + greeting).
+"""Flask webhook + chat router (slices 1-2).
 
-Spec refs: Components (Webhook dan Chat Router), Where It Runs,
-Decisions and Open Issues (ping-pong proof before AI work).
+Spec refs: Components (Webhook dan Chat Router; Kartu Teks, Klarifikasi
+Skip, dan Onboarding), Data Model (profile.json), Decisions and Open
+Issues (ping-pong proof before AI work).
 """
 
 import os
+import re
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -13,11 +15,35 @@ load_dotenv()
 
 import store
 import whatsapp
+from prompts import SKIP_WORDS, t
 
 app = Flask(__name__)
 store.ensure_data()
 
 GREETINGS = {"halo", "hallo", "hai", "hello", "hi", "p", "assalamualaikum", "tes", "test"}
+
+LANG_BUTTONS = [
+    {"id": "lang_id", "title": "Indonesia"},
+    {"id": "lang_en", "title": "English"},
+    {"id": "skip", "title": "Skip"},
+]
+SKIP_BUTTON = [{"id": "skip", "title": "Skip"}]
+
+TIME_RE = re.compile(r"(\d{1,2})[:.](\d{2})")
+
+
+def _parse_time(text: str) -> str | None:
+    m = TIME_RE.search(text or "")
+    if not m:
+        return None
+    hh, mm = int(m.group(1)), int(m.group(2))
+    if 0 <= hh <= 23 and 0 <= mm <= 59:
+        return f"{hh:02d}:{mm:02d}"
+    return None
+
+
+def _is_skip(text: str) -> bool:
+    return (text or "").strip().lower() in SKIP_WORDS
 
 
 def _greeting_for(profile: dict, notes: list) -> str:
@@ -90,27 +116,151 @@ def _handle_message(msg: dict) -> None:
         text = (reply.get("id") or reply.get("title") or "").strip()
 
     low = text.lower()
+
+    # Ping always works (tunnel proof), even mid-onboarding.
     if low == "ping":
         whatsapp.send_text(sender, "pong")
         return
-    if low in GREETINGS:
-        notes = store.load_notes()
-        whatsapp.send_text(sender, _greeting_for(profile, notes))
+
+    # Audio arrives in slice 4; politely hold until then.
+    if msg_type == "audio":
+        if profile.get("language") == "en":
+            whatsapp.send_text(
+                sender, "Voice notes aren't supported yet (slice 4). Please type the report."
+            )
+        else:
+            whatsapp.send_text(
+                sender, "Voice note belum didukung (slice 4). Ketik laporannya dulu ya."
+            )
         return
 
-    # Slice 1 fallback: extraction (slice 3) not built yet.
-    if profile.get("language") == "en":
+    if profile.get("onboarding_stage", "new") != "done":
+        _handle_onboarding(sender, text, profile)
+        return
+
+    if _handle_settings_command(sender, text, profile):
+        return
+
+    if low in GREETINGS:
+        whatsapp.send_text(sender, _greeting_for(profile, store.load_notes()))
+        return
+
+    # Report extraction lands in slice 3.
+    whatsapp.send_text(sender, t(profile.get("language", "id"), "fallback"))
+
+
+# --- Onboarding (PRD 0): name -> language -> recap time, each skippable ---
+
+
+def _handle_onboarding(sender: str, text: str, profile: dict) -> None:
+    lang = profile.get("language", "id")
+    stage = profile.get("onboarding_stage", "new")
+
+    if stage == "new":
+        profile["onboarding_stage"] = "ask_name"
+        store.save_profile(profile)
+        whatsapp.send_text(sender, t(lang, "onboarding_name"))
+        return
+
+    if stage == "ask_name":
+        if not _is_skip(text) and text:
+            profile["nickname"] = text.strip()[:30]
+        profile["onboarding_stage"] = "ask_language"
+        store.save_profile(profile)
+        whatsapp.send_quick_reply(sender, t(lang, "onboarding_lang"), LANG_BUTTONS)
+        return
+
+    if stage == "ask_language":
+        low = (text or "").strip().lower()
+        if low in ("lang_en", "english", "inggris", "en", "2"):
+            profile["language"] = "en"
+        elif _is_skip(text) or low in ("", "lang_id"):
+            profile["language"] = "id"
+        elif low in ("indonesia", "bahasa indonesia", "id", "1"):
+            profile["language"] = "id"
+        else:
+            # Unrecognized: keep asking once, don't advance.
+            whatsapp.send_quick_reply(
+                sender, t(profile.get("language", "id"), "onboarding_lang"), LANG_BUTTONS
+            )
+            return
+        profile["onboarding_stage"] = "ask_time"
+        store.save_profile(profile)
+        whatsapp.send_text(sender, t(profile["language"], "onboarding_time"))
+        return
+
+    if stage == "ask_time":
+        if _is_skip(text) or not (text or "").strip():
+            profile["recap_time"] = "17:00"
+        else:
+            parsed = _parse_time(text)
+            if not parsed:
+                whatsapp.send_text(sender, t(profile.get("language", "id"),
+                                            "onboarding_time_invalid"))
+                return
+            profile["recap_time"] = parsed
+        profile["onboarding_stage"] = "done"
+        store.save_profile(profile)
+        name = profile.get("nickname") or ("kamu" if profile["language"] == "id" else "there")
         whatsapp.send_text(
             sender,
-            "Message received. Text-report extraction isn't active yet "
-            "(slice 3). Send \"ping\" to test the connection.",
+            t(profile["language"], "onboarding_done").format(
+                name=name,
+                lang_label=t(profile["language"], "lang_label"),
+                time=profile["recap_time"],
+            ),
         )
-    else:
+        return
+
+    # Unknown stage: reset safely.
+    profile["onboarding_stage"] = "new"
+    store.save_profile(profile)
+    _handle_onboarding(sender, text, profile)
+
+
+# --- Settings commands after onboarding ---
+
+
+def _handle_settings_command(sender: str, text: str, profile: dict) -> bool:
+    lang = profile.get("language", "id")
+    low = (text or "").strip().lower()
+
+    m = re.match(r"(?:ubah|ganti)\s+nama(?:\s+ke|\s+jadi)?\s+(.+)", text, re.IGNORECASE)
+    if not m:
+        m = re.match(r"(?:change\s+name\s+to|my\s+name\s+is)\s+(.+)", text, re.IGNORECASE)
+    if m:
+        profile["nickname"] = m.group(1).strip().strip('"').strip()[:30]
+        store.save_profile(profile)
         whatsapp.send_text(
-            sender,
-            "Pesan diterima. Ekstraksi laporan teks belum aktif "
-            "(slice 3). Kirim \"ping\" untuk tes koneksi.",
+            sender, t(profile.get("language", "id"), "name_updated").format(name=profile["nickname"])
         )
+        return True
+
+    if any(k in low for k in ("ganti ke bahasa", "ganti bahasa ke", "switch to", "change language to")):
+        if "inggris" in low or "english" in low:
+            profile["language"] = "en"
+            store.save_profile(profile)
+            whatsapp.send_text(sender, t("en", "lang_updated"))
+            return True
+        if "indonesia" in low or "indonesian" in low:
+            profile["language"] = "id"
+            store.save_profile(profile)
+            whatsapp.send_text(sender, t("id", "lang_updated"))
+            return True
+
+    if any(k in low for k in ("ubah jam rekap", "ganti jam rekap", "change recap time", "recap time")):
+        parsed = _parse_time(text)
+        if parsed:
+            profile["recap_time"] = parsed
+            store.save_profile(profile)
+            whatsapp.send_text(
+                sender, t(profile.get("language", "id"), "time_updated").format(time=parsed)
+            )
+        else:
+            whatsapp.send_text(sender, t(lang, "time_invalid"))
+        return True
+
+    return False
 
 
 if __name__ == "__main__":

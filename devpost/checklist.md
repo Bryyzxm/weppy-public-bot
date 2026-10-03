@@ -13,7 +13,7 @@ Build mode: fast
 
 ## Slices
 
-- [ ] **1. Webhook hidup + ping-pong terbukti**
+- [x] **1. Webhook hidup + ping-pong terbukti**
   Becomes usable: `python app.py` jalan di localhost:5000, kirim `ping` (via simulasi webhook) dibalas `pong`, bukti jalur WhatsApp → laptop bekerja.
   Why now: Membuktikan risiko terbesar dulu (tunnel/webhook, bukan AI) sesuai kesepakatan di spec — kalau log diam, masalahnya di tunnel/Callback URL, bukan di AI. Scaffolding ikut di dalam slice ini, bukan langkah sendiri.
   PRD ref: `prd.md > The Core Journey` (langkah 1, sapa/perintah)
