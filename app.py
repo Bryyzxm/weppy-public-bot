@@ -1,4 +1,4 @@
-"""Flask webhook + chat router (slices 1-2).
+"""Flask webhook + chat router (slices 1-5).
 
 Spec refs: Components (Webhook dan Chat Router; Kartu Teks, Klarifikasi
 Skip, dan Onboarding), Data Model (profile.json), Decisions and Open
@@ -15,8 +15,8 @@ load_dotenv()
 
 import store
 import whatsapp
-from agent import GroqError, extract_report, missing_fields, new_note_id, render_card
-from prompts import SKIP_WORDS, t
+from agent import FIELD_ORDER, GroqError, extract_report, missing_fields, new_note_id, render_card
+from prompts import SKIP_WORDS, clarify_question, t
 
 app = Flask(__name__)
 store.ensure_data()
@@ -147,6 +147,18 @@ def _handle_message(msg: dict) -> None:
             whatsapp.send_text(sender, "Perintah rekap/follow-up belum aktif (slice 6).")
         return
 
+    # An answer to pending clarification wins over a new report. To start
+    # a fresh report instead, prefix with "laporan baru".
+    if low.startswith("laporan baru") or low.startswith("new report"):
+        _finalize_draft(store.load_notes())
+        _handle_report(sender, text.split(None, 2)[-1], profile)
+        return
+
+    active = _active_draft(store.load_notes())
+    if active is not None:
+        _handle_clarify_answer(sender, text, profile, active)
+        return
+
     _handle_report(sender, text, profile)
 
 
@@ -199,6 +211,57 @@ def _handle_report(sender: str, text: str, profile: dict) -> None:
     notes.append(note)
     store.save_notes(notes)
     whatsapp.send_text(sender, render_card(note, lang))
+    if note["pending_clarify"]:
+        _ask_field(sender, lang, note["pending_clarify"][0])
+
+
+def _active_draft(notes: list) -> dict | None:
+    """Newest note still waiting for clarification answers."""
+    for note in reversed(notes):
+        if note.get("status") == "draft" and note.get("pending_clarify"):
+            return note
+    return None
+
+
+def _finalize_draft(notes: list) -> None:
+    changed = False
+    for note in notes:
+        if note.get("status") == "draft":
+            note["status"] = "saved"
+            note["pending_clarify"] = []
+            changed = True
+    if changed:
+        store.save_notes(notes)
+
+
+def _ask_field(sender: str, lang: str, field: str) -> None:
+    whatsapp.send_quick_reply(sender, clarify_question(lang, field), SKIP_BUTTON)
+
+
+def _handle_clarify_answer(sender: str, text: str, profile: dict, active: dict) -> None:
+    """Slice 5: one answer (or Skip) -> update note -> next question or done."""
+    lang = profile.get("language", "id")
+    notes = store.load_notes()
+    note = next((n for n in notes if n.get("id") == active.get("id")), None)
+    if note is None or not note.get("pending_clarify"):
+        _handle_report(sender, text, profile)
+        return
+
+    field = note["pending_clarify"][0]
+    if not _is_skip(text) and (text or "").strip():
+        note[field] = text.strip()[:80]
+    note["pending_clarify"] = note["pending_clarify"][1:]
+    if not note["pending_clarify"]:
+        note["status"] = "saved"
+    store.save_notes(notes)
+
+    if note["pending_clarify"]:
+        _ask_field(sender, lang, note["pending_clarify"][0])
+        return
+    filled = sum(1 for f in FIELD_ORDER if (note.get(f) or "").strip())
+    whatsapp.send_text(
+        sender, clarify_question(lang, "saved").format(filled=filled)
+    )
 
 
 # --- Onboarding (PRD 0): name -> language -> recap time, each skippable ---

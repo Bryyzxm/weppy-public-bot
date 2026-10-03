@@ -43,7 +43,7 @@ Build mode: fast
   Learner check: Kirim satu laporan teks bebas via simulasi/WhatsApp, lihat kartu balasannya, lalu buka data/notes.json dan pastikan isinya sama dengan kartu.
   Commit: `Extract text reports to pipeline cards via Groq`
 
-- [ ] **4. Voice note jadi teks lalu kartu yang sama**
+- [x] **4. Voice note jadi teks lalu kartu yang sama**
   Becomes usable: Kirim voice note → ditranskripsi → diproses persis seperti laporan teks; kalau suara tidak jelas, agent minta ulangi, bukan mengarang kartu.
   Why now: Menyelesaikan setengah kernel yang tersisa (input suara) dengan memakai ulang ekstraksi slice 3 — risiko media sementara ~5 menit + format ogg/opus ditangani di sini.
   PRD ref: `prd.md > 2. Kirim laporan kunjungan via voice note atau teks` (termasuk suara tidak jelas → klarifikasi)

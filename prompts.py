@@ -103,3 +103,33 @@ SKIP_WORDS = {"skip", "lewati", "lewat", "/skip"}
 
 def t(lang: str, key: str) -> str:
     return STRINGS.get(lang, STRINGS["id"]).get(key, STRINGS["id"][key])
+
+
+CLARIFY = {
+    "id": {
+        "institusi": 'Perusahaan/institusinya apa? (Balas jawabannya, atau "Skip" bila belum tahu.)',
+        "kontak": 'Siapa nama contact person-nya? (Balas, atau "Skip".)',
+        "role": 'Apa role/jabatan contact person tersebut? (Balas, atau "Skip".)',
+        "produk": 'Produk/layanan apa yang dibahas? (Balas, atau "Skip".)',
+        "tahap_deal": (
+            "Tahap deal saat ini apa? Mis: Kunjungan awal, Penawaran harga, "
+            'Negosiasi, Deal, Follow-up. (Balas, atau "Skip".)'
+        ),
+        "saved": "Tersimpan. {filled}/5 info terisi.",
+    },
+    "en": {
+        "institusi": 'Which company/institution? (Reply, or "Skip" if unknown.)',
+        "kontak": 'Who is the contact person? (Reply, or "Skip".)',
+        "role": 'What is their role/job title? (Reply, or "Skip".)',
+        "produk": 'Which product/service was discussed? (Reply, or "Skip".)',
+        "tahap_deal": (
+            "What is the current deal stage? E.g.: Kunjungan awal, Penawaran harga, "
+            'Negosiasi, Deal, Follow-up. (Reply, or "Skip".)'
+        ),
+        "saved": "Saved. {filled}/5 fields filled.",
+    },
+}
+
+
+def clarify_question(lang: str, field: str) -> str:
+    return CLARIFY.get(lang, CLARIFY["id"]).get(field, CLARIFY["id"][field])
