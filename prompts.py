@@ -38,6 +38,10 @@ STRINGS = {
             "Pesan diterima. Ekstraksi laporan teks belum aktif "
             '(slice 3). Kirim "ping" untuk tes koneksi.'
         ),
+        "ai_busy": (
+            "Otak AI sedang sibuk/limit, coba kirim ulang 1 menit lagi ya. "
+            "Catatan belum disimpan."
+        ),
     },
     "en": {
         "onboarding_name": (
@@ -69,6 +73,10 @@ STRINGS = {
         "fallback": (
             "Message received. Text-report extraction isn't active yet "
             '(slice 3). Send "ping" to test the connection.'
+        ),
+        "ai_busy": (
+            "The AI is busy/rate-limited, please resend in 1 minute. "
+            "Nothing was saved."
         ),
     },
 }

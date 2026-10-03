@@ -15,6 +15,7 @@ load_dotenv()
 
 import store
 import whatsapp
+from agent import GroqError, extract_report, missing_fields, new_note_id, render_card
 from prompts import SKIP_WORDS, t
 
 app = Flask(__name__)
@@ -145,8 +146,44 @@ def _handle_message(msg: dict) -> None:
         whatsapp.send_text(sender, _greeting_for(profile, store.load_notes()))
         return
 
-    # Report extraction lands in slice 3.
-    whatsapp.send_text(sender, t(profile.get("language", "id"), "fallback"))
+    # Demo commands land in slice 6; hold until then.
+    if low in ("rekap sekarang", "cek follow-up", "cek follow up"):
+        if profile.get("language") == "en":
+            whatsapp.send_text(sender, "Recap/follow-up commands aren't active yet (slice 6).")
+        else:
+            whatsapp.send_text(sender, "Perintah rekap/follow-up belum aktif (slice 6).")
+        return
+
+    _handle_report(sender, text, profile)
+
+
+def _handle_report(sender: str, text: str, profile: dict) -> None:
+    """Slice 3: free text -> Groq extraction -> card + draft note."""
+    import datetime as _dt
+
+    lang = profile.get("language", "id")
+    try:
+        fields = extract_report(text)
+    except GroqError:
+        whatsapp.send_text(sender, t(lang, "ai_busy"))
+        return
+
+    notes = store.load_notes()
+    note = {
+        "id": new_note_id(notes),
+        "created_at": _dt.datetime.now().isoformat(timespec="seconds"),
+        "institusi": fields.get("institusi", ""),
+        "kontak": fields.get("kontak", ""),
+        "role": fields.get("role", ""),
+        "produk": fields.get("produk", ""),
+        "tahap_deal": fields.get("tahap_deal", ""),
+        "followup_date": fields.get("followup_date", ""),
+        "status": "saved" if not missing_fields(fields) else "draft",
+        "pending_clarify": missing_fields(fields),
+    }
+    notes.append(note)
+    store.save_notes(notes)
+    whatsapp.send_text(sender, render_card(note, lang))
 
 
 # --- Onboarding (PRD 0): name -> language -> recap time, each skippable ---

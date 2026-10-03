@@ -23,7 +23,7 @@ Build mode: fast
   Learner check: Jalankan `python app.py`, kirim simulasi `ping` (atau dari WA uji kalau tunnel sudah pasang), dan lihat balasan `pong` muncul di log + chat.
   Commit: `Scaffold Flask webhook with ping proof and JSON store`
 
-- [ ] **2. Onboarding personal (nama, bahasa, jam rekap)**
+- [x] **2. Onboarding personal (nama, bahasa, jam rekap)**
   Becomes usable: Sales baru yang chat pertama kali ditanya nama panggilan, bahasa (Indonesia/Inggris), jam rekap satu per satu — semua bisa di-skip — lalu disapa pakai nama.
   Why now: Semua sapaan, bahasa balasan, dan jam rekap di slice berikutnya bergantung pada profil ini; mumpung router dan penyimpanan sudah ada, profil dilengkapi sekarang.
   PRD ref: `prd.md > 0. Onboarding personalisasi saat pertama pakai`, `prd.md > 1. Histori dan rekap saat membuka chat`, `prd.md > 7. Dua bahasa (Indonesia dan Inggris)`
