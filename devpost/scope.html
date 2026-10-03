@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Asisten Sales WhatsApp B2B</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f8f5;
+    --card: #ffffff;
+    --ink: #17211a;
+    --muted: #5d6d62;
+    --green: #16a34a;
+    --green-dark: #14532d;
+    --line: #d8e2da;
+    --soft: #e8f5ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 20px 64px; }
+  header {
+    background: linear-gradient(135deg, #dcfce7, #ffffff 70%);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 4rem); line-height: 1.05; }
+  h2 { margin-top: 0; }
+  p { color: var(--muted); max-width: 78ch; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 0 8px 24px rgba(20, 83, 45, .06);
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .pill {
+    display: inline-block;
+    background: var(--soft);
+    color: var(--green-dark);
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin: 2px 4px 2px 0;
+    font-size: .9rem;
+    font-weight: 650;
+  }
+  ul { padding-left: 1.25rem; color: var(--muted); }
+  details {
+    border-top: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  summary { cursor: pointer; font-weight: 700; }
+  svg { width: 100%; height: auto; display: block; }
+  .node { fill: #e8f5ec; stroke: #16a34a; stroke-width: 2; }
+  .label { font-size: 15px; fill: #14532d; font-weight: 700; }
+  .small { font-size: 12px; fill: #5d6d62; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Asisten Sales WhatsApp B2B</h1>
+    <p>Proof of concept: sales mengirim voice note atau pesan setelah kunjungan, lalu agent merapikan catatan pipeline, menanyakan detail yang kurang, mengingatkan follow-up, dan memberi rekap sore hari.</p>
+  </header>
+
+  <section class="card">
+    <h2>Alur Inti</h2>
+    <svg viewBox="0 0 900 130" role="img" aria-label="Alur sales, agent WhatsApp, pipeline, follow-up, dan rekap">
+      <rect class="node" x="10" y="35" rx="16" width="140" height="60"/>
+      <text class="label" x="80" y="62" text-anchor="middle">Sales</text>
+      <text class="small" x="80" y="82" text-anchor="middle">voice note / chat</text>
+      <path d="M150 65H190" stroke="#16a34a" stroke-width="3" marker-end="url(#arrow)"/>
+      <rect class="node" x="190" y="35" rx="16" width="160" height="60"/>
+      <text class="label" x="270" y="62" text-anchor="middle">Agent WhatsApp</text>
+      <text class="small" x="270" y="82" text-anchor="middle">klarifikasi + Skip</text>
+      <path d="M350 65H390" stroke="#16a34a" stroke-width="3" marker-end="url(#arrow)"/>
+      <rect class="node" x="390" y="35" rx="16" width="145" height="60"/>
+      <text class="label" x="462" y="62" text-anchor="middle">Pipeline</text>
+      <text class="small" x="462" y="82" text-anchor="middle">catatan rapi</text>
+      <path d="M535 65H575" stroke="#16a34a" stroke-width="3" marker-end="url(#arrow)"/>
+      <rect class="node" x="575" y="35" rx="16" width="145" height="60"/>
+      <text class="label" x="647" y="62" text-anchor="middle">Follow-up</text>
+      <text class="small" x="647" y="82" text-anchor="middle">pengingat</text>
+      <path d="M720 65H760" stroke="#16a34a" stroke-width="3" marker-end="url(#arrow)"/>
+      <rect class="node" x="760" y="35" rx="16" width="130" height="60"/>
+      <text class="label" x="825" y="62" text-anchor="middle">Rekap</text>
+      <text class="small" x="825" y="82" text-anchor="middle">tiap sore</text>
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#16a34a"/></marker></defs>
+    </svg>
+  </section>
+
+  <section class="card">
+    <h2>Empat Data Inti</h2>
+    <span class="pill">Institusi/company</span>
+    <span class="pill">Contact person &amp; role</span>
+    <span class="pill">Produk/layanan</span>
+    <span class="pill">Tahap deal</span>
+  </section>
+
+  <section class="card">
+    <h2>In Scope / Later / Cut</h2>
+    <details open>
+      <summary>Dibuktikan sekarang</summary>
+      <ul>
+        <li>Mode uji coba Meta WhatsApp Cloud API</li>
+        <li>Satu nomor uji dan satu alur untuk satu sales</li>
+        <li>Pesan teks dan voice note</li>
+        <li>Klarifikasi adaptif dengan pilihan Skip</li>
+        <li>Catatan pipeline, pengingat follow-up, rekap sore</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Dikembangkan kemudian</summary>
+      <ul>
+        <li>Banyak sales dan nomor</li>
+        <li>Integrasi CRM produksi</li>
+        <li>Dashboard web dan analitik</li>
+        <li>Deployment produksi</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Dipotong dari proof of concept</summary>
+      <ul>
+        <li>CRM lengkap</li>
+        <li>Otomasi produksi massal</li>
+        <li>Scoring atau prediksi closing</li>
+        <li>Integrasi nomor WhatsApp pribadi tanpa API resmi</li>
+      </ul>
+    </details>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Personal learning context
+/devpost/learner-profile.md
+
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+
+# Local runtime data (may contain test phone numbers)
+data/profile.json
+data/notes.json
+
+# macOS
+.DS_Store
+
+# Python
+.venv/
+__pycache__/
