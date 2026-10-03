@@ -123,16 +123,9 @@ def _handle_message(msg: dict) -> None:
         whatsapp.send_text(sender, "pong")
         return
 
-    # Audio arrives in slice 4; politely hold until then.
+    # Slice 4: voice note -> download -> transcribe -> same pipeline.
     if msg_type == "audio":
-        if profile.get("language") == "en":
-            whatsapp.send_text(
-                sender, "Voice notes aren't supported yet (slice 4). Please type the report."
-            )
-        else:
-            whatsapp.send_text(
-                sender, "Voice note belum didukung (slice 4). Ketik laporannya dulu ya."
-            )
+        _handle_voice_note(sender, msg, profile)
         return
 
     if profile.get("onboarding_stage", "new") != "done":
@@ -155,6 +148,28 @@ def _handle_message(msg: dict) -> None:
         return
 
     _handle_report(sender, text, profile)
+
+
+def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
+    """Slice 4: audio.id -> immediate download -> Whisper -> _handle_report."""
+    from transcribe import transcribe_audio
+
+    lang = profile.get("language", "id")
+    media_id = (msg.get("audio") or {}).get("id", "")
+    if not media_id:
+        whatsapp.send_text(sender, t(lang, "vn_download_fail"))
+        return
+    try:
+        audio_bytes = whatsapp.download_media(media_id)
+    except Exception:
+        whatsapp.send_text(sender, t(lang, "vn_download_fail"))
+        return
+
+    result = transcribe_audio(audio_bytes)
+    if result.get("status") != "ok" or not result.get("text"):
+        whatsapp.send_text(sender, t(lang, "vn_unclear"))
+        return
+    _handle_report(sender, result["text"], profile)
 
 
 def _handle_report(sender: str, text: str, profile: dict) -> None:

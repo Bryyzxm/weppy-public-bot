@@ -33,7 +33,7 @@ Build mode: fast
   Learner check: Hapus isi data/profile.json jadi kosong, kirim `halo`, jawab/skip tiga pertanyaan, dan lihat sapaan berikutnya memakai nama panggilanmu.
   Commit: `Add chat onboarding with nickname language recap time`
 
-- [ ] **3. Laporan teks jadi kartu rapi (inti kernel)**
+- [x] **3. Laporan teks jadi kartu rapi (inti kernel)**
   Becomes usable: Kirim teks berantakan setelah kunjungan → terima kartu teks 4 field (Institusi, Kontak+Role, Produk, Tahap Deal) + status Terisi/Belum ada + tanggal follow-up tebakan → tersimpan di notes.json.
   Why now: Ini kernel unik dari scope (voice note/teks → catatan rapi tanpa karangan) — dibawa sedini mungkin agar versi teksnya terbukti sebelum suara dan penjadwalan menumpuk.
   PRD ref: `prd.md > 2. Kirim laporan kunjungan via voice note atau teks`, `prd.md > 3. Kartu laporan teks dari agent`
@@ -75,7 +75,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
+- [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review

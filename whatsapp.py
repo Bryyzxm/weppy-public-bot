@@ -132,3 +132,39 @@ def send_template(to: str, name: str, language_code: str, parameters: list):
 
 def clear_outbox() -> None:
     OUTBOX.clear()
+
+
+class WhatsappError(RuntimeError):
+    pass
+
+
+def download_media(media_id: str) -> bytes:
+    """Two-step voice-note download: GET /{media-id} -> temp URL -> bytes.
+
+    The temp URL expires in ~5 minutes, so this runs immediately
+    inside the webhook handler (spec.md > Important Failure Modes).
+    Stub mode returns fake bytes; the transcribe stub ignores content.
+    """
+    if is_stub():
+        return b"fake-ogg-opus-audio"
+
+    phone_token = os.getenv("WHATSAPP_TOKEN", "")
+    meta = requests.get(
+        f"https://graph.facebook.com/{GRAPH_VERSION}/{media_id}",
+        headers={"Authorization": f"Bearer {phone_token}"},
+        timeout=20,
+    )
+    if meta.status_code != 200:
+        raise WhatsappError(f"media lookup http {meta.status_code}")
+    url = (meta.json() or {}).get("url", "")
+    if not url:
+        raise WhatsappError("media lookup returned no url")
+
+    dl = requests.get(
+        url,
+        headers={"Authorization": f"Bearer {phone_token}"},
+        timeout=60,
+    )
+    if dl.status_code != 200 or not dl.content:
+        raise WhatsappError(f"media download http {dl.status_code}")
+    return dl.content

@@ -42,6 +42,15 @@ STRINGS = {
             "Otak AI sedang sibuk/limit, coba kirim ulang 1 menit lagi ya. "
             "Catatan belum disimpan."
         ),
+        "vn_download_fail": (
+            "Voice note gagal diunduh (link kedaluwarsa). "
+            "Tolong kirim ulang voice note-nya."
+        ),
+        "vn_unclear": (
+            "Maaf, suaranya kurang jelas jadi saya tidak buatkan catatan "
+            "karangan. Boleh ulangi bagian yang kurang jelas, atau ketik "
+            "laporannya sebagai teks?"
+        ),
     },
     "en": {
         "onboarding_name": (
@@ -77,6 +86,14 @@ STRINGS = {
         "ai_busy": (
             "The AI is busy/rate-limited, please resend in 1 minute. "
             "Nothing was saved."
+        ),
+        "vn_download_fail": (
+            "Voice note download failed (link expired). "
+            "Please resend the voice note."
+        ),
+        "vn_unclear": (
+            "Sorry, the audio was unclear so I didn't make up a note. "
+            "Could you repeat the unclear part, or type the report as text?"
         ),
     },
 }
