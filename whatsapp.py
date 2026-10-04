@@ -45,11 +45,16 @@ def _post(payload: dict):
     return resp.json()
 
 
+def _log(line: str) -> None:
+    if os.getenv("WHATSAPP_QUIET", "0") != "1":
+        print(line)
+
+
 def send_text(to: str, body: str):
     entry = {"to": to, "type": "text", "body": body}
     if is_stub():
         OUTBOX.append(entry)
-        print(f"[stub send_text to={to}] {body}")
+        _log(f"[stub send_text to={to}] {body}")
         return {"stub": True}
     return _post(
         {
@@ -71,7 +76,7 @@ def send_quick_reply(to: str, body: str, buttons: list):
     entry = {"to": to, "type": "quick_reply", "body": body, "buttons": buttons}
     if is_stub():
         OUTBOX.append(entry)
-        print(f"[stub quick_reply to={to}] {body} | {buttons}")
+        _log(f"[stub quick_reply to={to}] {body} | {buttons}")
         return {"stub": True}
     return _post(
         {
@@ -106,7 +111,7 @@ def send_template(to: str, name: str, language_code: str, parameters: list):
     }
     if is_stub():
         OUTBOX.append(entry)
-        print(f"[stub template to={to}] {name}/{language_code} {parameters}")
+        _log(f"[stub template to={to}] {name}/{language_code} {parameters}")
         return {"stub": True}
     components = []
     if parameters:
