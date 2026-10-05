@@ -29,7 +29,24 @@ Perintah lain: `halo` (sapaan + rekap terakhir), `ubah nama ke X`,
 `ganti ke bahasa Inggris`, `ubah jam rekap ke 17:00`,
 `laporan baru ...` (mulai laporan baru saat klarifikasi berjalan).
 
-## Catatan operasional
+## Jalur Twilio sandbox (alternatif tanpa verifikasi bisnis)
+
+1. Daftar trial di twilio.com/try-twilio (gratis, tanpa kartu kredit).
+2. Buka Twilio Console lama → Messaging → Try WhatsApp (sandbox),
+   catat kode join, mis. `join-ab12cd`.
+3. Dari HP kirim `join-ab12cd` ke **+14155238886** (nomor sandbox).
+4. Di pengaturan sandbox isi webhook: `https://xxx/event... (.trycloudflare.com)/twilio/inbound`
+   (method POST). Tunnel yang sama seperti jalur Meta.
+5. `.env`: `WHATSAPP_BACKEND=twilio` + `TWILIO_ACCOUNT_SID`,
+   `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`.
+6. Restart `python app.py`, kirim `ping` dari HP → dibalas `pong`.
+
+Catatan: sesi join kedaluwarsa tiap 3 hari (join ulang); tombol
+Skip tampil sebagai teks biasa (bukan tombol) di jalur ini; nomor
+sandbox bersama kadang dibatasi ke negara tertentu — jika gagal,
+hubungi Twilio Support atau kembali ke simulasi.
+
+## Catatan operasional (jalur Meta)
 
 - Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):
   generate ulang di Meta Developer → update `.env` → restart `app.py`.

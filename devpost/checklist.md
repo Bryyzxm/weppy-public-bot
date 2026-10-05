@@ -73,6 +73,16 @@ Build mode: fast
   Learner check: Ketik `rekap sekarang` dan `cek follow-up`, nilai apakah rekap per tahap + follow-up besok sudah jelas dan bahasanya mengikuti pilihanmu; ikuti README dari awal untuk memastikan orang lain bisa menjalankannya.
   Commit: `Schedule follow-ups and daily recap with demo commands`
 
+- [ ] **7. Jalur Twilio sandbox agar bisa tes dari HP**
+  Becomes usable: Chat dari HP via nomor sandbox Twilio (+14155238886) → balasan agent sama persis seperti jalur Meta (kartu, Skip, rekap).
+  Why now: Jalur Meta terbukti diblokir untuk +62 (error 130497) dan verifikasi bisnis/pembayaran sulit dipenuhi; tanpa jalur uji nyata, final review tidak bisa lewat WA beneran.
+  PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
+  Spec ref: `spec.md > External Services and Dependencies` (bagian Twilio Sandbox)
+  Build: `whatsapp.py` dual-backend (`WHATSAPP_BACKEND=meta|twilio`, quick-reply jadi teks biasa di Twilio); route baru `POST /twilio/inbound` parsing form Twilio (From/Body/MediaUrl0); unduh media via URL + auth Twilio; `.env.example` + README jalur sandbox; kode Meta tidak diubah.
+  Verify (mechanical): Dengan stub Twilio: POST form `Body=ping` → assert `pong`; laporan teks → assert kartu; audio (MediaUrl palsu + TRANSCRIBE_TEXT) → assert kartu; jalur Meta lama tetap lolos regresi.
+  Learner check: Join sandbox dari HP (`join <kode>` ke +14155238886), arahkan webhook Twilio ke `/twilio/inbound`, kirim `ping` dan laporan beneran dari HP.
+  Commit: `Add Twilio sandbox channel alongside Meta`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -97,4 +107,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 ## Revisions
 
 - Uji WA nomor nyata (+62) diblokir Meta error 130497 (akun uji dibatasi mengirim ke negara tertentu) — final review memakai simulasi webhook + stub Groq; wiring WA (verifikasi, subscription messages) terbukti benar dan jalur produksi (nomor sendiri + bisnis terverifikasi) tidak terdampak.
+- Tambah jalur Twilio sandbox sebagai transport uji alternatif (disetujui learner) — perilaku bot tidak berubah, hanya `whatsapp.py` + route inbound yang dual-backend; `spec.md > External Services and Dependencies` dilengkapi bagian Twilio.
 

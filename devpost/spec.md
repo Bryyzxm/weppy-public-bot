@@ -201,6 +201,13 @@ sales-wa-assistant/
 - Docs: https://ngrok.com/docs
 - Batas: URL gratis berubah tiap restart → update Callback URL tiap mulai ulang. Alternatif gratis: Cloudflare Tunnel.
 
+**4. Twilio Sandbox — transport uji alternatif (revisi build).**
+- Alasan: nomor uji Meta (+1) diblokir mengirim ke +62 (error 130497) dan verifikasi bisnis/pembayaran sulit dipenuhi; sandbox Twilio gratis, tanpa verifikasi, nomor harian learner tetap utuh. Perilaku bot identik — hanya transport yang beda (`WHATSAPP_BACKEND=twilio`).
+- Panggil: kirim API Twilio `POST https://api.twilio.com/2010-04-01/Accounts/{SID}/Messages.json` (Basic Auth SID/token); terima: `POST /twilio/inbound` form-encoded (`From`/`Body`/`MediaUrl0`). Quick-reply buttons tidak didukung → dikirim sebagai teks biasa (instruksi Skip tetap ada di kalimat). Media voice note diunduh dari `MediaUrl0` + auth Twilio, lalu transkripsi Groq seperti biasa.
+- Docs: https://www.twilio.com/docs/whatsapp/sandbox
+- Key: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` (mis. `whatsapp:+14155238886`).
+- Batas/biaya: trial gratis tanpa kartu kredit (100 pesan WA); setelah itu $0.005/pesan + fee template Meta. Sandbox: join kedaluwarsa tiap 3 hari (kirim `join <kode>` ulang), maks 1 pesan/3 detik, tanpa custom template (balasan bebas dalam 24 jam window tetap bisa). Risiko: nomor sandbox bersama kadang juga dibatasi ke negara tertentu (mis. Indonesia) — jika gagal, hubungi Twilio Support atau kembali ke simulasi.
+
 ## Important Failure Modes
 
 - **Tunnel mati / URL berubah →** WhatsApp tidak bisa mengetuk laptop; sales kirim pesan tapi tidak ada balasan. Fallback: cek log `app.py`, jalankan `ngrok http 5000` ulang, update Callback URL di Meta, kirim `ping` untuk tes. Untuk rekaman, pastikan tunnel hijau sebelum mulai.

@@ -100,6 +100,33 @@ def incoming():
     return jsonify({"ok": True})
 
 
+@app.post("/twilio/inbound")
+def twilio_inbound():
+    """Slice 7: Twilio posts form-encoded (From/Body/MediaUrl0), not JSON.
+
+    Returns empty TwiML — replies go out through the Twilio Messages API
+    (same send path as Meta), so nothing is ever answered twice.
+    """
+    form = request.form
+    sender = whatsapp._digits(form.get("From", ""))
+    if not sender:
+        return "<Response/>", 200, {"Content-Type": "text/xml"}
+    n_media = 0
+    try:
+        n_media = int(form.get("NumMedia", "0") or 0)
+    except ValueError:
+        n_media = 0
+    media_url = form.get("MediaUrl0", "") if n_media > 0 else ""
+    media_type = form.get("MediaContentType0", "")
+    if media_url and media_type.startswith("audio"):
+        msg = {"from": sender, "type": "audio", "audio": {"url": media_url}}
+    else:
+        msg = {"from": sender, "type": "text",
+               "text": {"body": (form.get("Body") or "").strip()}}
+    _handle_message(msg)
+    return "<Response/>", 200, {"Content-Type": "text/xml"}
+
+
 def _handle_message(msg: dict) -> None:
     sender = msg.get("from", "")
     if not sender:
@@ -179,12 +206,14 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
     from transcribe import transcribe_audio
 
     lang = profile.get("language", "id")
-    media_id = (msg.get("audio") or {}).get("id", "")
-    if not media_id:
-        whatsapp.send_text(sender, t(lang, "vn_download_fail"))
-        return
+    media = (msg.get("audio") or {})
     try:
-        audio_bytes = whatsapp.download_media(media_id)
+        if media.get("url"):
+            audio_bytes = whatsapp.download_twilio_media(media["url"])
+        elif media.get("id"):
+            audio_bytes = whatsapp.download_media(media["id"])
+        else:
+            raise ValueError("no audio ref")
     except Exception:
         whatsapp.send_text(sender, t(lang, "vn_download_fail"))
         return

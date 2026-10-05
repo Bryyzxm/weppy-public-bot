@@ -1,31 +1,64 @@
-"""WhatsApp Cloud API connector (see spec.md > Components: WhatsApp Connector).
+"""WhatsApp connector, dual backend (see spec.md > Components: WhatsApp Connector,
+spec.md > External Services and Dependencies §4 Twilio Sandbox).
 
-Three send paths: free text, quick-reply buttons, approved templates.
-Media download helper arrives in slice 4; kept out of slice 1 on purpose.
+`WHATSAPP_BACKEND=meta` (default) talks to Meta Graph API as before.
+`WHATSAPP_BACKEND=twilio` talks to the Twilio sandbox: inbound arrives as
+form-encoded POSTs on /twilio/inbound, outbound goes to the Twilio
+Messages API. Bot behavior (cards, Skip, recap) is identical on both.
 
-Stub mode: when WHATSAPP_TOKEN / PHONE_NUMBER_ID are empty or dummy
-(or WHATSAPP_STUB=1), nothing hits the network. Messages are appended
-to OUTBOX and printed, so Flask test-client verification works offline.
+Three send paths: free text, quick-reply buttons (Meta only — sent as
+plain text on Twilio, the Skip instruction stays in the wording),
+approved templates (Meta only — Twilio replies stay in-window).
+
+Stub mode: WHATSAPP_STUB=1, dummy creds, or TWILIO_STUB=1 on the Twilio
+path. Nothing hits the network; messages land in OUTBOX for Flask
+test-client verification.
 """
 
 import os
 
 import requests
 
+from requests.auth import HTTPBasicAuth
+
 OUTBOX: list = []
 
 GRAPH_VERSION = os.getenv("GRAPH_API_VERSION", "v21.0")
 
 
+def backend() -> str:
+    return os.getenv("WHATSAPP_BACKEND", "meta").strip().lower()
+
+
 def is_stub() -> bool:
     if os.getenv("WHATSAPP_STUB", "0") == "1":
         return True
+    if backend() == "twilio":
+        if os.getenv("TWILIO_STUB", "0") == "1":
+            return True
+        sid = os.getenv("TWILIO_ACCOUNT_SID", "")
+        tok = os.getenv("TWILIO_AUTH_TOKEN", "")
+        if not sid or not tok:
+            return True
+        return "dummy" in (sid + " " + tok).lower()
     token = os.getenv("WHATSAPP_TOKEN", "")
     phone_id = os.getenv("PHONE_NUMBER_ID", "")
     if not token or not phone_id:
         return True
     low = (token + " " + phone_id).lower()
     return low.startswith("dummy") or "dummy" in low or "test" in low
+
+
+def _digits(number: str) -> str:
+    """'whatsapp:+62812x' or '+62812x' -> '62812x' (internal canonical form)."""
+    n = (number or "").strip()
+    n = n.removeprefix("whatsapp:")
+    n = n.removeprefix("+")
+    return "".join(ch for ch in n if ch.isdigit())
+
+
+def _twilio_to(number: str) -> str:
+    return "whatsapp:+" + _digits(number)
 
 
 def _post(payload: dict):
@@ -45,6 +78,22 @@ def _post(payload: dict):
     return resp.json()
 
 
+def _twilio_post(data: dict):
+    """Send via Twilio Messages API (sandbox From number from env)."""
+    sid = os.getenv("TWILIO_ACCOUNT_SID", "")
+    tok = os.getenv("TWILIO_AUTH_TOKEN", "")
+    sender = os.getenv("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
+    payload = {"From": sender, **data}
+    resp = requests.post(
+        f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+        auth=HTTPBasicAuth(sid, tok),
+        data=payload,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
 def _log(line: str) -> None:
     if os.getenv("WHATSAPP_QUIET", "0") != "1":
         print(line)
@@ -56,6 +105,8 @@ def send_text(to: str, body: str):
         OUTBOX.append(entry)
         _log(f"[stub send_text to={to}] {body}")
         return {"stub": True}
+    if backend() == "twilio":
+        return _twilio_post({"To": _twilio_to(to), "Body": body})
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -78,6 +129,10 @@ def send_quick_reply(to: str, body: str, buttons: list):
         OUTBOX.append(entry)
         _log(f"[stub quick_reply to={to}] {body} | {buttons}")
         return {"stub": True}
+    if backend() == "twilio":
+        # Twilio sandbox has no button API on this path — plain text keeps
+        # the Skip instruction that already lives in the question wording.
+        return send_text(to, body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -143,6 +198,21 @@ class WhatsappError(RuntimeError):
     pass
 
 
+def download_url(url: str, auth=None) -> bytes:
+    """Download media bytes from a direct URL (Twilio MediaUrl0 + Basic Auth)."""
+    if is_stub():
+        return b"fake-ogg-opus-audio"
+    dl = requests.get(url, auth=auth, timeout=60)
+    if dl.status_code != 200 or not dl.content:
+        raise WhatsappError(f"media download http {dl.status_code}")
+    return dl.content
+
+
+def twilio_auth():
+    sid = os.getenv("TWILIO_ACCOUNT_SID", "")
+    return HTTPBasicAuth(sid, os.getenv("TWILIO_AUTH_TOKEN", ""))
+
+
 def download_media(media_id: str) -> bytes:
     """Two-step voice-note download: GET /{media-id} -> temp URL -> bytes.
 
@@ -173,3 +243,8 @@ def download_media(media_id: str) -> bytes:
     if dl.status_code != 200 or not dl.content:
         raise WhatsappError(f"media download http {dl.status_code}")
     return dl.content
+
+
+def download_twilio_media(url: str) -> bytes:
+    """Voice-note download on the Twilio path (MediaUrl0 + account auth)."""
+    return download_url(url, auth=twilio_auth())
