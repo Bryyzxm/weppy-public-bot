@@ -133,4 +133,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Rekap diperkaya (feedback final review): tiap baris memuat kontak + produk + tanggal follow-up, plus tombol per PT (maks 3/pesan) dan nomor fallback untuk buka kartu lengkap via `view_<id>`.
 - Tambah jalur Fonnte berbasis nomor sendiri (disetujui learner) — bebas blokir negara; `whatsapp.py` backend `fonnte` + route `/fonnte/inbound`; quick-reply/template fallback teks biasa; voice note via `url` webhook; `spec.md > External Services` dilengkapi bagian 6. Fonnte.
 - Jalur WAAPI.co.id sempat dibangun sebagai slice 10 lalu dibatalkan atas permintaan learner — perubahan kode + docs di-revert penuh (commit revert), tidak ada sisa referensi WAAPI; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
+- Jalur waapi.app sempat dibangun sebagai slice 10 baru (stub-first, terverifikasi offline) lalu dibatalkan atas permintaan learner karena risiko banned nomor WA sendiri — perubahan kode + docs di-revert penuh (2 commit revert), tidak ada sisa referensi waapi.app; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
 
