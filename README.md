@@ -73,23 +73,6 @@ Catatan: nomor milik sendiri jadi bebas blokir negara; tombol Skip
 tampil sebagai teks biasa (bukan tombol) di jalur ini; voice note
 diunduh dari `url` webhook lalu ditranskripsi Groq seperti biasa.
 
-## Jalur WAAPI.co.id (nomor WA sendiri via QR)
-
-1. Daftar di waapi.co.id (paket Free: 1 device, 100 pesan/hari),
-   tambah device dan sambungkan nomor via QR/pairing code, salin
-   token + device id.
-2. `.env`: `WHATSAPP_BACKEND=waapi` + `WAAPI_TOKEN=<token>` +
-   `WAAPI_DEVICE_ID=1`.
-3. Daftarkan webhook ke tunnel (method POST, event `message.received`):
-   `curl -X POST https://waapi.co.id/api/v2/webhook -H 'Authorization: Bearer TOKEN_KAMU' -H 'Content-Type: application/json' -d '{"device_id": 1, "url": "https://xxx.ngrok-free.app/waapi/inbound", "event_type": "message.received"}'`
-4. Restart `python app.py`, kirim `ping` dari HP ke nomor device.
-
-Catatan: docs publik hanya mendokumentasikan teks masuk
-(`event=message.received`, `data.from`/`data.message`) tanpa field
-audio/URL media — jadi **voice note dibalas jujur + diminta ketik
-teks** (sama seperti jalur d360) sampai provider mengonfirmasi jalur
-unduh; tombol Skip tampil sebagai teks biasa di jalur ini.
-
 ## Catatan operasional (jalur Meta)
 
 - Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):

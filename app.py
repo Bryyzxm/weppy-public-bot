@@ -170,46 +170,6 @@ def fonnte_inbound():
     return jsonify({"ok": True})
 
 
-@app.post("/waapi/inbound")
-def waapi_inbound():
-    """Slice 10: WAAPI.co.id posts JSON (event/data.from/data.message).
-
-    Docs (https://waapi.co.id/api-docs > Webhook Events): payload
-    {event: message.received, deviceId, data: {from, message, messageId}}.
-    No audio/media fields are documented, so every inbound is treated
-    as text; voice notes get the honest vn_no_media fallback in
-    _handle_voice_note. Always HTTP 200, never 500.
-    """
-    payload = request.get_json(force=True, silent=True) or {}
-    if not payload:
-        try:
-            payload = dict(request.form)
-        except Exception:
-            payload = {}
-    event = str(payload.get("event", "") or "")
-    data = payload.get("data") or {}
-    if not isinstance(data, dict):
-        data = {}
-    # Tolerate flat-shape forwards too (some setups forward data unwrapped).
-    sender_raw = data.get("from", "") or payload.get("from", "")
-    body_raw = data.get("message", "") or payload.get("message", "")
-    sender = whatsapp._digits(str(sender_raw))
-    if not sender:
-        return jsonify({"ok": True})
-    if event and event not in ("message.received", "message", "*"):
-        # Status/device events (sent/delivered/read/connected) — ack only.
-        return jsonify({"ok": True})
-    body = str(body_raw or "").strip()
-    if not body:
-        return jsonify({"ok": True})
-    msg = {"from": sender, "type": "text", "text": {"body": body}}
-    try:
-        _handle_message(msg)
-    except Exception as e:
-        print(f"[waapi] handler error: {e}")
-    return jsonify({"ok": True})
-
-
 def _handle_message(msg: dict) -> None:
     sender = msg.get("from", "")
     if not sender:
@@ -317,9 +277,8 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
     from transcribe import transcribe_audio
 
     lang = profile.get("language", "id")
-    if whatsapp.backend() in ("d360", "waapi") and not whatsapp.is_stub():
-        # 360dialog sandbox has no media download (spec §5); WAAPI.co.id
-        # documents no inbound audio/media field (spec §7) — honest fallback.
+    if whatsapp.backend() == "d360" and not whatsapp.is_stub():
+        # Sandbox 360dialog doesn't support media download (spec §5).
         whatsapp.send_text(sender, t(lang, "vn_no_media"))
         return
     media = (msg.get("audio") or {})
