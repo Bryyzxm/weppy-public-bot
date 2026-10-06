@@ -20,7 +20,7 @@ import os
 
 import store
 import whatsapp
-from agent import format_date
+from agent import format_date, stage_label
 
 TEMPLATES = {
     "id": {"code": "id", "followup": "followup_reminder_id", "recap": "daily_recap_id"},
@@ -84,7 +84,7 @@ def build_recap_text(notes: list, lang: str, ref: _dt.date) -> str:
     lines = [title]
     for stage in order:
         members = groups[stage]
-        lines.append(f"*{stage} ({len(members)}):*")
+        lines.append(f"*{stage_label(stage, lang)} ({len(members)}):*")
         for n in members:
             lines.append(f"\u2022 {_recap_line(n, lang)}")
 

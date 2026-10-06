@@ -20,6 +20,24 @@ DEFAULT_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 FIELD_ORDER = ["institusi", "kontak", "role", "produk", "tahap_deal"]
 
+# Canonical deal stages are stored in Indonesian (stable grouping);
+# display translates them per profile language. Anything else
+# (e.g. the user's own words) passes through untouched.
+STAGE_EN = {
+    "Kunjungan awal": "Initial visit",
+    "Penawaran harga": "Price quote",
+    "Negosiasi": "Negotiation",
+    "Deal": "Deal",
+    "Follow-up": "Follow-up",
+}
+
+
+def stage_label(value: str, lang: str) -> str:
+    v = (value or "").strip()
+    if lang == "en":
+        return STAGE_EN.get(v, v)
+    return v
+
 MONTH_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
             "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
 MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -245,7 +263,7 @@ def render_card(note: dict, lang: str) -> str:
         f"{L['institusi']}: {val(note.get('institusi', ''))}",
         f"{L['kontak']}: {kontak_line}",
         f"{L['produk']}: {val(note.get('produk', ''))}",
-        f"{L['tahap']}: {val(note.get('tahap_deal', ''))}",
+        f"{L['tahap']}: {val(stage_label(note.get('tahap_deal', ''), lang))}",
         f"{L['followup']}: {format_date(note.get('followup_date', ''), lang)}",
         L["hint"],
     ]

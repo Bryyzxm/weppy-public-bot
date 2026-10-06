@@ -143,8 +143,8 @@ CLARIFY = {
         "role": 'What is their role/job title? (Reply, or "Skip".)',
         "produk": 'Which product/service was discussed? (Reply, or "Skip".)',
         "tahap_deal": (
-            "What is the current deal stage? E.g.: Kunjungan awal, Penawaran harga, "
-            'Negosiasi, Deal, Follow-up. (Reply, or "Skip".)'
+            "What is the current deal stage? E.g.: Initial visit, Price quote, "
+            'Negotiation, Deal, Follow-up. (Reply, or "Skip".)'
         ),
         "saved": "Saved. {filled}/5 fields filled.",
     },
