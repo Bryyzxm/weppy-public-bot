@@ -16,7 +16,7 @@ import os
 import re
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+DEFAULT_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 FIELD_ORDER = ["institusi", "kontak", "role", "produk", "tahap_deal"]
 
@@ -66,14 +66,14 @@ def _extract_via_groq(text: str) -> dict:
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system",
-                 "content": EXTRACTION_SYSTEM.format(today=today)},
+                 "content": EXTRACTION_SYSTEM.replace("{today}", today)},
                 {"role": "user", "content": text},
             ],
         },
         timeout=30,
     )
-    if resp.status_code in (401, 429) or resp.status_code >= 500:
-        raise GroqError(f"groq http {resp.status_code}")
+    if resp.status_code != 200:
+        raise GroqError(f"groq http {resp.status_code}: {resp.text[:160]}")
     try:
         data = resp.json()
         raw = data["choices"][0]["message"]["content"]
