@@ -55,6 +55,12 @@ STRINGS = {
             "Di jalur uji ini voice note tidak bisa diunduh, jadi ketik "
             "laporannya sebagai teks ya."
         ),
+        "report_empty": (
+            "Saya tidak menemukan info laporan di pesan itu, jadi tidak "
+            "ada yang disimpan. Coba kirim ulang dengan menyebut "
+            "perusahaan, kontak, atau produk — atau ketik \"rekap\" untuk "
+            "rekap, \"cek follow-up\" untuk pengingat."
+        ),
     },
     "en": {
         "onboarding_name": (
@@ -102,6 +108,12 @@ STRINGS = {
         "vn_no_media": (
             "Voice notes can't be downloaded on this trial channel, "
             "so please type the report as text."
+        ),
+        "report_empty": (
+            "I couldn't find any report info in that message, so nothing "
+            "was saved. Try again mentioning the company, contact, or "
+            "product — or type \"recap\" for the recap, \"check follow-up\" "
+            "for reminders."
         ),
     },
 }

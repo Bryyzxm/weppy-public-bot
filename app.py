@@ -187,10 +187,16 @@ def _handle_message(msg: dict) -> None:
         return
 
     # Slice 6: demo commands call the same functions as the scheduler.
-    if low in ("rekap sekarang",):
+    # English aliases included — an unrecognized "recap now" must never
+    # become a bogus empty report (see _handle_report empty-guard).
+    if low in ("rekap sekarang", "rekap", "recap", "recap now",
+               "send recap", "send me the recap", "recap please",
+               "minta rekap"):
         scheduler.send_recap_to(profile, sender)
         return
-    if low in ("cek follow-up", "cek follow up"):
+    if low in ("cek follow-up", "cek follow up", "cek followup",
+               "check follow-up", "check follow-ups", "follow-up",
+               "follow up", "follow-ups", "followups", "cek pengingat"):
         scheduler.send_followups_to(profile, sender)
         return
 
@@ -246,6 +252,12 @@ def _handle_report(sender: str, text: str, profile: dict) -> None:
         fields = extract_report(text)
     except GroqError:
         whatsapp.send_text(sender, t(lang, "ai_busy"))
+        return
+
+    if not any((fields.get(f) or "").strip() for f in FIELD_ORDER):
+        # Nothing extractable (e.g. a mistyped command) — don't pollute
+        # notes.json with an empty note + 5 pointless questions.
+        whatsapp.send_text(sender, t(lang, "report_empty"))
         return
 
     notes = store.load_notes()
