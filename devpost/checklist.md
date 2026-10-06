@@ -103,7 +103,7 @@ Build mode: fast
   Learner check: Isi FONNTE_TOKEN di `.env`, arahkan webhook device ke `/fonnte/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Fonnte channel alongside Meta Twilio d360`
 
-- [ ] **10. Jalur waapi.app (nomor WA sendiri, BUKAN waapi.co.id)**
+- [x] **10. Jalur waapi.app (nomor WA sendiri, BUKAN waapi.co.id)**
   Becomes usable: Chat dari HP via nomor bot waapi.app sendiri → balasan agent sama persis seperti jalur Meta (kartu, Skip, rekap); voice note ikut didukung (base64 inline / download-media), bukan fallback.
   Why now: Alternatif nomor sendiri bebas blokir negara seperti Fonnte; dibangun stub-first karena learner belum punya instance ID/token — verifikasi offline dulu, token diisi nanti tanpa ubah kode.
   PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
