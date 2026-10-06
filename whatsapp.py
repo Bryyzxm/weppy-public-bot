@@ -41,6 +41,11 @@ def is_stub() -> bool:
         if not sid or not tok:
             return True
         return "dummy" in (sid + " " + tok).lower()
+    if backend() == "d360":
+        key = os.getenv("D360_API_KEY", "")
+        if not key:
+            return True
+        return "dummy" in key.lower()
     token = os.getenv("WHATSAPP_TOKEN", "")
     phone_id = os.getenv("PHONE_NUMBER_ID", "")
     if not token or not phone_id:
@@ -62,6 +67,8 @@ def _twilio_to(number: str) -> str:
 
 
 def _post(payload: dict):
+    if backend() == "d360":
+        return _d360_post(payload)
     phone_id = os.getenv("PHONE_NUMBER_ID", "")
     token = os.getenv("WHATSAPP_TOKEN", "")
     url = f"https://graph.facebook.com/{GRAPH_VERSION}/{phone_id}/messages"
@@ -70,6 +77,21 @@ def _post(payload: dict):
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _d360_post(payload: dict):
+    """Send via 360dialog sandbox (same payload shape as Meta)."""
+    resp = requests.post(
+        "https://waba-sandbox.360dialog.io/v1/messages",
+        headers={
+            "Content-Type": "application/json",
+            "D360-API-KEY": os.getenv("D360_API_KEY", ""),
         },
         json=payload,
         timeout=20,

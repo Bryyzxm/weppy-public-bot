@@ -51,6 +51,10 @@ STRINGS = {
             "karangan. Boleh ulangi bagian yang kurang jelas, atau ketik "
             "laporannya sebagai teks?"
         ),
+        "vn_no_media": (
+            "Di jalur uji ini voice note tidak bisa diunduh, jadi ketik "
+            "laporannya sebagai teks ya."
+        ),
     },
     "en": {
         "onboarding_name": (
@@ -94,6 +98,10 @@ STRINGS = {
         "vn_unclear": (
             "Sorry, the audio was unclear so I didn't make up a note. "
             "Could you repeat the unclear part, or type the report as text?"
+        ),
+        "vn_no_media": (
+            "Voice notes can't be downloaded on this trial channel, "
+            "so please type the report as text."
         ),
     },
 }

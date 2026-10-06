@@ -46,6 +46,19 @@ Skip tampil sebagai teks biasa (bukan tombol) di jalur ini; nomor
 sandbox bersama kadang dibatasi ke negara tertentu — jika gagal,
 hubungi Twilio Support atau kembali ke simulasi.
 
+## Jalur 360dialog sandbox (tanpa daftar akun)
+
+1. Dari HP kirim `START` (huruf besar semua) via WhatsApp ke **+551146733492**.
+   Balasannya berisi API key sandbox.
+2. `.env`: `WHATSAPP_BACKEND=d360` + `D360_API_KEY=<key dari WA>`.
+3. Set webhook sandbox ke tunnel: (ganti URL + key)
+   `curl -X POST https://waba-sandbox.360dialog.io/v1/configs/webhook -H 'Content-Type: application/json' -H 'D360-API-KEY: KEY_KAMU' -d '{"url": "https://xxx/event... (.trycloudflare.com)/webhook"}'`
+4. Restart `python app.py`, kirim `ping` dari HP ke +551146733492.
+
+Catatan: gratis 200 pesan ke nomor sendiri (cukup untuk POC);
+**voice note tidak didukung** (sandbox tak sediakan unduh media) —
+agent menjawab terus-terang dan meminta ketik teks.
+
 ## Catatan operasional (jalur Meta)
 
 - Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):

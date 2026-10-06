@@ -96,7 +96,12 @@ def incoming():
         for change in entry.get("changes", []):
             value = change.get("value", {})
             for msg in value.get("messages", []):
-                _handle_message(msg)
+                try:
+                    _handle_message(msg)
+                except Exception as e:
+                    # Never 500 on outbound failure (bad key, expired token,
+                    # flaky network) — log it, keep the webhook alive.
+                    print(f"[webhook] handler error: {e}")
     return jsonify({"ok": True})
 
 
@@ -123,7 +128,10 @@ def twilio_inbound():
     else:
         msg = {"from": sender, "type": "text",
                "text": {"body": (form.get("Body") or "").strip()}}
-    _handle_message(msg)
+    try:
+        _handle_message(msg)
+    except Exception as e:
+        print(f"[twilio] handler error: {e}")
     return "<Response/>", 200, {"Content-Type": "text/xml"}
 
 
@@ -206,6 +214,10 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
     from transcribe import transcribe_audio
 
     lang = profile.get("language", "id")
+    if whatsapp.backend() == "d360" and not whatsapp.is_stub():
+        # Sandbox 360dialog doesn't support media download (spec §5).
+        whatsapp.send_text(sender, t(lang, "vn_no_media"))
+        return
     media = (msg.get("audio") or {})
     try:
         if media.get("url"):

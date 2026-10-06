@@ -73,7 +73,7 @@ Build mode: fast
   Learner check: Ketik `rekap sekarang` dan `cek follow-up`, nilai apakah rekap per tahap + follow-up besok sudah jelas dan bahasanya mengikuti pilihanmu; ikuti README dari awal untuk memastikan orang lain bisa menjalankannya.
   Commit: `Schedule follow-ups and daily recap with demo commands`
 
-- [ ] **7. Jalur Twilio sandbox agar bisa tes dari HP**
+- [x] **7. Jalur Twilio sandbox agar bisa tes dari HP**
   Becomes usable: Chat dari HP via nomor sandbox Twilio (+14155238886) → balasan agent sama persis seperti jalur Meta (kartu, Skip, rekap).
   Why now: Jalur Meta terbukti diblokir untuk +62 (error 130497) dan verifikasi bisnis/pembayaran sulit dipenuhi; tanpa jalur uji nyata, final review tidak bisa lewat WA beneran.
   PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
@@ -82,6 +82,16 @@ Build mode: fast
   Verify (mechanical): Dengan stub Twilio: POST form `Body=ping` → assert `pong`; laporan teks → assert kartu; audio (MediaUrl palsu + TRANSCRIBE_TEXT) → assert kartu; jalur Meta lama tetap lolos regresi.
   Learner check: Join sandbox dari HP (`join <kode>` ke +14155238886), arahkan webhook Twilio ke `/twilio/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Twilio sandbox channel alongside Meta`
+
+- [ ] **8. Jalur 360dialog sandbox (tanpa daftar akun)**
+  Becomes usable: Chat dari HP via nomor sandbox 360dialog → balasan agent sama (kartu, Skip, rekap); voice note dikecualikan (sandbox tak dukung unduh media).
+  Why now: Signup Twilio ditolak filter fraud; sandbox 360dialog tanpa pendaftaran (cukup kirim `START` via WA) dan format webhook-nya identik Meta sehingga adaptasi minimal.
+  PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
+  Spec ref: `spec.md > External Services and Dependencies` (bagian 360dialog Sandbox)
+  Build: `whatsapp.py` backend `d360` (kirim via waba-sandbox.360dialog.io + header D360-API-KEY, payload sama persis); inbound pakai route `/webhook` yang sudah ada tanpa perubahan; voice note di jalur ini dibalas pesan terus-terang + minta ketik teks; `.env.example` + README.
+  Verify (mechanical): Dengan stub d360: POST /webhook `ping` → `pong`; laporan → kartu + klarifikasi; audio → pesan vn_sandbox_no_media, notes.json tidak bertambah; regresi Meta + Twilio tetap lolos.
+  Learner check: Kirim `START` ke +551146733492, isi D360_API_KEY ke `.env`, set webhook sandbox ke tunnel, kirim `ping` + laporan beneran dari HP.
+  Commit: `Add 360dialog sandbox channel`
 
 ## Hands-on Checkpoints
 
@@ -108,4 +118,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 
 - Uji WA nomor nyata (+62) diblokir Meta error 130497 (akun uji dibatasi mengirim ke negara tertentu) — final review memakai simulasi webhook + stub Groq; wiring WA (verifikasi, subscription messages) terbukti benar dan jalur produksi (nomor sendiri + bisnis terverifikasi) tidak terdampak.
 - Tambah jalur Twilio sandbox sebagai transport uji alternatif (disetujui learner) — perilaku bot tidak berubah, hanya `whatsapp.py` + route inbound yang dual-backend; `spec.md > External Services and Dependencies` dilengkapi bagian Twilio.
+- Signup Twilio ditolak filter akun; tambah jalur 360dialog sandbox (disetujui learner) — tanpa pendaftaran, format webhook identik Meta; voice note dikecualikan karena sandbox tak dukung unduh media.
 

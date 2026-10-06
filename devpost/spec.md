@@ -208,6 +208,12 @@ sales-wa-assistant/
 - Key: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` (mis. `whatsapp:+14155238886`).
 - Batas/biaya: trial gratis tanpa kartu kredit (100 pesan WA); setelah itu $0.005/pesan + fee template Meta. Sandbox: join kedaluwarsa tiap 3 hari (kirim `join <kode>` ulang), maks 1 pesan/3 detik, tanpa custom template (balasan bebas dalam 24 jam window tetap bisa). Risiko: nomor sandbox bersama kadang juga dibatasi ke negara tertentu (mis. Indonesia) — jika gagal, hubungi Twilio Support atau kembali ke simulasi.
 
+**5. 360dialog Sandbox — transport uji tanpa pendaftaran (revisi build).**
+- Alasan: signup Twilio ditolak filter akun; sandbox 360dialog cukup kirim `START` via WA ke +551146733492 untuk dapat API key — tanpa akun, verifikasi, atau kartu. Format webhook identik Meta sehingga route `/webhook` dipakai ulang tanpa perubahan; kirim via `POST https://waba-sandbox.360dialog.io/v1/messages` + header `D360-API-KEY` (payload sama persis).
+- Docs: https://docs.360dialog.com/docs/get-started/sandbox
+- Key: `D360_API_KEY` (`WHATSAPP_BACKEND=d360`).
+- Batas: gratis 200 pesan ke nomor sendiri (cukup untuk POC); tanpa custom template (tidak dipakai POC ini); **unduh media via media ID tidak didukung** → voice note di jalur ini dijawab terus-terang + diminta ketik teks. Risiko lintas negara (+55 → +62) tetap mungkin; jika gagal, kembali ke simulasi.
+
 ## Important Failure Modes
 
 - **Tunnel mati / URL berubah →** WhatsApp tidak bisa mengetuk laptop; sales kirim pesan tapi tidak ada balasan. Fallback: cek log `app.py`, jalankan `ngrok http 5000` ulang, update Callback URL di Meta, kirim `ping` untuk tes. Untuk rekaman, pastikan tunnel hijau sebelum mulai.
