@@ -1,6 +1,6 @@
 """WhatsApp connector, multi backend (see spec.md > Components: WhatsApp Connector,
 spec.md > External Services and Dependencies §4 Twilio Sandbox, §5 360dialog,
-§6 Fonnte).
+§6 Fonnte, §7 waapi.app).
 
 `WHATSAPP_BACKEND=meta` (default) talks to Meta Graph API as before.
 `WHATSAPP_BACKEND=twilio` talks to the Twilio sandbox: inbound arrives as
@@ -12,10 +12,15 @@ to Meta, inbound reuses /webhook).
 arrives as JSON POSTs on /fonnte/inbound (sender/message/text/url),
 outbound goes to POST https://api.fonnte.com/send with header
 `Authorization: <FONNTE_TOKEN>`.
+`WHATSAPP_BACKEND=waapi` talks to waapi.app (own number via QR,
+NOT waapi.co.id): inbound arrives as JSON POSTs on /waapi/inbound
+(event=message, data.message._data + data.media base64), outbound goes
+to POST https://waapi.app/api/v1/instances/{id}/client/action/send-message
+with header `Authorization: Bearer <WAAPI_TOKEN>`.
 
 Three send paths: free text, quick-reply buttons (Meta only — sent as
-plain text on Twilio/Fonnte, the Skip instruction stays in the wording),
-approved templates (Meta only — Twilio/Fonnte replies stay in-window,
+plain text on Twilio/Fonnte/waapi.app, the Skip instruction stays in the wording),
+approved templates (Meta only — Twilio/Fonnte/waapi.app replies stay in-window,
 template calls fall back to plain text).
 
 Stub mode: WHATSAPP_STUB=1, dummy creds, or TWILIO_STUB=1 on the Twilio
@@ -59,6 +64,13 @@ def is_stub() -> bool:
         if not key:
             return True
         return "dummy" in key.lower()
+    if backend() == "waapi":
+        inst = os.getenv("WAAPI_INSTANCE_ID", "")
+        key = os.getenv("WAAPI_TOKEN", "")
+        if not inst or not key:
+            return True
+        low = (inst + " " + key).lower()
+        return "dummy" in low or "test" in low
     token = os.getenv("WHATSAPP_TOKEN", "")
     phone_id = os.getenv("PHONE_NUMBER_ID", "")
     if not token or not phone_id:
@@ -77,6 +89,35 @@ def _digits(number: str) -> str:
 
 def _twilio_to(number: str) -> str:
     return "whatsapp:+" + _digits(number)
+
+
+def _waapi_chat_id(number: str) -> str:
+    """digits -> '<digits>@c.us' (waapi.app individual-chat format)."""
+    return _digits(number) + "@c.us"
+
+
+def _waapi_post(chat_id: str, message: str):
+    """Send via waapi.app: POST /instances/{id}/client/action/send-message.
+
+    Header `Authorization: Bearer <WAAPI_TOKEN>`, JSON body
+    {chatId, message}. Docs: https://waapi.readme.io (send-text-message).
+    Note the double status envelope: HTTP 200 + outer status only means
+    the request reached the instance — `data.status` is authoritative.
+    A malformed chatId comes back as data.status=error with no send.
+    """
+    instance = os.getenv("WAAPI_INSTANCE_ID", "")
+    resp = requests.post(
+        f"https://waapi.app/api/v1/instances/{instance}/client/action/send-message",
+        headers={
+            "authorization": f"Bearer {os.getenv('WAAPI_TOKEN', '')}",
+            "content-type": "application/json",
+            "accept": "application/json",
+        },
+        json={"chatId": chat_id, "message": message},
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
 
 
 def _post(payload: dict):
@@ -161,6 +202,8 @@ def send_text(to: str, body: str):
         return _twilio_post({"To": _twilio_to(to), "Body": body})
     if backend() == "fonnte":
         return _fonnte_post(_digits(to), body)
+    if backend() == "waapi":
+        return _waapi_post(_waapi_chat_id(to), body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -191,6 +234,10 @@ def send_quick_reply(to: str, body: str, buttons: list):
         # Fonnte supports buttons/templates on paper, but POC keeps the
         # same plain-text fallback so cards/Skip/recap stay identical.
         return send_text(to, body)
+    if backend() == "waapi":
+        # waapi.app is a plain-text/bot API — no Meta quick-reply widget.
+        # The Skip instruction already lives in the question wording.
+        return send_text(to, body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -216,8 +263,8 @@ def send_quick_reply(to: str, body: str, buttons: list):
 def send_template(to: str, name: str, language_code: str, parameters: list):
     """Approved template for outside the 24h window (slice 6 uses this).
 
-    Twilio/Fonnte have no Meta template concept — fall back to plain text
-    (own device / in-window sandbox replies don't need templates).
+    Twilio/Fonnte/waapi.app have no Meta template concept — fall back to
+    plain text (own device / in-window sandbox replies don't need templates).
     """
     entry = {
         "to": to,
@@ -230,7 +277,7 @@ def send_template(to: str, name: str, language_code: str, parameters: list):
         OUTBOX.append(entry)
         _log(f"[stub template to={to}] {name}/{language_code} {parameters}")
         return {"stub": True}
-    if backend() in ("twilio", "fonnte"):
+    if backend() in ("twilio", "fonnte", "waapi"):
         body = (parameters or [name])[0] if parameters else name
         return send_text(to, str(body))
     components = []
@@ -318,3 +365,56 @@ def download_twilio_media(url: str) -> bytes:
 def download_fonnte_media(url: str) -> bytes:
     """Voice-note/file download on the Fonnte path (public url, no auth)."""
     return download_url(url)
+
+
+def download_waapi_inline(b64: str) -> bytes:
+    """Voice-note bytes already embedded in the waapi.app webhook.
+
+    The message event carries data.media {mimetype, data: base64, ...}
+    for voice notes (audio/ogg; codecs=opus), so no extra HTTP call is
+    needed. Stub mode returns fake bytes; the transcribe stub ignores
+    content and uses TRANSCRIBE_TEXT instead.
+    """
+    if is_stub():
+        return b"fake-ogg-opus-audio"
+    import base64
+
+    try:
+        return base64.b64decode(b64)
+    except Exception as e:
+        raise WhatsappError(f"waapi inline media decode failed: {e}")
+
+
+def download_waapi_media(message_id: str) -> bytes:
+    """Voice-note download on the waapi.app path via download-media action.
+
+    POST /instances/{id}/client/action/download-media {messageId} returns
+    a temporary signed URL (valid 15 min); the file is then fetched with
+    a plain GET. Docs: https://waapi.readme.io/reference/download-media.md
+    messageId is the serialized id, e.g. false_62812@c.us_ABCDEF1234.
+    """
+    if is_stub():
+        return b"fake-ogg-opus-audio"
+    instance = os.getenv("WAAPI_INSTANCE_ID", "")
+    resp = requests.post(
+        f"https://waapi.app/api/v1/instances/{instance}/client/action/download-media",
+        headers={
+            "authorization": f"Bearer {os.getenv('WAAPI_TOKEN', '')}",
+            "content-type": "application/json",
+            "accept": "application/json",
+        },
+        json={"messageId": message_id},
+        timeout=20,
+    )
+    resp.raise_for_status()
+    payload = resp.json() or {}
+    data = payload.get("data") or {}
+    inner = (data.get("data") or {}) if isinstance(data, dict) else {}
+    media = (inner.get("media") or {}) if isinstance(inner, dict) else {}
+    url = media.get("url", "") if isinstance(media, dict) else ""
+    if not url:
+        raise WhatsappError("waapi download-media returned no url")
+    dl = requests.get(url, timeout=60)
+    if dl.status_code != 200 or not dl.content:
+        raise WhatsappError(f"waapi media download http {dl.status_code}")
+    return dl.content

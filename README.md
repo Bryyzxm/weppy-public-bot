@@ -73,6 +73,24 @@ Catatan: nomor milik sendiri jadi bebas blokir negara; tombol Skip
 tampil sebagai teks biasa (bukan tombol) di jalur ini; voice note
 diunduh dari `url` webhook lalu ditranskripsi Groq seperti biasa.
 
+## Jalur waapi.app (nomor WA sendiri, BUKAN waapi.co.id)
+
+1. Daftar di waapi.app, buat instance, scan QR (atau pairing code)
+   dengan nomor WA yang jadi bot, buat API token.
+2. `.env`: `WHATSAPP_BACKEND=waapi` + `WAAPI_INSTANCE_ID=<id>`
+   + `WAAPI_TOKEN=<token>`.
+3. Daftarkan webhook instance ke tunnel (via dashboard/API):
+   `https://xxx/event...(.trycloudflare.com)/waapi/inbound`
+   (method POST). Tunnel yang sama seperti jalur Meta.
+4. Restart `python app.py`, kirim `ping` dari HP ke nomor bot.
+
+Catatan: nomor milik sendiri jadi bebas blokir negara; tombol Skip
+tampil sebagai teks biasa (bukan tombol) di jalur ini; voice note
+(type `ptt`/`audio`) tiba dengan `data.media` base64 langsung di webhook
+(tanpa unduh tambahan) atau via endpoint `download-media` (URL 15 menit)
+lalu ditranskripsi Groq seperti biasa. Beda provider dengan waapi.co.id
+yang sempat dibatalkan — jangan tukar token/URL-nya.
+
 ## Catatan operasional (jalur Meta)
 
 - Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):

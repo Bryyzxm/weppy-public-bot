@@ -170,6 +170,92 @@ def fonnte_inbound():
     return jsonify({"ok": True})
 
 
+@app.post("/waapi/inbound")
+def waapi_inbound():
+    """Slice 10: waapi.app posts JSON (NOT waapi.co.id — different provider).
+
+    Shape (https://waapi.readme.io/reference/message-event.md):
+    {event: "message", instanceId, data: {message: {_data: {from, body,
+    type, fromMe, id}, ...top-level copy...}, media: {mimetype, data b64}}}.
+    Own-message echoes (fromMe=true) and non-message events (status/qr/...)
+    are acked and ignored. Voice notes (type ptt/audio, audio mimetype)
+    ride the same audio pipeline as Meta/Twilio/Fonnte — inline base64
+    preferred, serialized messageId fallback via download-media.
+    Optional HMAC check (header x-waapi-hmac, secret WAAPI_WEBHOOK_SECRET)
+    only when both are present. Always HTTP 200, never 500.
+    """
+    raw = request.get_data() or b""
+    payload = request.get_json(force=True, silent=True) or {}
+    if not isinstance(payload, dict):
+        payload = {}
+    secret = os.getenv("WAAPI_WEBHOOK_SECRET", "")
+    sig = (request.headers.get("x-waapi-hmac", "")
+           or request.headers.get("x-waapi-signature", "")).strip()
+    if secret and sig:
+        import hashlib
+        import hmac as _hmac
+
+        expected = _hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()
+        if not _hmac.compare_digest(expected, sig):
+            return jsonify({"ok": False, "error": "bad signature"}), 401
+
+    event = str(payload.get("event", "") or "")
+    if event and event != "message":
+        return jsonify({"ok": True})
+    data = payload.get("data") or {}
+    if not isinstance(data, dict):
+        data = {}
+    wrap = data.get("message") or {}
+    if not isinstance(wrap, dict):
+        wrap = {}
+    inner = wrap.get("_data") or {}
+    if not isinstance(inner, dict):
+        inner = {}
+    if bool(wrap.get("fromMe", inner.get("fromMe", False))):
+        return jsonify({"ok": True})
+
+    sender = whatsapp._digits(str(wrap.get("from") or inner.get("from") or ""))
+    if not sender:
+        return jsonify({"ok": True})
+
+    msg_type = str(wrap.get("type") or inner.get("type") or "chat")
+    has_media = bool(wrap.get("hasMedia", False))
+    media = data.get("media") or {}
+    if not isinstance(media, dict):
+        media = {}
+    mimetype = str(media.get("mimetype") or "")
+    body = str(wrap.get("body") or inner.get("body") or "").strip()
+
+    is_audio = msg_type in ("ptt", "audio") or (
+        has_media and mimetype.startswith("audio")
+    )
+    if is_audio:
+        b64 = str(media.get("data") or "")
+        mid = ""
+        for cand in (wrap.get("id"), inner.get("id")):
+            if isinstance(cand, dict) and cand.get("_serialized"):
+                mid = str(cand["_serialized"])
+                break
+            if isinstance(cand, str) and cand:
+                mid = cand
+                break
+        audio = {"mimetype": mimetype}
+        if b64:
+            audio["waapi_media_b64"] = b64
+        if mid:
+            audio["waapi_message_id"] = mid
+        msg = {"from": sender, "type": "audio", "audio": audio}
+    else:
+        if not body:
+            return jsonify({"ok": True})
+        msg = {"from": sender, "type": "text", "text": {"body": body}}
+    try:
+        _handle_message(msg)
+    except Exception as e:
+        print(f"[waapi] handler error: {e}")
+    return jsonify({"ok": True})
+
+
 def _handle_message(msg: dict) -> None:
     sender = msg.get("from", "")
     if not sender:
@@ -283,7 +369,20 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
         return
     media = (msg.get("audio") or {})
     try:
-        if media.get("url"):
+        if whatsapp.backend() == "waapi":
+            b64 = str(media.get("waapi_media_b64") or "")
+            mid = str(media.get("waapi_message_id") or "")
+            if b64:
+                audio_bytes = whatsapp.download_waapi_inline(b64)
+            elif mid:
+                audio_bytes = whatsapp.download_waapi_media(mid)
+            elif media.get("url"):
+                audio_bytes = whatsapp.download_url(media["url"])
+            elif media.get("id"):
+                audio_bytes = whatsapp.download_media(media["id"])
+            else:
+                raise ValueError("no waapi audio ref")
+        elif media.get("url"):
             if whatsapp.backend() == "fonnte":
                 audio_bytes = whatsapp.download_fonnte_media(media["url"])
             else:

@@ -221,6 +221,13 @@ sales-wa-assistant/
 - Key: `FONNTE_TOKEN` (`WHATSAPP_BACKEND=fonnte`).
 - Batas/biaya: paket berbayar Fonnte (device + kuota pesan); webhook wajib balas HTTP 200 (retry 15x tiap menit jika gagal).
 
+**7. waapi.app — transport nomor sendiri via QR (revisi build; BUKAN waapi.co.id).**
+- Alasan: nomor WA milik sendiri via QR/pairing sehingga bebas blokir lintas negara seperti Fonnte dan cocok untuk demo live. Berbeda provider dengan WAAPI.co.id yang sempat dibangun lalu dibatalkan (slice 10 lama di-revert penuh): waapi.app mendokumentasikan audio masuk + endpoint unduh media, sehingga voice note didukung penuh, bukan fallback.
+- Kirim: `POST https://waapi.app/api/v1/instances/{id}/client/action/send-message` + header `Authorization: Bearer <WAAPI_TOKEN>`, JSON `{chatId: "<digits>@c.us", message: <teks>}`. Perhatikan amplop ganda: HTTP 200 + `status` luar hanya berarti request sampai ke instance — `data.status` yang otoritatif (`error` = tidak terkirim, mis. format chatId salah). Terima: `POST /waapi/inbound` JSON (`event=message`, `data.message._data.{from,body,type,fromMe,id}` + `data.media.{mimetype,data base64}`). Voice note (`type` ptt/audio, `audio/ogg; codecs=opus`) memakai base64 inline langsung, fallback `POST .../action/download-media {messageId}` → URL sementara 15 menit. Quick-reply buttons tidak dipakai → dikirim sebagai teks biasa (instruksi Skip tetap ada di kalimat); template Meta tidak dipakai → `send_template` fallback ke teks biasa. Pesan `fromMe=true` (gema pesan sendiri) dan event non-message (status/QR) di-ack dan diabaikan. Opsional: verifikasi HMAC `x-waapi-hmac` bila `WAAPI_WEBHOOK_SECRET` diisi.
+- Docs: https://waapi.readme.io (message-event, send-text-message-to-chat, download-media)
+- Key: `WAAPI_INSTANCE_ID` + `WAAPI_TOKEN` (`WHATSAPP_BACKEND=waapi`), opsional `WAAPI_WEBHOOK_SECRET`.
+- Batas/biaya: flat $10/bulan per nomor (tanpa biaya per pesan); trial 3 hari tanpa kartu kredit. Send protection default: jeda 1–2 dtk/pesan, maks ~20 percakapan baru/jam dan ~60/hari per nomor (balasan ke yang lebih dulu chat tidak dihitung).
+
 ## Important Failure Modes
 
 - **Tunnel mati / URL berubah →** WhatsApp tidak bisa mengetuk laptop; sales kirim pesan tapi tidak ada balasan. Fallback: cek log `app.py`, jalankan `ngrok http 5000` ulang, update Callback URL di Meta, kirim `ping` untuk tes. Untuk rekaman, pastikan tunnel hijau sebelum mulai.

@@ -103,6 +103,16 @@ Build mode: fast
   Learner check: Isi FONNTE_TOKEN di `.env`, arahkan webhook device ke `/fonnte/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Fonnte channel alongside Meta Twilio d360`
 
+- [ ] **10. Jalur waapi.app (nomor WA sendiri, BUKAN waapi.co.id)**
+  Becomes usable: Chat dari HP via nomor bot waapi.app sendiri → balasan agent sama persis seperti jalur Meta (kartu, Skip, rekap); voice note ikut didukung (base64 inline / download-media), bukan fallback.
+  Why now: Alternatif nomor sendiri bebas blokir negara seperti Fonnte; dibangun stub-first karena learner belum punya instance ID/token — verifikasi offline dulu, token diisi nanti tanpa ubah kode.
+  PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
+  Spec ref: `spec.md > External Services and Dependencies` (bagian 7. waapi.app)
+  Build: `whatsapp.py` backend `waapi` (kirim `POST .../instances/{id}/client/action/send-message` + header `Bearer WAAPI_TOKEN`, chatId `<digits>@c.us`; quick-reply/template fallback teks biasa; unduh VN via `download_waapi_inline` base64 + `download_waapi_media` URL 15 menit); route baru `POST /waapi/inbound` parsing JSON waapi.app (`event=message`, `data.message._data.{from,body,type,fromMe,id}`, `data.media`; abaikan `fromMe=true` + event non-message; opsional HMAC `x-waapi-hmac`); `_handle_voice_note` cabang waapi; `.env.example` + README jalur waapi.app; kode Meta/Twilio/d360/Fonnte tidak diubah.
+  Verify (mechanical): Dengan stub waapi.app: POST /waapi/inbound `ping` → assert `pong`; laporan teks → assert kartu + klarifikasi; audio (base64 inline + TRANSCRIBE_TEXT) → assert kartu; `fromMe=true` + event non-message → assert diabaikan tanpa balasan; HMAC salah → 401; regresi Meta + Twilio + d360 + Fonnte tetap lolos.
+  Learner check: Setelah punya instance (buat di waapi.app, scan QR, buat token), isi WAAPI_INSTANCE_ID + WAAPI_TOKEN di `.env`, arahkan webhook instance ke `/waapi/inbound`, kirim `ping` dan laporan beneran dari HP.
+  Commit: `Add waapi.app channel alongside Meta Twilio d360 Fonnte`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -133,4 +143,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Rekap diperkaya (feedback final review): tiap baris memuat kontak + produk + tanggal follow-up, plus tombol per PT (maks 3/pesan) dan nomor fallback untuk buka kartu lengkap via `view_<id>`.
 - Tambah jalur Fonnte berbasis nomor sendiri (disetujui learner) — bebas blokir negara; `whatsapp.py` backend `fonnte` + route `/fonnte/inbound`; quick-reply/template fallback teks biasa; voice note via `url` webhook; `spec.md > External Services` dilengkapi bagian 6. Fonnte.
 - Jalur WAAPI.co.id sempat dibangun sebagai slice 10 lalu dibatalkan atas permintaan learner — perubahan kode + docs di-revert penuh (commit revert), tidak ada sisa referensi WAAPI; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
+- Tambah jalur waapi.app sebagai slice 10 baru (provider berbeda dari WAAPI.co.id yang dibatalkan; disetujui learner, dibangun stub-first karena belum ada instance ID/token) — voice note didukung penuh via base64 inline + endpoint download-media, bukan fallback; `spec.md > External Services` dilengkapi bagian 7. waapi.app.
 
