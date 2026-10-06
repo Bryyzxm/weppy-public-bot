@@ -103,6 +103,16 @@ Build mode: fast
   Learner check: Isi FONNTE_TOKEN di `.env`, arahkan webhook device ke `/fonnte/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Fonnte channel alongside Meta Twilio d360`
 
+- [x] **10. Jalur WAAPI.co.id (nomor WA sendiri via QR)**
+  Becomes usable: Chat dari HP via nomor device WAAPI.co.id sendiri → balasan agent sama persis seperti jalur lain untuk teks (kartu, Skip, rekap); voice note dibalas jujur + diminta ketik teks sampai jalur unduh terbukti.
+  Why now: Alternatif lokal gratis (1 device, 100 pesan/hari, tanpa kartu kredit) yang bebas blokir negara seperti Fonnte; docs teks + webhook sudah terverifikasi publik, jalur audio belum — dilipat sebagai fallback jujur agar tidak memblokir demo teks.
+  PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
+  Spec ref: `spec.md > External Services and Dependencies` (bagian 7. WAAPI.co.id)
+  Build: `whatsapp.py` backend `waapi` (kirim `POST https://waapi.co.id/api/v2/send-message` + header `Bearer WAAPI_TOKEN`, JSON `{device_id, phone, message}`; quick-reply/template fallback teks biasa); route baru `POST /waapi/inbound` parsing JSON WAAPI (`event`/`data.from`/`data.message`, ack saja untuk event status/device); voice note di jalur ini dibalas `vn_no_media` + minta ketik teks; `.env.example` + README jalur WAAPI; kode Meta/Twilio/d360/Fonnte tidak diubah.
+  Verify (mechanical): Dengan stub WAAPI: POST JSON `event=message.received, data={from, message=ping}` → `pong`; laporan teks → kartu + klarifikasi; event status (`message.sent`) → ack tanpa balasan karangan; regresi Meta + Twilio + d360 + Fonnte tetap lolos.
+  Learner check: Isi WAAPI_TOKEN + WAAPI_DEVICE_ID di `.env`, daftarkan webhook device ke `/waapi/inbound` via API, kirim `ping` dan laporan teks beneran dari HP.
+  Commit: `Add WAAPI channel alongside Meta Twilio d360 Fonnte`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -132,4 +142,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Tes live menemukan dua bug jalur asli (stub tak menangkapnya): prompt ekstraksi pecah oleh `.format()` + model Groq `llama-3.3-70b-versatile` sudah pensiun — diperbaiki ke prompt aman + `openai/gpt-oss-20b`, ekstraksi live terverifikasi tanpa karangan. Bonus: kegagalan kirim pesan tak lagi 500-kan webhook.
 - Rekap diperkaya (feedback final review): tiap baris memuat kontak + produk + tanggal follow-up, plus tombol per PT (maks 3/pesan) dan nomor fallback untuk buka kartu lengkap via `view_<id>`.
 - Tambah jalur Fonnte berbasis nomor sendiri (disetujui learner) — bebas blokir negara; `whatsapp.py` backend `fonnte` + route `/fonnte/inbound`; quick-reply/template fallback teks biasa; voice note via `url` webhook; `spec.md > External Services` dilengkapi bagian 6. Fonnte.
+- Tambah jalur WAAPI.co.id berbasis nomor sendiri via QR (diminta learner) — paket Free 1 device 100 pesan/hari; `whatsapp.py` backend `waapi` (`POST /api/v2/send-message` + Bearer + device_id) + route `/waapi/inbound` (`message.received`/`data.from`/`data.message`); quick-reply/template fallback teks biasa; voice note fallback jujur `vn_no_media` karena docs publik tanpa field audio/URL media; `spec.md > External Services` dilengkapi bagian 7. WAAPI.
 

@@ -1,6 +1,6 @@
 """WhatsApp connector, multi backend (see spec.md > Components: WhatsApp Connector,
 spec.md > External Services and Dependencies §4 Twilio Sandbox, §5 360dialog,
-§6 Fonnte).
+§6 Fonnte, §7 WAAPI.co.id).
 
 `WHATSAPP_BACKEND=meta` (default) talks to Meta Graph API as before.
 `WHATSAPP_BACKEND=twilio` talks to the Twilio sandbox: inbound arrives as
@@ -12,10 +12,15 @@ to Meta, inbound reuses /webhook).
 arrives as JSON POSTs on /fonnte/inbound (sender/message/text/url),
 outbound goes to POST https://api.fonnte.com/send with header
 `Authorization: <FONNTE_TOKEN>`.
+`WHATSAPP_BACKEND=waapi` talks to WAAPI.co.id (own device via QR):
+inbound arrives as JSON POSTs on /waapi/inbound
+(event=message.received, data.from/data.message), outbound goes to
+POST https://waapi.co.id/api/v2/send-message with header
+`Authorization: Bearer <WAAPI_TOKEN>` + {device_id, phone, message}.
 
 Three send paths: free text, quick-reply buttons (Meta only — sent as
-plain text on Twilio/Fonnte, the Skip instruction stays in the wording),
-approved templates (Meta only — Twilio/Fonnte replies stay in-window,
+plain text on Twilio/Fonnte/WAAPI, the Skip instruction stays in the wording),
+approved templates (Meta only — Twilio/Fonnte/WAAPI replies stay in-window,
 template calls fall back to plain text).
 
 Stub mode: WHATSAPP_STUB=1, dummy creds, or TWILIO_STUB=1 on the Twilio
@@ -56,6 +61,11 @@ def is_stub() -> bool:
         return "dummy" in key.lower()
     if backend() == "fonnte":
         key = os.getenv("FONNTE_TOKEN", "")
+        if not key:
+            return True
+        return "dummy" in key.lower()
+    if backend() == "waapi":
+        key = os.getenv("WAAPI_TOKEN", "")
         if not key:
             return True
         return "dummy" in key.lower()
@@ -146,6 +156,30 @@ def _twilio_post(data: dict):
     return resp.json()
 
 
+def _waapi_post(target: str, message: str):
+    """Send via WAAPI.co.id: POST https://waapi.co.id/api/v2/send-message.
+
+    Header `Authorization: Bearer <WAAPI_TOKEN>`, JSON body
+    {device_id, phone, message}. `device_id` from WAAPI_DEVICE_ID env.
+    Docs: https://waapi.co.id/api-docs
+    """
+    resp = requests.post(
+        "https://waapi.co.id/api/v2/send-message",
+        headers={
+            "Authorization": f"Bearer {os.getenv('WAAPI_TOKEN', '')}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "device_id": int(os.getenv("WAAPI_DEVICE_ID", "1")),
+            "phone": _digits(target),
+            "message": message,
+        },
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
 def _log(line: str) -> None:
     if os.getenv("WHATSAPP_QUIET", "0") != "1":
         print(line)
@@ -161,6 +195,8 @@ def send_text(to: str, body: str):
         return _twilio_post({"To": _twilio_to(to), "Body": body})
     if backend() == "fonnte":
         return _fonnte_post(_digits(to), body)
+    if backend() == "waapi":
+        return _waapi_post(_digits(to), body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -191,6 +227,10 @@ def send_quick_reply(to: str, body: str, buttons: list):
         # Fonnte supports buttons/templates on paper, but POC keeps the
         # same plain-text fallback so cards/Skip/recap stay identical.
         return send_text(to, body)
+    if backend() == "waapi":
+        # WAAPI has a send-button endpoint on paper, but POC keeps the
+        # same plain-text fallback so cards/Skip/recap stay identical.
+        return send_text(to, body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -216,7 +256,7 @@ def send_quick_reply(to: str, body: str, buttons: list):
 def send_template(to: str, name: str, language_code: str, parameters: list):
     """Approved template for outside the 24h window (slice 6 uses this).
 
-    Twilio/Fonnte have no Meta template concept — fall back to plain text
+    Twilio/Fonnte/WAAPI have no Meta template concept — fall back to plain text
     (own device / in-window sandbox replies don't need templates).
     """
     entry = {
@@ -230,7 +270,7 @@ def send_template(to: str, name: str, language_code: str, parameters: list):
         OUTBOX.append(entry)
         _log(f"[stub template to={to}] {name}/{language_code} {parameters}")
         return {"stub": True}
-    if backend() in ("twilio", "fonnte"):
+    if backend() in ("twilio", "fonnte", "waapi"):
         body = (parameters or [name])[0] if parameters else name
         return send_text(to, str(body))
     components = []

@@ -221,6 +221,13 @@ sales-wa-assistant/
 - Key: `FONNTE_TOKEN` (`WHATSAPP_BACKEND=fonnte`).
 - Batas/biaya: paket berbayar Fonnte (device + kuota pesan); webhook wajib balas HTTP 200 (retry 15x tiap menit jika gagal).
 
+**7. WAAPI.co.id — transport nomor sendiri via QR (revisi build).**
+- Alasan: alternatif lokal murah (paket Free: 1 device, 100 pesan/hari, tanpa kartu kredit) berbasis nomor sendiri via QR/pairing, sehingga bebas blokir lintas negara seperti Fonnte dan cocok untuk demo live.
+- Kirim: `POST https://waapi.co.id/api/v2/send-message` + header `Authorization: Bearer <WAAPI_TOKEN>`, JSON `{device_id, phone: <digits 628..>, message: <teks>}`. Terima: `POST /waapi/inbound` JSON (`event=message.received`, `data.from`/`data.message`). Quick-reply buttons tidak dipakai → dikirim sebagai teks biasa (instruksi Skip tetap ada di kalimat); template Meta tidak dipakai → `send_template` fallback ke teks biasa.
+- Docs: https://waapi.co.id/api-docs
+- Key: `WAAPI_TOKEN` + `WAAPI_DEVICE_ID` (`WHATSAPP_BACKEND=waapi`).
+- Batas/risiko: docs publik tidak menunjukkan field audio, URL media, endpoint unduh, atau Base64 untuk media masuk → voice note di jalur ini dijawab terus-terang + diminta ketik teks (sama seperti d360) sampai provider mengonfirmasi atau uji live membuktikan sebaliknya; jalur QR/Web berarti risiko akun lebih tinggi daripada API resmi (Meta/Fonnte-style official).
+
 ## Important Failure Modes
 
 - **Tunnel mati / URL berubah →** WhatsApp tidak bisa mengetuk laptop; sales kirim pesan tapi tidak ada balasan. Fallback: cek log `app.py`, jalankan `ngrok http 5000` ulang, update Callback URL di Meta, kirim `ping` untuk tes. Untuk rekaman, pastikan tunnel hijau sebelum mulai.
