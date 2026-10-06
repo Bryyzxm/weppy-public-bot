@@ -135,6 +135,41 @@ def twilio_inbound():
     return "<Response/>", 200, {"Content-Type": "text/xml"}
 
 
+@app.post("/fonnte/inbound")
+def fonnte_inbound():
+    """Slice 9: Fonnte posts JSON (sender/message/text/url), not Meta shape.
+
+    Fields (docs.fonnte.com/webhook-reply-message): device, sender,
+    message, text (button text), member (group sender), name, location,
+    url/filename/extension (attachment), timestamp, inboxid.
+    Fonnte requires HTTP 200 — always return ok, never 500.
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    if not payload:
+        try:
+            payload = dict(request.form)
+        except Exception:
+            payload = {}
+    sender = whatsapp._digits(str(payload.get("sender", "")))
+    if not sender:
+        return jsonify({"ok": True})
+    message = str(payload.get("message", "") or "").strip()
+    btn_text = str(payload.get("text", "") or "").strip()
+    url = str(payload.get("url", "") or "").strip()
+    ext = str(payload.get("extension", "") or "").strip().lower().lstrip(".")
+    audio_exts = {"ogg", "opus", "oga", "mp3", "m4a", "aac", "wav", "amr"}
+    if url and (ext in audio_exts or (not message and not btn_text)):
+        msg = {"from": sender, "type": "audio", "audio": {"url": url}}
+    else:
+        body = message or btn_text
+        msg = {"from": sender, "type": "text", "text": {"body": body}}
+    try:
+        _handle_message(msg)
+    except Exception as e:
+        print(f"[fonnte] handler error: {e}")
+    return jsonify({"ok": True})
+
+
 def _handle_message(msg: dict) -> None:
     sender = msg.get("from", "")
     if not sender:
@@ -249,7 +284,10 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
     media = (msg.get("audio") or {})
     try:
         if media.get("url"):
-            audio_bytes = whatsapp.download_twilio_media(media["url"])
+            if whatsapp.backend() == "fonnte":
+                audio_bytes = whatsapp.download_fonnte_media(media["url"])
+            else:
+                audio_bytes = whatsapp.download_twilio_media(media["url"])
         elif media.get("id"):
             audio_bytes = whatsapp.download_media(media["id"])
         else:

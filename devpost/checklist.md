@@ -93,6 +93,16 @@ Build mode: fast
   Learner check: Kirim `START` ke +551146733492, isi D360_API_KEY ke `.env`, set webhook sandbox ke tunnel, kirim `ping` + laporan beneran dari HP.
   Commit: `Add 360dialog sandbox channel`
 
+- [x] **9. Jalur Fonnte (nomor WA sendiri)**
+  Becomes usable: Chat dari HP via nomor Fonnte sendiri → balasan agent sama persis seperti jalur Meta (kartu, Skip, rekap).
+  Why now: Nomor uji Meta diblokir ke +62 (error 130497), signup Twilio ditolak filter, sandbox 360dialog tanpa media; Fonnte pakai nomor sendiri sehingga bebas blokir negara dan cocok untuk demo live.
+  PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
+  Spec ref: `spec.md > External Services and Dependencies` (bagian 6. Fonnte)
+  Build: `whatsapp.py` backend `fonnte` (kirim `POST https://api.fonnte.com/send` + header `Authorization: FONNTE_TOKEN`, quick-reply/template fallback teks biasa); route baru `POST /fonnte/inbound` parsing JSON Fonnte (sender/message/text/url); unduh voice note dari `url` tanpa auth; `.env.example` + README jalur Fonnte; kode Meta/Twilio/d360 tidak diubah.
+  Verify (mechanical): Dengan stub Fonnte: POST JSON `message=ping` → `pong`; laporan teks → kartu + klarifikasi; audio (url palsu + TRANSCRIBE_TEXT) → kartu; pesan kosong → tanpa kartu karangan; regresi Meta + Twilio + d360 tetap lolos.
+  Learner check: Isi FONNTE_TOKEN di `.env`, arahkan webhook device ke `/fonnte/inbound`, kirim `ping` dan laporan beneran dari HP.
+  Commit: `Add Fonnte channel alongside Meta Twilio d360`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -121,4 +131,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Signup Twilio ditolak filter akun; tambah jalur 360dialog sandbox (disetujui learner) — tanpa pendaftaran, format webhook identik Meta; voice note dikecualikan karena sandbox tak dukung unduh media.
 - Tes live menemukan dua bug jalur asli (stub tak menangkapnya): prompt ekstraksi pecah oleh `.format()` + model Groq `llama-3.3-70b-versatile` sudah pensiun — diperbaiki ke prompt aman + `openai/gpt-oss-20b`, ekstraksi live terverifikasi tanpa karangan. Bonus: kegagalan kirim pesan tak lagi 500-kan webhook.
 - Rekap diperkaya (feedback final review): tiap baris memuat kontak + produk + tanggal follow-up, plus tombol per PT (maks 3/pesan) dan nomor fallback untuk buka kartu lengkap via `view_<id>`.
+- Tambah jalur Fonnte berbasis nomor sendiri (disetujui learner) — bebas blokir negara; `whatsapp.py` backend `fonnte` + route `/fonnte/inbound`; quick-reply/template fallback teks biasa; voice note via `url` webhook; `spec.md > External Services` dilengkapi bagian 6. Fonnte.
 

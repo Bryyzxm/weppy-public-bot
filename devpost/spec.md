@@ -214,6 +214,13 @@ sales-wa-assistant/
 - Key: `D360_API_KEY` (`WHATSAPP_BACKEND=d360`).
 - Batas: gratis 200 pesan ke nomor sendiri (cukup untuk POC); tanpa custom template (tidak dipakai POC ini); **unduh media via media ID tidak didukung** → voice note di jalur ini dijawab terus-terang + diminta ketik teks. Risiko lintas negara (+55 → +62) tetap mungkin; jika gagal, kembali ke simulasi.
 
+**6. Fonnte — transport nomor sendiri (revisi build).**
+- Alasan: nomor uji Meta (+1) diblokir ke +62 (error 130497), signup Twilio ditolak filter, sandbox 360dialog tanpa media; Fonnte memakai nomor WA milik sendiri (beli paket, connect QR) sehingga bebas blokir lintas negara dan cocok untuk demo live + produksi kecil.
+- Kirim: `POST https://api.fonnte.com/send` + header `Authorization: <FONNTE_TOKEN>` (tanpa prefix Bearer), form `{target: <digits 628..>, message: <teks>}`. Terima: `POST /fonnte/inbound` JSON (`sender/message/text/url/filename/extension`). Quick-reply buttons tidak dipakai → dikirim sebagai teks biasa (instruksi Skip tetap ada di kalimat); template Meta tidak dipakai → `send_template` fallback ke teks biasa. Voice note diunduh dari `url` webhook (tanpa auth) lalu transkripsi Groq seperti biasa.
+- Docs: https://docs.fonnte.com/api-send-message + https://docs.fonnte.com/webhook-reply-message
+- Key: `FONNTE_TOKEN` (`WHATSAPP_BACKEND=fonnte`).
+- Batas/biaya: paket berbayar Fonnte (device + kuota pesan); webhook wajib balas HTTP 200 (retry 15x tiap menit jika gagal).
+
 ## Important Failure Modes
 
 - **Tunnel mati / URL berubah →** WhatsApp tidak bisa mengetuk laptop; sales kirim pesan tapi tidak ada balasan. Fallback: cek log `app.py`, jalankan `ngrok http 5000` ulang, update Callback URL di Meta, kirim `ping` untuk tes. Untuk rekaman, pastikan tunnel hijau sebelum mulai.

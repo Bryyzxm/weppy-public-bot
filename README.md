@@ -59,6 +59,20 @@ Catatan: gratis 200 pesan ke nomor sendiri (cukup untuk POC);
 **voice note tidak didukung** (sandbox tak sediakan unduh media) —
 agent menjawab terus-terang dan meminta ketik teks.
 
+## Jalur Fonnte (nomor WA sendiri)
+
+1. Daftar di fonnte.com, tambah device (nomor WA yang jadi bot),
+   connect via QR, salin token.
+2. `.env`: `WHATSAPP_BACKEND=fonnte` + `FONNTE_TOKEN=<token>`.
+3. Di pengaturan device Fonnte isi webhook:
+   `https://xxx/event...(.trycloudflare.com)/fonnte/inbound`
+   (method POST). Tunnel yang sama seperti jalur Meta.
+4. Restart `python app.py`, kirim `ping` dari HP ke nomor device.
+
+Catatan: nomor milik sendiri jadi bebas blokir negara; tombol Skip
+tampil sebagai teks biasa (bukan tombol) di jalur ini; voice note
+diunduh dari `url` webhook lalu ditranskripsi Groq seperti biasa.
+
 ## Catatan operasional (jalur Meta)
 
 - Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):

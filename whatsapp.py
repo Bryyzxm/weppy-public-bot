@@ -1,14 +1,22 @@
-"""WhatsApp connector, dual backend (see spec.md > Components: WhatsApp Connector,
-spec.md > External Services and Dependencies §4 Twilio Sandbox).
+"""WhatsApp connector, multi backend (see spec.md > Components: WhatsApp Connector,
+spec.md > External Services and Dependencies §4 Twilio Sandbox, §5 360dialog,
+§6 Fonnte).
 
 `WHATSAPP_BACKEND=meta` (default) talks to Meta Graph API as before.
 `WHATSAPP_BACKEND=twilio` talks to the Twilio sandbox: inbound arrives as
 form-encoded POSTs on /twilio/inbound, outbound goes to the Twilio
 Messages API. Bot behavior (cards, Skip, recap) is identical on both.
+`WHATSAPP_BACKEND=d360` talks to the 360dialog sandbox (payload identical
+to Meta, inbound reuses /webhook).
+`WHATSAPP_BACKEND=fonnte` talks to Fonnte (own device number): inbound
+arrives as JSON POSTs on /fonnte/inbound (sender/message/text/url),
+outbound goes to POST https://api.fonnte.com/send with header
+`Authorization: <FONNTE_TOKEN>`.
 
 Three send paths: free text, quick-reply buttons (Meta only — sent as
-plain text on Twilio, the Skip instruction stays in the wording),
-approved templates (Meta only — Twilio replies stay in-window).
+plain text on Twilio/Fonnte, the Skip instruction stays in the wording),
+approved templates (Meta only — Twilio/Fonnte replies stay in-window,
+template calls fall back to plain text).
 
 Stub mode: WHATSAPP_STUB=1, dummy creds, or TWILIO_STUB=1 on the Twilio
 path. Nothing hits the network; messages land in OUTBOX for Flask
@@ -43,6 +51,11 @@ def is_stub() -> bool:
         return "dummy" in (sid + " " + tok).lower()
     if backend() == "d360":
         key = os.getenv("D360_API_KEY", "")
+        if not key:
+            return True
+        return "dummy" in key.lower()
+    if backend() == "fonnte":
+        key = os.getenv("FONNTE_TOKEN", "")
         if not key:
             return True
         return "dummy" in key.lower()
@@ -100,6 +113,23 @@ def _d360_post(payload: dict):
     return resp.json()
 
 
+def _fonnte_post(target: str, message: str):
+    """Send via Fonnte: POST https://api.fonnte.com/send.
+
+    Header is raw `Authorization: <TOKEN>` (no Bearer prefix).
+    `target` is digits (e.g. 62812xxxx); leading 0 is converted to 62
+    by Fonnte's default countryCode.
+    """
+    resp = requests.post(
+        "https://api.fonnte.com/send",
+        headers={"Authorization": os.getenv("FONNTE_TOKEN", "")},
+        data={"target": target, "message": message},
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
 def _twilio_post(data: dict):
     """Send via Twilio Messages API (sandbox From number from env)."""
     sid = os.getenv("TWILIO_ACCOUNT_SID", "")
@@ -129,6 +159,8 @@ def send_text(to: str, body: str):
         return {"stub": True}
     if backend() == "twilio":
         return _twilio_post({"To": _twilio_to(to), "Body": body})
+    if backend() == "fonnte":
+        return _fonnte_post(_digits(to), body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -155,6 +187,10 @@ def send_quick_reply(to: str, body: str, buttons: list):
         # Twilio sandbox has no button API on this path — plain text keeps
         # the Skip instruction that already lives in the question wording.
         return send_text(to, body)
+    if backend() == "fonnte":
+        # Fonnte supports buttons/templates on paper, but POC keeps the
+        # same plain-text fallback so cards/Skip/recap stay identical.
+        return send_text(to, body)
     return _post(
         {
             "messaging_product": "whatsapp",
@@ -178,7 +214,11 @@ def send_quick_reply(to: str, body: str, buttons: list):
 
 
 def send_template(to: str, name: str, language_code: str, parameters: list):
-    """Approved template for outside the 24h window (slice 6 uses this)."""
+    """Approved template for outside the 24h window (slice 6 uses this).
+
+    Twilio/Fonnte have no Meta template concept — fall back to plain text
+    (own device / in-window sandbox replies don't need templates).
+    """
     entry = {
         "to": to,
         "type": "template",
@@ -190,6 +230,9 @@ def send_template(to: str, name: str, language_code: str, parameters: list):
         OUTBOX.append(entry)
         _log(f"[stub template to={to}] {name}/{language_code} {parameters}")
         return {"stub": True}
+    if backend() in ("twilio", "fonnte"):
+        body = (parameters or [name])[0] if parameters else name
+        return send_text(to, str(body))
     components = []
     if parameters:
         components = [
@@ -270,3 +313,8 @@ def download_media(media_id: str) -> bytes:
 def download_twilio_media(url: str) -> bytes:
     """Voice-note download on the Twilio path (MediaUrl0 + account auth)."""
     return download_url(url, auth=twilio_auth())
+
+
+def download_fonnte_media(url: str) -> bytes:
+    """Voice-note/file download on the Fonnte path (public url, no auth)."""
+    return download_url(url)
