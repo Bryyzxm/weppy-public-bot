@@ -83,7 +83,7 @@ Build mode: fast
   Learner check: Join sandbox dari HP (`join <kode>` ke +14155238886), arahkan webhook Twilio ke `/twilio/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Twilio sandbox channel alongside Meta`
 
-- [ ] **8. Jalur 360dialog sandbox (tanpa daftar akun)**
+- [x] **8. Jalur 360dialog sandbox (tanpa daftar akun)**
   Becomes usable: Chat dari HP via nomor sandbox 360dialog → balasan agent sama (kartu, Skip, rekap); voice note dikecualikan (sandbox tak dukung unduh media).
   Why now: Signup Twilio ditolak filter fraud; sandbox 360dialog tanpa pendaftaran (cukup kirim `START` via WA) dan format webhook-nya identik Meta sehingga adaptasi minimal.
   PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
@@ -119,4 +119,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Uji WA nomor nyata (+62) diblokir Meta error 130497 (akun uji dibatasi mengirim ke negara tertentu) — final review memakai simulasi webhook + stub Groq; wiring WA (verifikasi, subscription messages) terbukti benar dan jalur produksi (nomor sendiri + bisnis terverifikasi) tidak terdampak.
 - Tambah jalur Twilio sandbox sebagai transport uji alternatif (disetujui learner) — perilaku bot tidak berubah, hanya `whatsapp.py` + route inbound yang dual-backend; `spec.md > External Services and Dependencies` dilengkapi bagian Twilio.
 - Signup Twilio ditolak filter akun; tambah jalur 360dialog sandbox (disetujui learner) — tanpa pendaftaran, format webhook identik Meta; voice note dikecualikan karena sandbox tak dukung unduh media.
+- Tes live menemukan dua bug jalur asli (stub tak menangkapnya): prompt ekstraksi pecah oleh `.format()` + model Groq `llama-3.3-70b-versatile` sudah pensiun — diperbaiki ke prompt aman + `openai/gpt-oss-20b`, ekstraksi live terverifikasi tanpa karangan. Bonus: kegagalan kirim pesan tak lagi 500-kan webhook.
 
