@@ -63,19 +63,15 @@ def _recipient(profile: dict) -> str:
 
 
 def build_recap_text(notes: list, lang: str, ref: _dt.date) -> str:
+    no_stage = "No stage yet" if lang == "en" else "Belum ada tahap"
     groups: dict = {}
     order: list = []
     for n in notes:
-        stage = (n.get("tahap_deal") or "").strip() or (
-            "No stage yet" if lang == "en" else "Belum ada tahap"
-        )
-        name = (n.get("institusi") or "").strip() or (
-            "(unnamed)" if lang == "en" else "(tanpa nama)"
-        )
+        stage = (n.get("tahap_deal") or "").strip() or no_stage
         if stage not in groups:
             groups[stage] = []
             order.append(stage)
-        groups[stage].append(name)
+        groups[stage].append(n)
 
     date_s = format_date(ref.isoformat(), lang)
     if not notes:
@@ -87,8 +83,10 @@ def build_recap_text(notes: list, lang: str, ref: _dt.date) -> str:
     title = f"*Pipeline recap — {date_s}*" if lang == "en" else f"*Rekap pipeline — {date_s}*"
     lines = [title]
     for stage in order:
-        names = groups[stage]
-        lines.append(f"\u2022 {stage} ({len(names)}): " + ", ".join(names))
+        members = groups[stage]
+        lines.append(f"*{stage} ({len(members)}):*")
+        for n in members:
+            lines.append(f"\u2022 {_recap_line(n, lang)}")
 
     tomorrow = (ref + _dt.timedelta(days=1)).isoformat()
     due = [n for n in notes if (n.get("followup_date") or "") == tomorrow]
@@ -102,6 +100,26 @@ def build_recap_text(notes: list, lang: str, ref: _dt.date) -> str:
         for n in due:
             lines.append(f"\u2022 {_followup_item(n, lang)}")
     return "\n".join(lines)
+
+
+def _recap_line(n: dict, lang: str) -> str:
+    """One structured line per note: company — contact (role) | product | follow-up."""
+    inst = (n.get("institusi") or "").strip() or (
+        "(unnamed)" if lang == "en" else "(tanpa nama)"
+    )
+    kontak = (n.get("kontak") or "").strip()
+    role = (n.get("role") or "").strip()
+    if kontak and role:
+        who = f"{kontak} ({role})"
+    elif kontak:
+        who = kontak
+    else:
+        who = "(no contact)" if lang == "en" else "(tanpa kontak)"
+    prod = (n.get("produk") or "").strip() or (
+        "(no product)" if lang == "en" else "(tanpa produk)"
+    )
+    fu = format_date(n.get("followup_date", ""), lang)
+    return f"{inst} \u2014 {who} | {prod} | Follow-up {fu}"
 
 
 def _followup_item(n: dict, lang: str) -> str:
@@ -171,7 +189,12 @@ def send_recap_to(profile: dict, sender: str, ref=None) -> bool:
     ref = ref or _today()
     lang = profile.get("language", "id")
     body = build_recap_text(store.load_notes(), lang, ref)
-    return _send_window_aware(profile, sender, lang, "recap", body)
+    if not _send_window_aware(profile, sender, lang, "recap", body):
+        return False
+    # Detail buttons need an active window (and make no sense on a template).
+    if in_window(profile, sender):
+        send_recap_details(profile, sender, lang)
+    return True
 
 
 def send_followups_to(profile: dict, sender: str, ref=None) -> bool:
@@ -179,6 +202,57 @@ def send_followups_to(profile: dict, sender: str, ref=None) -> bool:
     lang = profile.get("language", "id")
     body = build_followup_text(store.load_notes(), lang, ref)
     return _send_window_aware(profile, sender, lang, "followup", body)
+
+
+DETAIL_TEXT = {
+    "id": "Lihat laporan lengkap — ketuk tombol atau balas nomor:",
+    "en": "View full report — tap a button or reply with the number:",
+}
+NOTE_GONE = {
+    "id": "Catatan itu sudah tidak ada.",
+    "en": "That note is gone.",
+}
+
+
+def _display_name(n: dict, lang: str) -> str:
+    return (n.get("institusi") or "").strip() or (
+        "(unnamed)" if lang == "en" else "(tanpa nama)"
+    )
+
+
+def send_recap_details(profile: dict, sender: str, lang: str) -> bool:
+    """Per-note buttons (max 3 per message) + numbered fallback list.
+
+    The chosen ids land in profile.recap_picklist so a typed number works
+    even where buttons don't render. Best-effort: if the channel rejects
+    interactive messages, the numbered text still goes out.
+    """
+    notes = store.load_notes()
+    if not notes:
+        return True
+    pick = [(n.get("id", ""), _display_name(n, lang)) for n in notes]
+    profile["recap_picklist"] = [nid for nid, _ in pick]
+    store.save_profile(profile)
+    chunks = [pick[i:i + 3] for i in range(0, len(pick), 3)]
+    base = 0
+    for ci, chunk in enumerate(chunks):
+        rows = [f"{base + j}. {name}" for j, (_, name) in enumerate(chunk, start=1)]
+        body = DETAIL_TEXT.get(lang, DETAIL_TEXT["id"])
+        if len(chunks) > 1:
+            body += f" ({ci + 1}/{len(chunks)})"
+        body += "\n" + "\n".join(rows)
+        buttons = [{"id": f"view_{nid}", "title": name[:20]} for nid, name in chunk]
+        try:
+            whatsapp.send_quick_reply(sender, body, buttons)
+        except Exception as e:
+            print(f"[scheduler] buttons failed, numbers only: {e}")
+            whatsapp.send_text(sender, body)
+        base += len(chunk)
+    return True
+
+
+def find_note(note_id: str) -> dict | None:
+    return next((n for n in store.load_notes() if n.get("id") == note_id), None)
 
 
 def flush_notices(sender: str, profile: dict) -> None:

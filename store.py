@@ -25,6 +25,7 @@ DEFAULT_PROFILE = {
     "last_seen": {},
     "last_sender": "",
     "pending_notices": [],
+    "recap_picklist": [],
     "last_recap_date": "",
     "last_followup_date": "",
 }

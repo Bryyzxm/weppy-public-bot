@@ -200,6 +200,12 @@ def _handle_message(msg: dict) -> None:
         scheduler.send_followups_to(profile, sender)
         return
 
+    # A tap on a recap detail button always means "show that note",
+    # even mid-clarification (the draft stays active afterwards).
+    if low.startswith("view_"):
+        _handle_view_note(sender, profile, text.strip()[5:])
+        return
+
     # An answer to pending clarification wins over a new report. To start
     # a fresh report instead, prefix with "laporan baru".
     if low.startswith("laporan baru") or low.startswith("new report"):
@@ -210,6 +216,22 @@ def _handle_message(msg: dict) -> None:
     active = _active_draft(store.load_notes())
     if active is not None:
         _handle_clarify_answer(sender, text, profile, active)
+        return
+
+    # A typed number (or "lihat N"/"view N") picks a recap detail entry.
+    pick = profile.get("recap_picklist") or []
+    num = None
+    if low.isdigit():
+        num = int(low)
+    else:
+        m = re.match(r"^(?:lihat|view|buka|open)\s+(\d+)$", low)
+        if m:
+            num = int(m.group(1))
+    if num is not None and pick and 1 <= num <= len(pick):
+        _handle_view_note(sender, profile, pick[num - 1])
+        profile = store.load_profile()
+        profile["recap_picklist"] = []
+        store.save_profile(profile)
         return
 
     _handle_report(sender, text, profile)
@@ -241,6 +263,16 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
         whatsapp.send_text(sender, t(lang, "vn_unclear"))
         return
     _handle_report(sender, result["text"], profile)
+
+
+def _handle_view_note(sender: str, profile: dict, note_id: str) -> None:
+    """Resend the full card for one recap entry (button tap or number)."""
+    lang = profile.get("language", "id")
+    note = scheduler.find_note(note_id)
+    if note is None:
+        whatsapp.send_text(sender, scheduler.NOTE_GONE.get(lang, scheduler.NOTE_GONE["id"]))
+        return
+    whatsapp.send_text(sender, render_card(note, lang))
 
 
 def _handle_report(sender: str, text: str, profile: dict) -> None:
