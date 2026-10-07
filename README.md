@@ -73,6 +73,25 @@ Catatan: nomor milik sendiri jadi bebas blokir negara; tombol Skip
 tampil sebagai teks biasa (bukan tombol) di jalur ini; voice note
 diunduh dari `url` webhook lalu ditranskripsi Groq seperti biasa.
 
+## Jalur Wavio (Meta resmi via wavio.web.id)
+
+1. Daftar di dashboard Wavio, hubungkan nomor WhatsApp via
+   Embedded Signup Meta, lalu buat API key di menu **API Keys**
+   dan salin `numberId` dari menu **Numbers**.
+2. `.env`: `WHATSAPP_BACKEND=wavio` + `WAVIO_API_KEY=wavio_xxxx`
+   + `WAVIO_NUMBER_ID=<id nomor>`.
+3. Daftarkan webhook (event `messages:received`) ke tunnel:
+   `https://xxx/event...(.trycloudflare.com)/wavio/inbound`
+   (method POST). Tunnel yang sama seperti jalur Meta.
+4. Restart `python app.py`, kirim `ping` dari HP ke nomor yang
+   dihubungkan → dibalas `pong`.
+
+Catatan: API resmi Meta (coexistence — CS tetap bisa balas via HP/WA Web
+tanpa logout, tanpa risiko banned); tombol Skip dikirim sebagai tombol
+interaktif asli, fallback teks biasa jika gagal; template di luar 24 jam
+dikirim via API template Wavio; voice note diunduh via `GET /media/{id}`
+lalu ditranskripsi Groq seperti biasa.
+
 ## Catatan operasional (jalur Meta)
 
 - Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):

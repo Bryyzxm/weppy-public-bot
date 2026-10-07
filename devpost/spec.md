@@ -221,6 +221,13 @@ sales-wa-assistant/
 - Key: `FONNTE_TOKEN` (`WHATSAPP_BACKEND=fonnte`).
 - Batas/biaya: paket berbayar Fonnte (device + kuota pesan); webhook wajib balas HTTP 200 (retry 15x tiap menit jika gagal).
 
+**7. Wavio — transport Meta resmi (revisi build).**
+- Alasan: Meta partner resmi (Official Meta Cloud API Partner, server Indonesia) dengan coexistence — CS tetap bisa chat via HP/WA Web tanpa logout, tanpa risiko banned seperti gateway unofficial; REST API + webhook publik terdokumentasi sehingga wiring minimal.
+- Kirim: `POST https://api.wavio.web.id/api/v1/public/messages/send` + header `X-API-Key: <WAVIO_API_KEY>`, body `{numberId: <WAVIO_NUMBER_ID>, to: "+628..", text}`. Tombol Skip via `POST .../messages/send-interactive` (`interactiveType: button`, `buttons: [{id, title}]`, fallback teks biasa jika gagal). Template via `POST .../messages/send-template` (`templateName`, `templateLanguage`, `components` bentuk standar Meta). Terima: `POST /wavio/inbound` JSON event `messages:received` — bentuk payload tidak ada di docs publik, jadi parser menerima beberapa bentuk (forward Meta-style `entry/changes` atau envelope custom `{event, data}`/`{type, message}`) lalu melempar ke router yang sama; bentuk tak dikenal di-log + ack 200 (tidak pernah 500 karena Wavio retry). Voice note diunduh via `GET .../media/{mediaId}?numberId=...` (binary stream, auth API key) lalu transkripsi Groq seperti biasa.
+- Docs: https://doc.wavio.web.id/api/introduction + https://doc.wavio.web.id/api/messaging + https://doc.wavio.web.id/api/webhooks
+- Key: `WAVIO_API_KEY` (format `wavio_xxxxx`, dari Dashboard → API Keys), `WAVIO_NUMBER_ID` (dari menu Numbers) (`WHATSAPP_BACKEND=wavio`).
+- Batas/biaya: fitur inti gratis selamanya, pesan unlimited tanpa kuota (biaya percakapan dibayar langsung ke Meta tanpa markup); paket Business/Professional untuk nomor/anggota tambahan.
+
 ## Important Failure Modes
 
 - **Tunnel mati / URL berubah →** WhatsApp tidak bisa mengetuk laptop; sales kirim pesan tapi tidak ada balasan. Fallback: cek log `app.py`, jalankan `ngrok http 5000` ulang, update Callback URL di Meta, kirim `ping` untuk tes. Untuk rekaman, pastikan tunnel hijau sebelum mulai.

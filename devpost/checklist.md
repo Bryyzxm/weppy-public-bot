@@ -103,6 +103,16 @@ Build mode: fast
   Learner check: Isi FONNTE_TOKEN di `.env`, arahkan webhook device ke `/fonnte/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Fonnte channel alongside Meta Twilio d360`
 
+- [x] **10. Jalur Wavio (Meta resmi via wavio.web.id)**
+  Becomes usable: Chat dari HP via nomor Wavio → balasan agent sama persis seperti jalur Meta (kartu, Skip, rekap).
+  Why now: Wavio adalah Meta Cloud API partner resmi (coexistence, tanpa risiko banned) dengan REST API + webhook publik; menambah jalur demo live yang stabil tanpa mengubah perilaku bot.
+  PRD ref: `prd.md > The Core Journey` (sama, hanya transport chat yang beda)
+  Spec ref: `spec.md > External Services and Dependencies` (bagian 7. Wavio)
+  Build: `whatsapp.py` backend `wavio` (kirim via `POST .../messages/send` + header `X-API-Key`, tombol Skip via `POST .../messages/send-interactive` fallback teks biasa, template via `POST .../messages/send-template`); route baru `POST /wavio/inbound` parsing fleksibel (Meta-style `entry/changes` atau envelope custom) lalu ke `_handle_message` yang sama; voice note via `GET /media/{mediaId}` + transkripsi Groq; `.env.example` + README jalur Wavio; kode Meta/Twilio/d360/Fonnte tidak diubah.
+  Verify (mechanical): Dengan stub Wavio: POST `ping` → assert `pong`; laporan teks → assert kartu; audio (url palsu + TRANSCRIBE_TEXT) → assert kartu; pesan kosong → tanpa kartu karangan; regresi Meta + Twilio + d360 + Fonnte tetap lolos.
+  Learner check: Isi `WAVIO_API_KEY` + `WAVIO_NUMBER_ID` di `.env`, daftarkan webhook `messages:received` ke `/wavio/inbound`, kirim `ping` dan laporan beneran dari HP.
+  Commit: `Add Wavio channel alongside Meta Twilio d360 Fonnte`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -134,4 +144,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Tambah jalur Fonnte berbasis nomor sendiri (disetujui learner) — bebas blokir negara; `whatsapp.py` backend `fonnte` + route `/fonnte/inbound`; quick-reply/template fallback teks biasa; voice note via `url` webhook; `spec.md > External Services` dilengkapi bagian 6. Fonnte.
 - Jalur WAAPI.co.id sempat dibangun sebagai slice 10 lalu dibatalkan atas permintaan learner — perubahan kode + docs di-revert penuh (commit revert), tidak ada sisa referensi WAAPI; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
 - Jalur waapi.app sempat dibangun sebagai slice 10 baru (stub-first, terverifikasi offline) lalu dibatalkan atas permintaan learner karena risiko banned nomor WA sendiri — perubahan kode + docs di-revert penuh (2 commit revert), tidak ada sisa referensi waapi.app; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
+- Tambah jalur Wavio berbasis Meta resmi (disetujui learner) — Official Meta Cloud API Partner dengan coexistence; `whatsapp.py` backend `wavio` (kirim `/messages/send`, tombol Skip via `/messages/send-interactive` fallback teks, template via `/messages/send-template`) + route `/wavio/inbound` parsing fleksibel (Meta-style `entry/changes` atau envelope custom, tak dikenal di-log + ack 200); voice note via `GET /media/{mediaId}`; stub-first terverifikasi offline 25 checks (ping dua bentuk payload, kartu 4 field, klarifikasi Skip, audio, pesan kosong, regresi Meta/Twilio/d360/Fonnte); `spec.md > External Services` dilengkapi bagian 7. Wavio. Live `ping` dari HP masih menunggu kredensial learner.
 

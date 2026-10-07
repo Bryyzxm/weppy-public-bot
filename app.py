@@ -135,6 +135,105 @@ def twilio_inbound():
     return "<Response/>", 200, {"Content-Type": "text/xml"}
 
 
+@app.post("/wavio/inbound")
+def wavio_inbound():
+    """Slice 10: Wavio posts `messages:received` webhooks as JSON.
+
+    The exact payload shape is not in the public docs, so several shapes
+    are accepted: a Meta-style entry/changes forward (official-partner
+    forward), or a custom envelope ({event, data} / {type, message}).
+    Unknown shapes are logged and acked 200 — never 500 (Wavio retries
+    failed deliveries).
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    msgs = _parse_wavio_payload(payload)
+    if not msgs and payload:
+        try:
+            print(f"[wavio] unrecognized payload keys: {sorted(payload.keys())}")
+        except Exception:
+            print("[wavio] unrecognized payload (non-dict)")
+    for msg in msgs:
+        try:
+            _handle_message(msg)
+        except Exception as e:
+            print(f"[wavio] handler error: {e}")
+    return jsonify({"ok": True})
+
+
+def _normalize_meta_message(m: dict) -> dict | None:
+    """Meta-style webhook message -> internal shape (digits sender)."""
+    sender = whatsapp._digits(str(m.get("from", "")))
+    if not sender:
+        return None
+    m = dict(m)
+    m["from"] = sender
+    return m
+
+
+def _normalize_wavio_message(item: dict) -> dict | None:
+    """One custom-envelope Wavio item -> internal {from, type, ...}."""
+    if not isinstance(item, dict):
+        return None
+    sender = ""
+    for k in ("from", "sender", "waId", "wa_id", "phone", "fromNumber", "chatId"):
+        v = item.get(k)
+        if v:
+            sender = whatsapp._digits(str(v))
+            if sender:
+                break
+    if not sender:
+        return None
+    audio = item.get("audio") or {}
+    media_id = audio.get("id") or item.get("mediaId") or item.get("media_id") or ""
+    media_url = (audio.get("url") or item.get("mediaUrl")
+                 or item.get("media_url") or item.get("url") or "")
+    msg_type = str(item.get("type") or "").lower()
+    if media_id or media_url or msg_type in ("audio", "voice", "ptt", "voice_note"):
+        if media_url and not media_id:
+            return {"from": sender, "type": "audio", "audio": {"url": media_url}}
+        if media_id:
+            return {"from": sender, "type": "audio", "audio": {"id": media_id}}
+        return None
+    text = ""
+    for k in ("text", "body", "message", "caption", "content"):
+        v = item.get(k)
+        if isinstance(v, dict):
+            v = v.get("body") or v.get("text") or ""
+        if v:
+            text = str(v).strip()
+            if text:
+                break
+    btn = item.get("buttonReply") or item.get("button_reply") or {}
+    if not text and isinstance(btn, dict):
+        text = str(btn.get("id") or btn.get("title") or "").strip()
+    if not text:
+        return None
+    return {"from": sender, "type": "text", "text": {"body": text}}
+
+
+def _parse_wavio_payload(payload: dict) -> list:
+    """Normalize any known Wavio inbound shape to internal messages."""
+    out = []
+    if not isinstance(payload, dict):
+        return out
+    if "entry" in payload:
+        for entry in payload.get("entry", []) or []:
+            for change in entry.get("changes", []) or []:
+                value = change.get("value", {}) or {}
+                for m in value.get("messages", []) or []:
+                    norm = _normalize_meta_message(m)
+                    if norm:
+                        out.append(norm)
+        return out
+    data = payload.get("data", payload)
+    items = data if isinstance(data, list) else ([data] if isinstance(data, dict) else [])
+    for item in items:
+        norm = _normalize_wavio_message(item)
+        if norm:
+            out.append(norm)
+    return out
+
+
 @app.post("/fonnte/inbound")
 def fonnte_inbound():
     """Slice 9: Fonnte posts JSON (sender/message/text/url), not Meta shape.
@@ -286,10 +385,15 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
         if media.get("url"):
             if whatsapp.backend() == "fonnte":
                 audio_bytes = whatsapp.download_fonnte_media(media["url"])
+            elif whatsapp.backend() == "wavio":
+                audio_bytes = whatsapp.download_wavio_url(media["url"])
             else:
                 audio_bytes = whatsapp.download_twilio_media(media["url"])
         elif media.get("id"):
-            audio_bytes = whatsapp.download_media(media["id"])
+            if whatsapp.backend() == "wavio":
+                audio_bytes = whatsapp.download_wavio_media(media["id"])
+            else:
+                audio_bytes = whatsapp.download_media(media["id"])
         else:
             raise ValueError("no audio ref")
     except Exception:
