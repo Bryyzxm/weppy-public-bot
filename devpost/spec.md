@@ -174,6 +174,7 @@ sales-wa-assistant/
 ├── transcribe.py       # VN → teks via Groq Whisper, status unclear jika gagal
 ├── store.py            # baca/tulis profile.json + notes.json (atomik)
 ├── scheduler.py        # APScheduler: rekap harian + cek follow-up + fungsi yang dipakai perintah demo
+├── export_csv.py       # notes.json -> CSV utf-8-sig (perintah `ekspor csv`, Telegram dokumen / WA teks)
 ├── requirements.txt    # flask, apscheduler, requests, python-dotenv, groq
 ├── .env.example        # GROQ_API_KEY, WHATSAPP_TOKEN, PHONE_NUMBER_ID, VERIFY_TOKEN
 ├── README.md           # cara jalan lokal + cara rekam demo (dibaca orang lain dari GitHub)

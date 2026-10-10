@@ -123,6 +123,16 @@ Build mode: fast
   Learner check: Buat bot di `@BotFather`, isi token di `.env`, jalankan `python telegram_poll.py`, kirim voice note kunjungan dari HP via Telegram.
   Commit: `Pivot transport layer to Telegram Bot API for hackathon POC`
 
+- [x] **12. Ekspor CSV semua catatan pipeline**
+  Becomes usable: Ketik `ekspor csv` / `export csv` (atau ketuk tombol 📥 Ekspor CSV) → terima file `catatan-pipeline.csv` berisi semua notes (id, created_at, institusi, kontak, role, produk, tahap_deal, followup_date, status), siap dibuka di Excel/Sheets.
+  Why now: Permintaan learner setelah 11 slice selesai — melengkapi loop demo (catat → rekap → unduh) tanpa menyentuh kernel ekstraksi; murni tampilan baca-saja dari notes.json yang sama.
+  PRD ref: `prd.md > What We're Building` (butir 8 rekap — CSV adalah bentuk unduh dari data yang sama)
+  Spec ref: `spec.md > Data Model` (data/notes.json), `spec.md > File Structure` (export_csv.py)
+  Build: `export_csv.py` baru (notes_to_csv_text/bytes utf-8-sig + header stabil); `telegram.py` send_document (stub → OUTBOX type=document); `app.py` perintah EXPORT_COMMANDS + tombol menu_export + handler _handle_export (Telegram kirim dokumen, WhatsApp fallback teks chunk 3000); `prompts.py` strings export_empty/export_caption + menu_export + help_text.
+  Verify (mechanical): `py_compile` OK; `test_telegram.py` tetap 8/8; skenario ekspor: kosong → export_empty, 2 notes (koma+quote) → document + CSV parse benar, tombol menu_export → document, alias en → caption EN, fallback WhatsApp → teks CSV via /webhook.
+  Learner check: Jalankan bot (`python telegram_poll.py`), kirim `ekspor csv` dari HP, dan buka file CSV di Excel/Sheets — pastikan semua catatan + kolomnya sama dengan kartu.
+  Commit: `Add CSV export of pipeline notes via chat command`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -156,3 +166,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Jalur waapi.app sempat dibangun sebagai slice 10 baru (stub-first, terverifikasi offline) lalu dibatalkan atas permintaan learner karena risiko banned nomor WA sendiri — perubahan kode + docs di-revert penuh (2 commit revert), tidak ada sisa referensi waapi.app; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
 - Tambah jalur Wavio berbasis Meta resmi (disetujui learner) — Official Meta Cloud API Partner dengan coexistence; `whatsapp.py` backend `wavio` (kirim `/messages/send`, tombol Skip via `/messages/send-interactive` fallback teks, template via `/messages/send-template`) + route `/wavio/inbound` parsing fleksibel (Meta-style `entry/changes` atau envelope custom, tak dikenal di-log + ack 200); voice note via `GET /media/{mediaId}`; stub-first terverifikasi offline 25 checks (ping dua bentuk payload, kartu 4 field, klarifikasi Skip, audio, pesan kosong, regresi Meta/Twilio/d360/Fonnte); `spec.md > External Services` dilengkapi bagian 7. Wavio. Live `ping` dari HP masih menunggu kredensial learner.
 - Pivot transport layer ke Telegram Bot API untuk POC hackathon (disetujui learner) — WhatsApp gateway butuh kartu kredit / verifikasi bisnis rumit / risiko ban nomor pribadi; pivot ke Telegram Bot API (@BotFather) memberikan jalur demo gratis instan 1 menit tanpa kartu kredit, tanpa risiko ban, dan tanpa batas 24 jam. Semua kapabilitas AI inti (Groq LLM 4 field, Groq Whisper voice note .oga, tombol inline Skip, follow-up, rekap harian) terbukti 100% fungsional di Telegram; arsitektur dibuat modular (CHAT_TRANSPORT=telegram|whatsapp) sehingga siap dipasang kembali ke WhatsApp BSP saat produksi.
+- Ekspor CSV atas permintaan learner (scope change kecil, disetujui via permintaan langsung) — biaya: 1 file baru + 1 perintah chat + 1 tombol menu, tanpa ubah kernel/skema; murni baca notes.json → CSV utf-8-sig; Telegram kirim dokumen, WhatsApp fallback teks; `test_telegram.py` 8/8 tetap lolos + skenario ekspor terverifikasi (kosong, koma/quote quoting, tombol, alias EN, fallback WA).

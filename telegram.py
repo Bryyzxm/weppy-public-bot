@@ -100,6 +100,29 @@ def send_template(to: str | int, name: str, language_code: str, parameters: list
     return send_text(to, str(body))
 
 
+def send_document(to: str | int, file_bytes: bytes, filename: str, caption: str = "") -> dict:
+    """Kirim file (dipakai ekspor CSV) via sendDocument.
+
+    Stub mode: catat ke OUTBOX type=document agar verifikasi offline bisa
+    assert tanpa network.
+    """
+    entry = {"to": str(to), "type": "document", "filename": filename,
+             "caption": caption, "size": len(file_bytes or b"")}
+    if is_stub():
+        OUTBOX.append(entry)
+        _log(f"[telegram stub send_document to={to}] {filename} ({entry['size']} bytes)")
+        return {"ok": True, "stub": True}
+
+    url = f"{TELEGRAM_API_BASE}/bot{token()}/sendDocument"
+    files = {"document": (filename, file_bytes, "text/csv")}
+    data = {"chat_id": str(to)}
+    if caption:
+        data["caption"] = caption
+    resp = requests.post(url, data=data, files=files, timeout=30)
+    resp.raise_for_status()
+    return resp.json()
+
+
 def answer_callback_query(callback_query_id: str, text: str = "") -> dict:
     if is_stub():
         return {"ok": True, "stub": True}

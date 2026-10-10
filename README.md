@@ -68,7 +68,8 @@ Buka bot Telegram yang kamu buat, kirim `ping` atau voice note — bot langsung 
 3. **Kartu Ekstraksi & Klarifikasi Skip:** Bot membalas kartu teks 4 field rapi. Field yang belum lengkap ditanyakan satu per satu dengan tombol inline **Skip**.
 4. **Pengingat Follow-up:** Ketik `cek follow-up` → bot menampilkan daftar yang jatuh tempo hari ini.
 5. **Rekap Harian:** Ketik `rekap sekarang` → bot menampilkan ringkasan per tahap deal lengkap dengan tombol inline untuk melihat detail tiap catatan.
-6. **Cek Data:** Tunjukkan file `data/notes.json` sebagai bukti persistensi data lokal.
+6. **Ekspor CSV:** Ketik `ekspor csv` (atau ketuk 📥 Ekspor CSV) → bot mengirim file `catatan-pipeline.csv`, buka di Excel/Sheets.
+7. **Cek Data:** Tunjukkan file `data/notes.json` sebagai bukti persistensi data lokal.
 
 ---
 

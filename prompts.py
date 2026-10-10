@@ -73,6 +73,8 @@ STRINGS = {
             'bahas kopi 100kg, minta penawaran harga."\n'
             "• Rekap: ketuk Rekap (atau ketik \"rekap\") untuk rekap pipeline.\n"
             "• Follow-up: ketuk Follow-up (atau ketik \"cek follow-up\").\n"
+            "• Ekspor: ketuk Ekspor CSV (atau ketik \"ekspor csv\") "
+            "untuk unduh semua catatan sebagai file CSV.\n"
             "• Pengaturan: ketuk Pengaturan untuk ubah nama/bahasa/jam rekap.\n"
             '• Ketik "menu" untuk tampilkan menu lagi, "ping" untuk tes koneksi.'
         ),
@@ -99,10 +101,19 @@ STRINGS = {
         "menu_followup": "⏰ Follow-up",
         "menu_settings": "⚙️ Pengaturan",
         "menu_help": "❓ Bantuan",
+        "menu_export": "📥 Ekspor CSV",
         "menu_main": "Menu Utama",
         "settings_name": "Ubah Nama",
         "settings_lang": "Ganti Bahasa",
         "settings_time": "Ubah Jam",
+        "export_empty": (
+            "Belum ada catatan tersimpan. Kirim laporan kunjungan dulu, "
+            "baru ekspor CSV."
+        ),
+        "export_caption": (
+            "Berikut file CSV berisi {n} catatan pipeline. "
+            "Buka di Excel/Sheets ya."
+        ),
     },
     "en": {
         "onboarding_name": (
@@ -169,6 +180,8 @@ STRINGS = {
             'discussed 100kg coffee, they asked for a price quote."\n'
             "• Recap: tap Recap (or type \"recap\") for the pipeline recap.\n"
             "• Follow-up: tap Follow-up (or type \"check follow-up\").\n"
+            "• Export: tap Export CSV (or type \"export csv\") "
+            "to download all notes as a CSV file.\n"
             "• Settings: tap Settings to change name/language/recap time.\n"
             '• Type "menu" to show the menu again, "ping" to test connection.'
         ),
@@ -194,10 +207,19 @@ STRINGS = {
         "menu_followup": "⏰ Follow-up",
         "menu_settings": "⚙️ Settings",
         "menu_help": "❓ Help",
+        "menu_export": "📥 Export CSV",
         "menu_main": "Main Menu",
         "settings_name": "Change Name",
         "settings_lang": "Change Language",
         "settings_time": "Change Time",
+        "export_empty": (
+            "No notes stored yet. Send a visit report first, "
+            "then export CSV."
+        ),
+        "export_caption": (
+            "Here is the CSV file with {n} pipeline note(s). "
+            "Open it in Excel/Sheets."
+        ),
     },
 }
 
@@ -247,6 +269,7 @@ def main_menu_buttons(lang: str) -> list:
         {"id": "menu_lapor", "title": t(lang, "menu_lapor")},
         {"id": "menu_recap", "title": t(lang, "menu_recap")},
         {"id": "menu_followup", "title": t(lang, "menu_followup")},
+        {"id": "menu_export", "title": t(lang, "menu_export")},
         {"id": "menu_settings", "title": t(lang, "menu_settings")},
         {"id": "menu_help", "title": t(lang, "menu_help")},
     ]

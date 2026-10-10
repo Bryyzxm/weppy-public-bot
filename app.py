@@ -55,6 +55,9 @@ MENU_COMMANDS = {"menu", "/menu", "/start", "menu utama", "utama", "main menu"}
 HELP_COMMANDS = {"bantuan", "help", "/help", "tolong", "contoh", "info", "cara pakai"}
 SETTINGS_MENU_COMMANDS = {"pengaturan", "pengaturan menu", "setting", "settings", "/settings"}
 
+EXPORT_COMMANDS = {"ekspor csv", "export csv", "unduh csv", "download csv",
+                   "ekspor", "export", "csv"}
+
 LAPOR_COMMANDS = {"lapor", "kirim laporan", "laporan", "send report", "new report menu"}
 
 
@@ -90,6 +93,42 @@ def _send_settings_menu(sender: str, lang: str) -> None:
 
 def _send_help(sender: str, lang: str) -> None:
     transport_module().send_text(sender, t(lang, "help_text"))
+
+
+def _handle_export(sender: str, profile: dict) -> None:
+    """Slice 12: kirim semua notes.json sebagai file CSV.
+
+    Telegram: file dokumen (.csv) + caption jumlah catatan.
+    WhatsApp (semua backend): tidak ada API dokumen di POC ini — kirim isi
+    CSV sebagai teks (dipotong per ~3000 karakter agar lolos limit).
+    Kosong: pesan export_empty, tidak ada file.
+    """
+    import export_csv
+
+    lang = profile.get("language", "id")
+    trans = transport_module()
+    notes = store.load_notes()
+    if not notes:
+        trans.send_text(sender, t(lang, "export_empty"))
+        _send_main_menu(sender, lang)
+        return
+    caption = t(lang, "export_caption").format(n=len(notes))
+    if trans == telegram:
+        telegram.send_document(
+            sender,
+            export_csv.notes_to_csv_bytes(notes),
+            export_csv.CSV_FILENAME,
+            caption,
+        )
+        _send_main_menu(sender, lang)
+        return
+    # WhatsApp fallback: CSV sebagai teks (chunk agar tidak kepotong API).
+    text = export_csv.notes_to_csv_text(notes)
+    chunks = [text[i:i + 3000] for i in range(0, len(text), 3000)] or [text]
+    trans.send_text(sender, caption)
+    for ch in chunks:
+        trans.send_text(sender, ch)
+    _send_main_menu(sender, lang)
 
 
 def _send_lapor_prompt(sender: str, lang: str, has_draft: bool = False) -> None:
@@ -412,6 +451,11 @@ def _handle_message(msg: dict) -> None:
         scheduler.send_followups_to(profile, sender)
         return
 
+    # Slice 12: ekspor CSV (perintah ketik, semua bahasa).
+    if low in EXPORT_COMMANDS:
+        _handle_export(sender, profile)
+        return
+
     # A tap on a recap detail button always means "show that note",
     # even mid-clarification (the draft stays active afterwards).
     if low.startswith("view_"):
@@ -497,6 +541,9 @@ def _handle_menu_action(sender: str, text: str, profile: dict) -> bool:
     if text in ("menu_followup",):
         scheduler.send_followups_to(profile, sender)
         return True
+    if text in ("menu_export",) or low in EXPORT_COMMANDS:
+        _handle_export(sender, profile)
+        return True
 
     # Settings options (two-step).
     if text in ("settings_name",):
@@ -568,6 +615,7 @@ def _handle_pending_setting(sender: str, text: str, profile: dict) -> bool:
     # settings button then sends a real report).
     if (low == "ping" or low in GREETINGS or low.startswith("view_")
             or low.startswith("laporan baru") or low.startswith("new report")
+            or low in EXPORT_COMMANDS
             or low in ("rekap sekarang", "rekap", "recap", "recap now",
                        "send recap", "send me the recap", "recap please",
                        "minta rekap", "cek follow-up", "cek follow up",
