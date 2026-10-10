@@ -3,3 +3,4 @@ requests>=2.31
 python-dotenv>=1.0
 apscheduler>=3.10
 groq>=0.9
+faster-whisper>=1.0

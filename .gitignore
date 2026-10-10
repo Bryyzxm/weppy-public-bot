@@ -9,6 +9,13 @@
 # Local runtime data (may contain test phone numbers)
 data/profile.json
 data/notes.json
+data/processed_updates.json
+
+# Telegram polling runtime
+.telegram_poll.lock
+
+# AI context runtime
+.opencode-context.md
 
 # macOS
 .DS_Store
@@ -16,3 +23,6 @@ data/notes.json
 # Python
 .venv/
 __pycache__/
+
+# JCE context index runtime state
+.opencode-jce/context/

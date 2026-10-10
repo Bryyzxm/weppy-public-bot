@@ -61,6 +61,48 @@ STRINGS = {
             "perusahaan, kontak, atau produk — atau ketik \"rekap\" untuk "
             "rekap, \"cek follow-up\" untuk pengingat."
         ),
+        "menu_body": (
+            "Menu utama — ketuk tombol di bawah (atau ketik perintah):\n"
+            "Kirim laporan baru, lihat rekap/follow-up, ubah pengaturan, "
+            'atau minta bantuan. (Ketik "menu" kapan saja untuk tampilkan lagi.)'
+        ),
+        "help_text": (
+            "Bantuan — cara pakai:\n"
+            "• Kirim laporan: ketuk Kirim Laporan lalu kirim teks/voice note, mis:\n"
+            '"Baru dari PT Maju Jaya ketemu Ibu Sari purchasing, '
+            'bahas kopi 100kg, minta penawaran harga."\n'
+            "• Rekap: ketuk Rekap (atau ketik \"rekap\") untuk rekap pipeline.\n"
+            "• Follow-up: ketuk Follow-up (atau ketik \"cek follow-up\").\n"
+            "• Pengaturan: ketuk Pengaturan untuk ubah nama/bahasa/jam rekap.\n"
+            '• Ketik "menu" untuk tampilkan menu lagi, "ping" untuk tes koneksi.'
+        ),
+        "settings_body": (
+            "Pengaturan — ketuk tombol yang mau diubah "
+            '(atau ketik "menu" untuk kembali).'
+        ),
+        "lapor_prompt": (
+            "Silakan kirim laporan kunjungan sebagai teks atau voice note, mis:\n"
+            '"Baru dari PT Maju Jaya ketemu Ibu Sari purchasing, '
+            'bahas kopi 100kg, minta penawaran harga."'
+        ),
+        "lapor_has_draft": (
+            "Masih ada draft yang belum lengkap. Selesaikan dulu pertanyaan di atas, "
+            'atau mulai baru dengan "lapor baru ..." + isi laporan.'
+        ),
+        "setting_name_ask": "Siapa nama panggilan baru? Balas nama-nya.",
+        "setting_time_ask": (
+            "Jam berapa rekap sore dikirim? Ketuk tombol atau balas HH:MM "
+            "(mis. 17:00, 12:00, atau 19:00)."
+        ),
+        "menu_lapor": "📝 Kirim Laporan",
+        "menu_recap": "📊 Rekap",
+        "menu_followup": "⏰ Follow-up",
+        "menu_settings": "⚙️ Pengaturan",
+        "menu_help": "❓ Bantuan",
+        "menu_main": "Menu Utama",
+        "settings_name": "Ubah Nama",
+        "settings_lang": "Ganti Bahasa",
+        "settings_time": "Ubah Jam",
     },
     "en": {
         "onboarding_name": (
@@ -115,6 +157,47 @@ STRINGS = {
             "product — or type \"recap\" for the recap, \"check follow-up\" "
             "for reminders."
         ),
+        "menu_body": (
+            "Main menu — tap a button below (or type a command):\n"
+            'Send a new report, view recap/follow-ups, change settings, '
+            'or ask for help. (Type "menu" anytime to show it again.)'
+        ),
+        "help_text": (
+            "Help — how to use:\n"
+            "• Send a report: tap Send Report then send text/voice note, e.g.:\n"
+            '"Just visited PT Maju Jaya, met Mrs Sari from purchasing, '
+            'discussed 100kg coffee, they asked for a price quote."\n'
+            "• Recap: tap Recap (or type \"recap\") for the pipeline recap.\n"
+            "• Follow-up: tap Follow-up (or type \"check follow-up\").\n"
+            "• Settings: tap Settings to change name/language/recap time.\n"
+            '• Type "menu" to show the menu again, "ping" to test connection.'
+        ),
+        "settings_body": (
+            'Settings — tap what to change (or type "menu" to go back).'
+        ),
+        "lapor_prompt": (
+            "Please send the visit report as text or voice note, e.g.:\n"
+            '"Just visited PT Maju Jaya, met Mrs Sari from purchasing, '
+            'discussed 100kg coffee, they asked for a price quote."'
+        ),
+        "lapor_has_draft": (
+            "There is still an incomplete draft. Please answer the question "
+            'above first, or start fresh with "new report ..." + the report.'
+        ),
+        "setting_name_ask": "What is the new nickname? Reply with the name.",
+        "setting_time_ask": (
+            "What time should the daily recap be sent? Tap a button or reply "
+            "HH:MM (e.g. 17:00, 12:00, or 19:00)."
+        ),
+        "menu_lapor": "📝 Send Report",
+        "menu_recap": "📊 Recap",
+        "menu_followup": "⏰ Follow-up",
+        "menu_settings": "⚙️ Settings",
+        "menu_help": "❓ Help",
+        "menu_main": "Main Menu",
+        "settings_name": "Change Name",
+        "settings_lang": "Change Language",
+        "settings_time": "Change Time",
     },
 }
 
@@ -153,3 +236,63 @@ CLARIFY = {
 
 def clarify_question(lang: str, field: str) -> str:
     return CLARIFY.get(lang, CLARIFY["id"]).get(field, CLARIFY["id"][field])
+
+
+# --- Button-based navigation (menu utama + preset) ---
+# Button ids are stable across languages; titles are localized.
+# All titles <= 20 chars (WhatsApp Cloud API limit).
+
+def main_menu_buttons(lang: str) -> list:
+    return [
+        {"id": "menu_lapor", "title": t(lang, "menu_lapor")},
+        {"id": "menu_recap", "title": t(lang, "menu_recap")},
+        {"id": "menu_followup", "title": t(lang, "menu_followup")},
+        {"id": "menu_settings", "title": t(lang, "menu_settings")},
+        {"id": "menu_help", "title": t(lang, "menu_help")},
+    ]
+
+
+def settings_menu_buttons(lang: str) -> list:
+    return [
+        {"id": "settings_name", "title": t(lang, "settings_name")},
+        {"id": "settings_lang", "title": t(lang, "settings_lang")},
+        {"id": "settings_time", "title": t(lang, "settings_time")},
+        {"id": "menu_main", "title": t(lang, "menu_main")},
+    ]
+
+
+def time_preset_buttons() -> list:
+    # 3 buttons max agar muat di WhatsApp (max 3/pesan).
+    # Opsi lain tetap bisa diketik manual HH:MM.
+    return [
+        {"id": "time_08:00", "title": "08:00"},
+        {"id": "time_17:00", "title": "17:00"},
+        {"id": "skip", "title": "Skip"},
+    ]
+
+
+# Tahap deal: id stabil -> nilai kanonis Indonesia (pengelompokan stabil).
+DEAL_ID_MAP = {
+    "deal_awal": "Kunjungan awal",
+    "deal_harga": "Penawaran harga",
+    "deal_nego": "Negosiasi",
+    "deal_deal": "Deal",
+    "deal_fup": "Follow-up",
+}
+
+DEAL_EN_LABEL = {
+    "Kunjungan awal": "Initial visit",
+    "Penawaran harga": "Price quote",
+    "Negosiasi": "Negotiation",
+    "Deal": "Deal",
+    "Follow-up": "Follow-up",
+}
+
+
+def tahap_deal_buttons(lang: str) -> list:
+    out = []
+    for bid, canonical in DEAL_ID_MAP.items():
+        title = DEAL_EN_LABEL.get(canonical, canonical) if lang == "en" else canonical
+        out.append({"id": bid, "title": title})
+    out.append({"id": "skip", "title": "Skip"})
+    return out

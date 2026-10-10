@@ -113,6 +113,16 @@ Build mode: fast
   Learner check: Isi `WAVIO_API_KEY` + `WAVIO_NUMBER_ID` di `.env`, daftarkan webhook `messages:received` ke `/wavio/inbound`, kirim `ping` dan laporan beneran dari HP.
   Commit: `Add Wavio channel alongside Meta Twilio d360 Fonnte`
 
+- [x] **11. Pivot Transport Layer ke Telegram Bot (POC Hackathon)**
+  Becomes usable: Chat bot berjalan 100% via Telegram Bot API (`@BotFather`, gratis, tanpa kartu kredit/risiko ban) dengan kapabilitas AI utuh: voice note `.oga` via Whisper, ekstraksi Groq 4 field, tombol inline Skip, follow-up, rekap harian + tombol detail catatan.
+  Why now: WhatsApp gateway butuh kartu kredit / verifikasi bisnis rumit / risiko ban nomor pribadi. Pivot ke Telegram membuktikan 100% kapabilitas AI inti dalam batas waktu hackathon dengan arsitektur modular yang siap dicolok kembali ke WhatsApp BSP saat produksi.
+  PRD ref: `prd.md > The Core Journey`
+  Spec ref: `spec.md > External Services and Dependencies` (bagian 8. Telegram Bot API)
+  Build: `telegram.py` HTTP client (sendMessage, inline keyboard, answerCallbackQuery, getFile/download voice .oga, stub mode); `app.py` route `POST /telegram/webhook` + parser update (text, voice, callback_query); `telegram_poll.py` runner long-polling tanpa ngrok; `scheduler.py` window-free sending ke Telegram; konfigurasi `CHAT_TRANSPORT=telegram` & `TELEGRAM_BOT_TOKEN`; update `.env.example`, `.env`, `README.md`, `test_telegram.py`.
+  Verify (mechanical): `python test_telegram.py` lolos 8/8 skenario (ping, onboarding, ekstraksi laporan, callback Skip, voice note Whisper, cek follow-up, rekap sekarang, detail view); regresi WhatsApp `demo_chat.py` tetap lolos.
+  Learner check: Buat bot di `@BotFather`, isi token di `.env`, jalankan `python telegram_poll.py`, kirim voice note kunjungan dari HP via Telegram.
+  Commit: `Pivot transport layer to Telegram Bot API for hackathon POC`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — setelah slice 3 (kernel teks → kartu), sebelum suara/klarifikasi dikunci
@@ -145,4 +155,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Jalur WAAPI.co.id sempat dibangun sebagai slice 10 lalu dibatalkan atas permintaan learner — perubahan kode + docs di-revert penuh (commit revert), tidak ada sisa referensi WAAPI; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
 - Jalur waapi.app sempat dibangun sebagai slice 10 baru (stub-first, terverifikasi offline) lalu dibatalkan atas permintaan learner karena risiko banned nomor WA sendiri — perubahan kode + docs di-revert penuh (2 commit revert), tidak ada sisa referensi waapi.app; transport aktif kembali ke Meta/Twilio/d360/Fonnte.
 - Tambah jalur Wavio berbasis Meta resmi (disetujui learner) — Official Meta Cloud API Partner dengan coexistence; `whatsapp.py` backend `wavio` (kirim `/messages/send`, tombol Skip via `/messages/send-interactive` fallback teks, template via `/messages/send-template`) + route `/wavio/inbound` parsing fleksibel (Meta-style `entry/changes` atau envelope custom, tak dikenal di-log + ack 200); voice note via `GET /media/{mediaId}`; stub-first terverifikasi offline 25 checks (ping dua bentuk payload, kartu 4 field, klarifikasi Skip, audio, pesan kosong, regresi Meta/Twilio/d360/Fonnte); `spec.md > External Services` dilengkapi bagian 7. Wavio. Live `ping` dari HP masih menunggu kredensial learner.
-
+- Pivot transport layer ke Telegram Bot API untuk POC hackathon (disetujui learner) — WhatsApp gateway butuh kartu kredit / verifikasi bisnis rumit / risiko ban nomor pribadi; pivot ke Telegram Bot API (@BotFather) memberikan jalur demo gratis instan 1 menit tanpa kartu kredit, tanpa risiko ban, dan tanpa batas 24 jam. Semua kapabilitas AI inti (Groq LLM 4 field, Groq Whisper voice note .oga, tombol inline Skip, follow-up, rekap harian) terbukti 100% fungsional di Telegram; arsitektur dibuat modular (CHAT_TRANSPORT=telegram|whatsapp) sehingga siap dipasang kembali ke WhatsApp BSP saat produksi.

@@ -1,9 +1,88 @@
-# Asisten Sales WhatsApp B2B
+# Asisten Sales B2B (AI Voice & Pipeline Assistant)
 
-Asisten WhatsApp untuk sales B2B: voice note/teks setelah kunjungan
+Asisten AI untuk tim sales B2B: voice note/teks setelah kunjungan
 jadi catatan pipeline rapi, plus pengingat follow-up dan rekap harian.
 
-## Cara jalan (lokal)
+> **Catatan Pivot POC (Hackathon):** Transport layer default diarahkan ke **Telegram Bot API**
+> agar pengujian dan demo dapat berjalan 100% gratis, instan (1 menit), tanpa kartu kredit,
+> dan tanpa risiko ban nomor pribadi. Logika AI inti (Groq LLM 4 field, Groq Whisper voice note,
+> klarifikasi Skip, follow-up, rekap) bersifat modular dan siap dicolok ke WhatsApp BSP
+> untuk tahap produksi.
+
+---
+
+## Cara Cepat: Jalankan via Telegram (Rekomendasi POC)
+
+### 1. Buat Bot Telegram (1 Menit, Gratis)
+1. Buka aplikasi Telegram di HP / Laptop, cari akun resmi **`@BotFather`**.
+2. Kirim perintah `/newbot`.
+3. Masukkan nama tampilan bot (contoh: `Asisten Sales B2B`).
+4. Masukkan username bot berakhiran `bot` (contoh: `asisten_sales_demo_bot`).
+5. `@BotFather` akan memberikan **HTTP API Token** (contoh: `7123456789:ABCdefGHIjkl...`).
+
+### 2. Konfigurasi Lingkungan
+1. Install dependencies:
+   ```bash
+   python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
+   ```
+2. Salin file lingkungan:
+   ```bash
+   cp .env.example .env
+   ```
+3. Buka `.env` dan isi:
+   ```env
+   GROQ_API_KEY=gsk_xxxxxxx             # API key gratis dari console.groq.com
+   CHAT_TRANSPORT=telegram
+   TELEGRAM_BOT_TOKEN=7123456789:ABC... # Token dari @BotFather
+   ```
+
+### 3. Jalankan Bot (Dua Opsi)
+
+#### Opsi A: Mode Polling (Paling Mudah, Tanpa ngrok)
+Jalankan langsung script polling:
+```bash
+./.venv/bin/python telegram_poll.py
+```
+Buka bot Telegram yang kamu buat, kirim `ping` atau voice note — bot langsung membalas seketika!
+
+#### Opsi B: Mode Webhook (Server Flask)
+1. Jalankan server Flask:
+   ```bash
+   ./.venv/bin/python app.py
+   ```
+2. Di terminal lain, buka tunnel:
+   ```bash
+   ngrok http 5000
+   ```
+3. Pasang webhook Telegram ke URL ngrok:
+    ```bash
+   curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" -d "url=https://xxx.ngrok-free.app/telegram/webhook"
+    ```
+
+---
+
+## Alur Demo & Rekaman
+
+1. **Onboarding:** Kirim pesan pertama / `halo` → bot menyapa dan menanyakan nama, bahasa, jam rekap.
+2. **Voice Note Laporan:** Kirim voice note dari HP menceritakan hasil kunjungan (contoh: *"Baru dari PT Maju Jaya ketemu Bu Sari purchasing, bahas kopi 100kg, deal, follow up besok"*).
+3. **Kartu Ekstraksi & Klarifikasi Skip:** Bot membalas kartu teks 4 field rapi. Field yang belum lengkap ditanyakan satu per satu dengan tombol inline **Skip**.
+4. **Pengingat Follow-up:** Ketik `cek follow-up` → bot menampilkan daftar yang jatuh tempo hari ini.
+5. **Rekap Harian:** Ketik `rekap sekarang` → bot menampilkan ringkasan per tahap deal lengkap dengan tombol inline untuk melihat detail tiap catatan.
+6. **Cek Data:** Tunjukkan file `data/notes.json` sebagai bukti persistensi data lokal.
+
+---
+
+## Verifikasi Unit Test Offline (Stub Mode)
+
+Untuk memastikan seluruh sistem berjalan mulus tanpa koneksi internet/token asli:
+```bash
+./.venv/bin/python test_telegram.py
+```
+Script ini mensimulasikan payload webhook Telegram lengkap (ping, onboarding, teks laporan, audio voice note, callback button Skip, hingga perintah rekap).
+
+---
+
+## Transport Layer Alternatif (WhatsApp)
 
 1. `python3.12 -m venv .venv && ./.venv/bin/pip install -r requirements.txt`
 2. Salin `.env.example` ke `.env`, isi token.

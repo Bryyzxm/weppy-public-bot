@@ -19,8 +19,14 @@ import datetime as _dt
 import os
 
 import store
+import telegram
 import whatsapp
 from agent import format_date, stage_label
+
+
+def transport_module():
+    mode = os.getenv("CHAT_TRANSPORT", "telegram").strip().lower()
+    return telegram if mode == "telegram" else whatsapp
 
 TEMPLATES = {
     "id": {"code": "id", "followup": "followup_reminder_id", "recap": "daily_recap_id"},
@@ -169,6 +175,10 @@ def build_followup_text(notes: list, lang: str, ref: _dt.date) -> str:
 
 def _send_window_aware(profile: dict, sender: str, lang: str, kind: str, body: str) -> bool:
     """True if delivered. Template failure queues a notice for next chat."""
+    trans = transport_module()
+    if trans == telegram:
+        telegram.send_text(sender, body)
+        return True
     if in_window(profile, sender):
         whatsapp.send_text(sender, body)
         return True
@@ -191,8 +201,8 @@ def send_recap_to(profile: dict, sender: str, ref=None) -> bool:
     body = build_recap_text(store.load_notes(), lang, ref)
     if not _send_window_aware(profile, sender, lang, "recap", body):
         return False
-    # Detail buttons need an active window (and make no sense on a template).
-    if in_window(profile, sender):
+    trans = transport_module()
+    if trans == telegram or in_window(profile, sender):
         send_recap_details(profile, sender, lang)
     return True
 
@@ -242,11 +252,12 @@ def send_recap_details(profile: dict, sender: str, lang: str) -> bool:
             body += f" ({ci + 1}/{len(chunks)})"
         body += "\n" + "\n".join(rows)
         buttons = [{"id": f"view_{nid}", "title": name[:20]} for nid, name in chunk]
+        trans = transport_module()
         try:
-            whatsapp.send_quick_reply(sender, body, buttons)
+            trans.send_quick_reply(sender, body, buttons)
         except Exception as e:
             print(f"[scheduler] buttons failed, numbers only: {e}")
-            whatsapp.send_text(sender, body)
+            trans.send_text(sender, body)
         base += len(chunk)
     return True
 
@@ -265,7 +276,7 @@ def flush_notices(sender: str, profile: dict) -> None:
         if lang == "en"
         else "Gagal terkirim saat kamu offline:"
     )
-    whatsapp.send_text(sender, head + "\n" + "\n---\n".join(notices))
+    transport_module().send_text(sender, head + "\n" + "\n---\n".join(notices))
     profile["pending_notices"] = []
     store.save_profile(profile)
 

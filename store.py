@@ -15,6 +15,8 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parent / "data"
 PROFILE_PATH = DATA_DIR / "profile.json"
 NOTES_PATH = DATA_DIR / "notes.json"
+SEEN_PATH = DATA_DIR / "processed_updates.json"
+SEEN_KEEP = 200
 
 DEFAULT_PROFILE = {
     "sender_allowlist": [],
@@ -22,6 +24,7 @@ DEFAULT_PROFILE = {
     "language": "id",
     "recap_time": "17:00",
     "onboarding_stage": "new",
+    "pending_setting": "",
     "last_seen": {},
     "last_sender": "",
     "pending_notices": [],
@@ -82,3 +85,46 @@ def load_notes() -> list:
 
 def save_notes(notes: list) -> None:
     _atomic_write(NOTES_PATH, notes)
+
+
+def claim_update(update_id) -> bool:
+    """Klaim update_id Telegram agar hanya diproses satu kali.
+
+    Dipakai di satu titik (_process_telegram_update) sehingga update yang
+    sama tidak dibalas dua kali walau dua proses (polling ganda / polling +
+    webhook) menerima update yang sama. Berbasis file + flock antar-proses.
+    Return True = pertama kali (lanjut proses), False = duplikat (skip).
+    """
+    try:
+        uid = int(update_id)
+    except (TypeError, ValueError):
+        return True  # tanpa id valid -> proses seperti biasa
+    import fcntl
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    # buka/buat file state, kunci eksklusif selama baca-ubah-tulis
+    with open(SEEN_PATH, "a+", encoding="utf-8") as f:
+        try:
+            fcntl.flock(f, fcntl.LOCK_EX)
+        except OSError:
+            pass
+        f.seek(0)
+        try:
+            raw = f.read()
+            seen = json.loads(raw) if raw.strip() else []
+            if not isinstance(seen, list):
+                seen = []
+        except (json.JSONDecodeError, ValueError):
+            seen = []
+        if uid in seen:
+            return False
+        seen.append(uid)
+        del seen[:-SEEN_KEEP]
+        f.seek(0)
+        f.truncate()
+        json.dump(seen, f)
+        try:
+            fcntl.flock(f, fcntl.LOCK_UN)
+        except OSError:
+            pass
+    return True

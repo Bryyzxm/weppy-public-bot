@@ -10,6 +10,7 @@ Usage: ./.venv/bin/python demo_chat.py
 
 import os
 
+os.environ["CHAT_TRANSPORT"] = "whatsapp"
 os.environ["WHATSAPP_STUB"] = "1"
 os.environ["WHATSAPP_QUIET"] = "1"
 os.environ["GROQ_STUB"] = "1"
