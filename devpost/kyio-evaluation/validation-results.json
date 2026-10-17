@@ -1,0 +1,23 @@
+{
+  "time": "2026-10-15T09:46:46.581094+00:00",
+  "request": {
+    "method": "GET",
+    "path": "/api/ai/claude-haiku-4-5",
+    "query": {}
+  },
+  "http_status": 400,
+  "elapsed_ms": 1694.49,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "x-ratelimit-limit": "1000",
+    "x-ratelimit-remaining": "981",
+    "x-ratelimit-reset": "60"
+  },
+  "response": {
+    "error": {
+      "code": "MISSING_PARAMETER",
+      "message": "Parameter 'q' is required."
+    }
+  }
+}

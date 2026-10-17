@@ -1,155 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asisten Sales WhatsApp B2B — PRD (Draft)</title>
+<title>Weppy — Public Telegram PRD (Draft)</title>
 <style>
-  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0; --mut:#94a3b8; --acc:#22c55e; --warn:#f59e0b; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--txt); line-height:1.6; }
-  .wrap { max-width:900px; margin:0 auto; padding:32px 20px 80px; }
-  .badge { display:inline-block; font-size:13px; padding:4px 12px; border-radius:999px; background:#334155; color:#fcd34d; border:1px solid #475569; }
-  h1 { font-size:30px; margin:12px 0 4px; }
-  .sub { color:var(--mut); margin:0 0 20px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; margin:16px 0; }
-  .card h2 { margin:0 0 10px; font-size:19px; }
-  .card h3 { margin:18px 0 8px; font-size:16px; color:#a5f3c0; }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  @media(max-width:700px){ .grid2{grid-template-columns:1fr;} }
-  .pill { display:inline-block; font-size:12px; padding:2px 10px; border-radius:999px; margin:2px 4px 2px 0; }
-  .ok { background:#14532d; color:#bbf7d0; } .miss { background:#78350f; color:#fde68a; } .skip { background:#334155; color:#e2e8f0; }
-  ul.tight { margin:8px 0; padding-left:20px; }
-  li { margin:6px 0; }
-  .crit { list-style:none; padding:0; } .crit li { background:#0f172a; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
-  .crit li::before { content:"☐ "; color:var(--acc); font-weight:700; }
-  details { background:#0f172a; border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin:8px 0; }
-  summary { cursor:pointer; font-weight:600; }
-  .journey-svg { width:100%; height:auto; background:#0b1220; border:1px solid var(--line); border-radius:12px; }
-  .stepper { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
-  button { background:var(--acc); color:#052e16; border:0; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; }
-  button.ghost { background:transparent; color:var(--txt); border:1px solid var(--line); }
-  #stepBox { background:#0b1220; border:1px solid var(--line); border-radius:12px; padding:16px; min-height:110px; }
-  #stepBox .n { color:var(--warn); font-weight:700; font-size:13px; }
-  .note { border-left:4px solid var(--acc); padding:10px 14px; background:#052e16; border-radius:0 10px 10px 0; color:#d1fae5; }
-  .foot { color:var(--mut); font-size:13px; margin-top:24px; }
-  a { color:#86efac; }
+:root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--mut:#94a3b8;--acc:#22c55e;--warn:#f59e0b}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}.wrap{max-width:920px;margin:0 auto;padding:32px 20px 80px}.badge{display:inline-block;font-size:13px;padding:4px 12px;border-radius:999px;background:#334155;color:#fcd34d;border:1px solid var(--line)}h1{font-size:32px;margin:12px 0 4px}.sub{color:var(--mut);margin:0 0 20px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}.card h2{margin:0 0 10px;font-size:19px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}.node{border:1px solid var(--line);border-radius:11px;background:#0b1220;padding:14px}.node b{color:#86efac}details{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}summary{cursor:pointer;font-weight:700}.callout{border-left:4px solid var(--warn);padding:12px 16px;background:#3b2c12;border-radius:0 10px 10px 0}.foot{color:var(--mut);font-size:13px}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <span class="badge">devpost/prd.md &middot; status: approved &middot; kanonis: Markdown</span>
-  <h1>Asisten Sales WhatsApp B2B</h1>
-  <p class="sub">Asisten WhatsApp pribadi untuk sales B2B yang mengubah voice note/teks setelah kunjungan menjadi catatan pipeline yang rapi, lalu membantu follow-up dan rekap harian.</p>
-
-  <div class="note">Scope bilang "agent mengekstrak 4 info dan bertanya yang kurang dengan Skip." Sekarang kita tahu persis artinya: <b>onboarding singkat</b> (nama + bahasa + jam rekap) saat pertama pakai, histori bawaan WhatsApp + balasan rekap saat disapa, kirim voice note (unduh cepat + transkripsi), terima <b>kartu teks</b> berisi 4 field + status, dilengkapi lewat <b>chat satu per satu dengan Skip</b> (quick-reply), tanggal follow-up ditentukan agent, dan rekap sore via template ter-approve + perintah demo.</div>
-
-  <div class="card">
-    <h2>1 &middot; Diagram perjalanan (klik langkahnya)</h2>
-    <svg class="journey-svg" viewBox="0 0 880 190" role="img" aria-label="Diagram perjalanan 7 langkah">
-      <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#64748b" stroke-width="1.5"/></marker></defs>
-      <g font-family="system-ui" font-size="12" fill="#e2e8f0" text-anchor="middle">
-        <rect x="8" y="60" width="112" height="70" rx="10" fill="#1e293b" stroke="#22c55e"/><text x="64" y="88">1. Buka</text><text x="64" y="104" fill="#94a3b8">histori+rekap</text>
-        <rect x="132" y="60" width="112" height="70" rx="10" fill="#1e293b" stroke="#334155"/><text x="188" y="88">2. Kirim</text><text x="188" y="104" fill="#94a3b8">voice/teks</text>
-        <rect x="256" y="60" width="112" height="70" rx="10" fill="#1e293b" stroke="#334155"/><text x="312" y="88">3. Kartu</text><text x="312" y="104" fill="#94a3b8">laporan</text>
-        <rect x="380" y="60" width="112" height="70" rx="10" fill="#1e293b" stroke="#334155"/><text x="436" y="88">4. Tanya</text><text x="436" y="104" fill="#94a3b8">+ Skip</text>
-        <rect x="504" y="60" width="112" height="70" rx="10" fill="#1e293b" stroke="#334155"/><text x="560" y="88">5. Simpan</text><text x="560" y="104" fill="#94a3b8">+ tgl FU</text>
-        <rect x="628" y="60" width="112" height="70" rx="10" fill="#1e293b" stroke="#334155"/><text x="684" y="88">6. Ingatkan</text><text x="684" y="104" fill="#94a3b8">follow-up</text>
-        <rect x="752" y="60" width="120" height="70" rx="10" fill="#1e293b" stroke="#f59e0b"/><text x="812" y="88">7. Rekap</text><text x="812" y="104" fill="#94a3b8">sore / tahap</text>
-      </g>
-      <g stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)">
-        <line x1="120" y1="95" x2="130" y2="95"/><line x1="244" y1="95" x2="254" y2="95"/><line x1="368" y1="95" x2="378" y2="95"/>
-        <line x1="492" y1="95" x2="502" y2="95"/><line x1="616" y1="95" x2="626" y2="95"/><line x1="740" y1="95" x2="750" y2="95"/>
-      </g>
-    </svg>
-    <div class="stepper">
-      <button class="ghost" id="prevBtn">← Sebelumnya</button>
-      <button id="nextBtn">Berikutnya →</button>
-      <span id="stepCount" style="color:#94a3b8;font-size:13px"></span>
-    </div>
-    <div id="stepBox" style="margin-top:12px"></div>
-  </div>
-
-  <div class="card">
-    <h2>2 &middot; Permukaan: cuma 1 thread chat + 1 layar laporan</h2>
-    <div class="grid2">
-      <div><b>Thread chat utama</b><ul class="tight"><li>Histori bawaan WhatsApp; rekap via balasan saat disapa</li><li>Tengah: laporan baru + balasan agent</li><li>Bawah: kirim voice/teks + tombol Skip (maks 3, judul ≤20)</li></ul></div>
-      <div><b>Kartu laporan teks</b><ul class="tight"><li>Pesan teks terformat di dalam chat, bukan Flows/webview</li><li>Hanya untuk melihat + instruksi lanjut di chat</li><li>Tanpa ketuk-buka-tutup</li></ul></div>
-    </div>
-    <p style="color:#94a3b8">Nada: singkat, praktis, membantu — bukan formulir CRM. Selalu ada Skip. Dua bahasa ID/EN ikut profil. Bebas hanya 24 jam; di luar itu wajib template.</p>
-  </div>
-
-  <div class="card">
-    <h2>3 &middot; Perilaku per bagian (klik untuk kriteria cek)</h2>
-    <details open><summary>0. Onboarding: nama + bahasa + jam rekap (baru)</summary>
-      <ul class="crit"><li>Pemakaian pertama: agent bertanya nama panggilan, bahasa (Indonesia/Inggris), dan jam rekap sore, satu per satu, semuanya bisa di-skip.</li><li>Skip bahasa = Indonesia; skip jam = default 17:00 waktu lokal; nama dipakai untuk menyapa berikutnya.</li></ul>
-    </details>
-    <details><summary>Kartu laporan: 4 field + status</summary>
-      <div><span class="pill ok">Institusi</span><span class="pill ok">Contact + role</span><span class="pill ok">Produk dibahas</span><span class="pill miss">Tahap deal: belum ada</span></div>
-      <ul class="crit"><li>Kartu menampilkan 4 field dengan nilai atau penanda "belum ada" — tanpa karangan.</li><li>Ada cara lanjut di chat untuk melengkapi yang kurang.</li></ul>
-    </details>
-    <details><summary>Klarifikasi chat dengan Skip (cara utama)</summary>
-      <ul class="crit"><li>Agent bertanya satu per satu, tiap pertanyaan ada opsi <span class="pill skip">Skip</span>.</li><li>Skip = field tetap kosong, lanjut ke berikutnya, catatan parsial tetap tersimpan + konfirmasi singkat.</li></ul>
-    </details>
-    <details><summary>Follow-up: tanggal dari agent</summary>
-      <ul class="crit"><li>Tanggal follow-up ditentukan agent dari isi laporan dan terlihat di catatan (tampil DD Mon YYYY, simpan YYYY-MM-DD).</li><li>Dalam 24 jam: pesan bebas. Di luar 24 jam: template ter-approve ID/EN. Demo: <code>cek follow-up</code>.</li></ul>
-    </details>
-    <details><summary>Rekap sore: per tahap + follow-up besok</summary>
-      <ul class="crit"><li>Satu pesan otomatis tiap sore di jam rekap, hanya dari nomor uji ini.</li><li>Otomatis = template ter-approve ID/EN (di luar 24 jam); demo <code>rekap sekarang</code> = pesan bebas dalam sesi.</li></ul>
-    </details>
-    <details><summary>Dua bahasa: Indonesia + Inggris (baru)</summary>
-      <ul class="crit"><li>Voice/teks dua bahasa dipahami sebagai satu alur yang sama.</li><li>Balasan mengikuti bahasa pilihan onboarding; ganti kapan saja via chat ("ganti ke bahasa Inggris" / "switch to Indonesian").</li></ul>
-    </details>
-    <details><summary>Histori saat buka + laporan via voice/teks</summary>
-      <ul class="crit"><li>Histori = bawaan WhatsApp; rekap diberikan saat sales menyapa; pengguna baru dipicu pesan pertama → sambutan + contoh.</li><li>Voice note (unduh cepat ~5 mnt + transkripsi) dan teks diperlakukan sebagai satu jenis laporan yang sama.</li></ul>
-    </details>
-  </div>
-
-  <div class="card">
-    <h2>4 &middot; Keadaan penting (states)</h2>
-    <ul class="tight">
-      <li><b>Pertama pakai / kosong</b> — sambutan + onboarding singkat (nama, jam rekap) + contoh laporan, bukan error.</li>
-      <li><b>Parsial</b> — kartu tandai yang kosong, masuk klarifikasi Skip.</li>
-      <li><b>Audio tidak jelas</b> — tidak dikarang; agent minta klarifikasi bagian yang kurang jelas.</li>
-      <li><b>Di-skip</b> — tetap disimpan sebagai parsial.</li>
-      <li><b>Tersimpan</b> — 4 field + tanggal follow-up bertahan antar sesi.</li>
-      <li><b>Batas</b> — 1 sales, 1 nomor uji (allowlist), mode uji coba. Bebas 24 jam; di luar itu template ID/EN. Media ~5 menit.</li>
-    </ul>
-  </div>
-
-  <div class="card">
-    <h2>5 &middot; Yang dibangun vs ditunda</h2>
-    <div class="grid2">
-      <div><b>Membangun (POC)</b><ul class="tight"><li>Onboarding (nama + bahasa + jam)</li><li>Dua bahasa ID/EN</li><li>Histori + rekap saat buka</li><li>Voice + teks satu alur</li><li>Kartu 4 field + status</li><li>Chat Skip + simpan parsial</li><li>Klarifikasi audio tak jelas</li><li>Tanggal FU dari agent + pengingat</li><li>Rekap sore per tahap</li></ul></div>
-      <div><b>Ditunda</b><ul class="tight"><li>Edit form di Flows</li><li>Banyak sales / tim / banyak nomor</li><li>CRM produksi, dashboard, kalender</li></ul></div>
-    </div>
-    <h3>Keputusan produk</h3>
-    <ul class="tight"><li>Input tetap voice/teks (voice → transkripsi); kartu hanya teks, bukan Flows — cepat di lapangan.</li><li>Dua bahasa via pilihan eksplisit saat onboarding, bisa diganti via chat — mudah ditebak dan didemokan.</li><li>Chat Skip jadi cara utama; form ditunda agar muat 2–4 jam.</li><li>Tanggal FU dari agent (DD Mon YYYY / YYYY-MM-DD); rekap fokus aksi besok via template.</li></ul>
-    <h3>Pertanyaan terbuka</h3>
-    <ul class="tight"><li>Nama + parameter 4 template ID/EN di dashboard Meta — diputuskan saat build.</li><li>Format tanggal sudah diputuskan — tampil DD Mon YYYY, simpan YYYY-MM-DD.</li></ul>
-  </div>
-
-  <p class="foot">Kanonis: <b>devpost/prd.md</b>. Halaman ini hanya pendamping visual offline (tanpa CDN/framework). Diagram di atas inline-SVG sehingga tetap tampil tanpa internet.</p>
-</div>
-<script>
-(function(){
-  var steps=[
-    {t:"0. Onboarding personal",d:"Pertama pakai: agent bertanya nama panggilan, bahasa (Indonesia/Inggris), dan jam rekap sore, satu per satu, bisa di-skip. Kriteria: nama dipakai menyapa; skip bahasa = Indonesia; skip jam = default 17:00."},
-    {t:"1. Buka chat",d:"Histori = bawaan WhatsApp. Rebalasan sapaan + rekap terakhir diberikan saat sales menyapa. Pengguna baru dipicu pesan pertama."},
-    {t:"2. Kirim laporan",d:"Sales mengirim voice note (unduh cepat + transkripsi) atau teks bebas tentang klien. Kriteria: keduanya diterima sebagai satu jenis laporan yang sama."},
-    {t:"3. Terima kartu teks",d:"Agent membalas kartu teks di dalam chat berisi 4 field + status Terisi/Belum ada (bukan Flows). Kriteria: tidak ada data karangan."},
-    {t:"4. Lengkapi dengan Skip",d:"Agent bertanya satu per satu di chat, tiap pertanyaan ada Skip. Kriteria: Skip lanjut ke berikutnya; catatan parsial tetap tersimpan."},
-    {t:"5. Catatan tersimpan + tanggal FU",d:"Agent menyimpan catatan dan menentukan tanggal follow-up dari isi laporan. Kriteria: tanggal terlihat di catatan."},
-    {t:"6. Pengingat follow-up",d:"Saat tanggal tiba, sales dapat pengingat menyebut institusi + contact + tindak lanjut."},
-    {t:"7. Rekap sore",d:"Sore hari terima satu pesan: ringkasan per tahap deal + siapa di-follow-up besok. Kriteria: hanya dari nomor uji ini."},
-    {t:"Cabang: audio tidak jelas",d:"Tidak dibuatkan kartu karangan. Agent meminta klarifikasi bagian yang kurang jelas."}
-  ];
-  var i=0, box=document.getElementById('stepBox'), count=document.getElementById('stepCount');
-  function render(){ box.innerHTML='<div class="n">Langkah '+(i+1)+' / '+steps.length+'</div><div style="font-weight:700;font-size:17px;margin:4px 0">'+steps[i].t+'</div><div style="color:#cbd5e1">'+steps[i].d+'</div>'; count.textContent='Langkah '+(i+1)+' dari '+steps.length; }
-  document.getElementById('prevBtn').onclick=function(){ i=(i-1+steps.length)%steps.length; render(); };
-  document.getElementById('nextBtn').onclick=function(){ i=(i+1)%steps.length; render(); };
-  render();
-})();
-</script>
-</body>
-</html>
+<body><main class="wrap">
+<span class="badge">devpost/prd.md · status: draft · kanonis: Markdown</span>
+<h1>Weppy — Sales pipeline pribadi melalui Telegram</h1>
+<p class="sub">Bot publik; data tiap private chat terisolasi dari pengguna lain.</p>
+<section class="card"><h2>Perjalanan pengguna</h2><div class="grid">
+<div class="node"><b>1. Mulai</b><br>/start → onboarding nama, bahasa, jam WIB</div>
+<div class="node"><b>2. Lapor</b><br>Teks atau voice note → Groq ekstraksi/transkripsi</div>
+<div class="node"><b>3. Lengkapi</b><br>Kartu empat field → klarifikasi satu per satu + Skip</div>
+<div class="node"><b>4. Tindak lanjuti</b><br>Rekap, pengingat, detail, CSV pribadi</div>
+</div><p>Setiap operasi data memakai pemilik Telegram <code>chat_id</code>.</p></section>
+<section class="card"><h2>Perilaku dan penerimaan</h2>
+<details open><summary>Isolasi pengguna</summary><ul><li>Profil, catatan, dan draf tersimpan per private chat.</li><li>Greeting/recap/export hanya membaca catatan pemilik.</li><li>Callback detail dengan ID pengguna lain menghasilkan “not found”.</li></ul></details>
+<details><summary>Laporan dan klarifikasi</summary><ul><li>Teks/voice note menjadi kartu empat field; fakta tak disebut tetap kosong.</li><li>Field kurang ditanya satu per satu; jawaban/Skip hanya memperbarui draf pemilik.</li><li>Voice note gagal meminta input ulang/teks.</li></ul></details>
+<details><summary>Jadwal dan hosting</summary><ul><li>Cron menjadwalkan rekap/pengingat per profil dalam zona Asia/Jakarta.</li><li>Hosting gratis best-effort, bukan jaminan uptime 24/7 atau SLA.</li></ul></details>
+</section>
+<section class="card"><h2>Boundary</h2><div class="callout">Tidak termasuk grup Telegram, berbagi catatan, akses tim, dashboard, transport WhatsApp, atau SLA produksi. Hindari data pelanggan sensitif pada layanan demo gratis.</div></section>
+<p class="foot">Kanonis: <b>devpost/prd.md</b>. Companion ini offline dan menampilkan status draft dokumen.</p>
+</main></body></html>

@@ -1,0 +1,2924 @@
+{
+  "source": "src/worker.ts actual entire module bundled in memory with esbuild; existing extractReport exported only in memory",
+  "replay_only": true,
+  "note": "Validates production parser with live saved responses, not Worker egress, D1 or Telegram. Diagnostic adapters are not production changes. FixtureDate freezes Jakarta date to each fixture.",
+  "summary": {
+    "groq:unchanged": {
+      "attempts": 24,
+      "accepted": 23
+    },
+    "kyio_public:unchanged": {
+      "attempts": 24,
+      "accepted": 0
+    },
+    "kyio_public:envelope_only": {
+      "attempts": 24,
+      "accepted": 0
+    },
+    "kyio_public:envelope_and_markdown_strip": {
+      "attempts": 24,
+      "accepted": 15
+    },
+    "kyio_public:envelope_and_fenced_object": {
+      "attempts": 24,
+      "accepted": 24
+    },
+    "kyio_gpt5_public:unchanged": {
+      "attempts": 10,
+      "accepted": 0
+    },
+    "kyio_gpt5_public:envelope_only": {
+      "attempts": 10,
+      "accepted": 9
+    },
+    "kyio_gpt5_public:envelope_and_markdown_strip": {
+      "attempts": 10,
+      "accepted": 10
+    },
+    "kyio_gpt5_public:envelope_and_fenced_object": {
+      "attempts": 10,
+      "accepted": 10
+    }
+  },
+  "correctness_summary": {
+    "groq:unchanged": {
+      "attempts": 24,
+      "accepted": 23,
+      "correct_reports": 22,
+      "correct_fields": 137,
+      "mismatches": [
+        {
+          "case": "voice_id_chained",
+          "values": {
+            "institusi": {
+              "expected": [
+                "Contoh Nusantara",
+                "perusahaan Contoh Nusantara"
+              ],
+              "actual": "Nusantara"
+            }
+          }
+        }
+      ]
+    },
+    "kyio_public:unchanged": {
+      "attempts": 24,
+      "accepted": 0,
+      "correct_reports": 0,
+      "correct_fields": 0,
+      "mismatches": []
+    },
+    "kyio_public:envelope_only": {
+      "attempts": 24,
+      "accepted": 0,
+      "correct_reports": 0,
+      "correct_fields": 0,
+      "mismatches": []
+    },
+    "kyio_public:envelope_and_markdown_strip": {
+      "attempts": 24,
+      "accepted": 15,
+      "correct_reports": 15,
+      "correct_fields": 90,
+      "mismatches": []
+    },
+    "kyio_public:envelope_and_fenced_object": {
+      "attempts": 24,
+      "accepted": 24,
+      "correct_reports": 20,
+      "correct_fields": 140,
+      "mismatches": [
+        {
+          "case": "missing_facts",
+          "values": {
+            "tahap_deal": {
+              "expected": "",
+              "actual": "Kunjungan awal"
+            }
+          }
+        },
+        {
+          "case": "missing_facts_repeat_2",
+          "values": {
+            "tahap_deal": {
+              "expected": "",
+              "actual": "Kunjungan awal"
+            }
+          }
+        },
+        {
+          "case": "missing_facts_repeat_3",
+          "values": {
+            "tahap_deal": {
+              "expected": "",
+              "actual": "Kunjungan awal"
+            }
+          }
+        },
+        {
+          "case": "field_length_80",
+          "values": {
+            "institusi": {
+              "expected": "PT ContohContohContohContohContohContohContohContohContohContohContohContohConto",
+              "actual": "PT ContohContohContohContohContohContohContohContohContohContohC"
+            }
+          }
+        }
+      ]
+    },
+    "kyio_gpt5_public:unchanged": {
+      "attempts": 10,
+      "accepted": 0,
+      "correct_reports": 0,
+      "correct_fields": 0,
+      "mismatches": []
+    },
+    "kyio_gpt5_public:envelope_only": {
+      "attempts": 10,
+      "accepted": 9,
+      "correct_reports": 9,
+      "correct_fields": 54,
+      "mismatches": []
+    },
+    "kyio_gpt5_public:envelope_and_markdown_strip": {
+      "attempts": 10,
+      "accepted": 10,
+      "correct_reports": 10,
+      "correct_fields": 60,
+      "mismatches": []
+    },
+    "kyio_gpt5_public:envelope_and_fenced_object": {
+      "attempts": 10,
+      "accepted": 10,
+      "correct_reports": 10,
+      "correct_fields": 60,
+      "mismatches": []
+    }
+  },
+  "records": [
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "complete_id",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "missing_facts",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 154 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": false,
+        "followup_date": true
+      },
+      "production_note_mismatches": {
+        "tahap_deal": {
+          "expected": "",
+          "actual": "Kunjungan awal"
+        }
+      }
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "no_visit_facts",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "no_visit_facts",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "no_visit_facts",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "no_visit_facts",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 111 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "no_visit_facts",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "tomorrow",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "tomorrow",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "tomorrow",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "tomorrow",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "tomorrow",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "next_week",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "CV Demo Mingguan",
+        "kontak": "Rina",
+        "role": "pemilik",
+        "produk": "teh",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-10-22"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "next_week",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "next_week",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "next_week",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 160 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "next_week",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "CV Demo Mingguan",
+        "kontak": "Rina",
+        "role": "pemilik",
+        "produk": "teh",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-10-22"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "explicit_beats_relative",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Jadwal",
+        "kontak": "Dedi",
+        "role": "pembeli",
+        "produk": "kertas",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-11-02"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "explicit_beats_relative",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "explicit_beats_relative",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "explicit_beats_relative",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 169 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "explicit_beats_relative",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Jadwal",
+        "kontak": "Dedi",
+        "role": "pembeli",
+        "produk": "kertas",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-11-02"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "english",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Ltd.",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee beans",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-23"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "english",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "english",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "english",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Ltd.",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee beans",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-23"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "english",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Ltd.",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee beans",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-23"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "mixed_language",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Campuran",
+        "kontak": "Rudi",
+        "role": "purchasing manager",
+        "produk": "mesin kopi",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "mixed_language",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "mixed_language",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "mixed_language",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Campuran",
+        "kontak": "Rudi",
+        "role": "purchasing manager",
+        "produk": "mesin kopi",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "mixed_language",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Campuran",
+        "kontak": "Rudi",
+        "role": "purchasing manager",
+        "produk": "mesin kopi",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "negated_deal",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Diskusi",
+        "kontak": "Wati",
+        "role": "direktur",
+        "produk": "komputer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "negated_deal",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "negated_deal",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "negated_deal",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 167 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "negated_deal",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Diskusi",
+        "kontak": "Wati",
+        "role": "Direktur",
+        "produk": "Komputer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "corrected_contact",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Koreksi",
+        "kontak": "Sari",
+        "role": "manajer",
+        "produk": "meja",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-21"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "corrected_contact",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "corrected_contact",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "corrected_contact",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Koreksi",
+        "kontak": "Sari",
+        "role": "manajer",
+        "produk": "meja",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-21"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "corrected_contact",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Koreksi",
+        "kontak": "Sari",
+        "role": "manajer",
+        "produk": "meja",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-21"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "month_boundary",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "month_boundary",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "month_boundary",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "month_boundary",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "month_boundary",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "year_boundary",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Tahun",
+        "kontak": "Nia",
+        "role": "pemilik",
+        "produk": "beras",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2027-01-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "year_boundary",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "year_boundary",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "year_boundary",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Tahun",
+        "kontak": "Nia",
+        "role": "pemilik",
+        "produk": "beras",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2027-01-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "year_boundary",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Tahun",
+        "kontak": "Nia",
+        "role": "pemilik",
+        "produk": "beras",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2027-01-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "leap_day",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "leap_day",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "leap_day",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "leap_day",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "leap_day",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "quoted_unicode",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "CV Cahaya & Kawan",
+        "kontak": "Éka",
+        "role": "pemilik",
+        "produk": "Paket \"A\" {demo}",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-10-25"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "quoted_unicode",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "quoted_unicode",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "quoted_unicode",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "CV Cahaya & Kawan",
+        "kontak": "Éka",
+        "role": "pemilik",
+        "produk": "Paket \"A\" {demo}",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-10-25"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "quoted_unicode",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "CV Cahaya & Kawan",
+        "kontak": "Éka",
+        "role": "pemilik",
+        "produk": "Paket \"A\" {demo}",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-10-25"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "untrusted_instruction",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Aman",
+        "kontak": "Sinta",
+        "role": "pemilik",
+        "produk": "sabun",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-22"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "untrusted_instruction",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "untrusted_instruction",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "untrusted_instruction",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Aman",
+        "kontak": "Sinta",
+        "role": "pemilik",
+        "produk": "sabun",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-22"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "untrusted_instruction",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Aman",
+        "kontak": "Sinta",
+        "role": "pemilik",
+        "produk": "sabun",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-22"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "long_report",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "long_report",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "long_report",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "long_report",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "long_report",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "complete_id_repeat_2",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "missing_facts_repeat_2",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_2",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_2",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_2",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 154 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_2",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": false,
+        "followup_date": true
+      },
+      "production_note_mismatches": {
+        "tahap_deal": {
+          "expected": "",
+          "actual": "Kunjungan awal"
+        }
+      }
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "complete_id_repeat_3",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_3",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_3",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_3",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_3",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "groq",
+      "case": "missing_facts_repeat_3",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_3",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_3",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_3",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 154 (line 9 column 1)"
+    },
+    {
+      "capture_file": "chat-results.json",
+      "provider": "kyio_public",
+      "case": "missing_facts_repeat_3",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": false,
+        "followup_date": true
+      },
+      "production_note_mismatches": {
+        "tahap_deal": {
+          "expected": "",
+          "actual": "Kunjungan awal"
+        }
+      }
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "groq",
+      "case": "voice_id_chained",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Nusantara",
+        "kontak": "Sari",
+        "role": "manajer pembelian",
+        "produk": "mesin kopi",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": false,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {
+        "institusi": {
+          "expected": [
+            "Contoh Nusantara",
+            "perusahaan Contoh Nusantara"
+          ],
+          "actual": "Nusantara"
+        }
+      }
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_id_chained",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_id_chained",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_id_chained",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Perusahaan Contoh Nusantara",
+        "kontak": "Sari",
+        "role": "Manajer Pembelian",
+        "produk": "Mesin Kopi",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_id_chained",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Perusahaan Contoh Nusantara",
+        "kontak": "Sari",
+        "role": "Manajer Pembelian",
+        "produk": "Mesin Kopi",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "groq",
+      "case": "voice_en_chained",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Limited",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee machines",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_en_chained",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_en_chained",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_en_chained",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Limited",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee machines",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "voice_en_chained",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Limited",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee machines",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "groq",
+      "case": "field_length_80",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq extraction failed"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "field_length_80",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "field_length_80",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "field_length_80",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 204 (line 9 column 1)"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "field_length_80",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT ContohContohContohContohContohContohContohContohContohContohC",
+        "kontak": "Budi",
+        "role": "pemilik",
+        "produk": "kopi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": false,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {
+        "institusi": {
+          "expected": "PT ContohContohContohContohContohContohContohContohContohContohContohContohConto",
+          "actual": "PT ContohContohContohContohContohContohContohContohContohContohC"
+        }
+      }
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "groq",
+      "case": "unknown_stage",
+      "adapter": "unchanged",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Baru",
+        "kontak": "Ana",
+        "role": "pemilik",
+        "produk": "teh",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "unknown_stage",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "unknown_stage",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "unknown_stage",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": false,
+      "error": "Unexpected non-whitespace character after JSON at position 148 (line 9 column 1)"
+    },
+    {
+      "capture_file": "edge-results.json",
+      "provider": "kyio_public",
+      "case": "unknown_stage",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Baru",
+        "kontak": "Ana",
+        "role": "pemilik",
+        "produk": "teh",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "missing_facts",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "missing_facts",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "missing_facts",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "missing_facts",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "tomorrow",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "tomorrow",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "tomorrow",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "tomorrow",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "explicit_beats_relative",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "explicit_beats_relative",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Jadwal",
+        "kontak": "Dedi",
+        "role": "pembeli",
+        "produk": "kertas",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-11-02"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "explicit_beats_relative",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Jadwal",
+        "kontak": "Dedi",
+        "role": "pembeli",
+        "produk": "kertas",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-11-02"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "explicit_beats_relative",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Jadwal",
+        "kontak": "Dedi",
+        "role": "pembeli",
+        "produk": "kertas",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-11-02"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "english",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "english",
+      "adapter": "envelope_only",
+      "parser_accepts": false,
+      "error": "Unexpected token '`', \"```json\n{\n\"... is not valid JSON"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "english",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Ltd.",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee beans",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-23"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "english",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "Example North Ltd.",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee beans",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-23"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "negated_deal",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "negated_deal",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Diskusi",
+        "kontak": "Wati",
+        "role": "direktur",
+        "produk": "komputer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "negated_deal",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Diskusi",
+        "kontak": "Wati",
+        "role": "direktur",
+        "produk": "komputer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "negated_deal",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Diskusi",
+        "kontak": "Wati",
+        "role": "direktur",
+        "produk": "komputer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-18"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "month_boundary",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "month_boundary",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "month_boundary",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "month_boundary",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "leap_day",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "leap_day",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "leap_day",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "leap_day",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "long_report",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "long_report",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "long_report",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "long_report",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "unchanged",
+      "parser_accepts": false,
+      "error": "Groq response has no choices"
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "envelope_only",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "envelope_and_markdown_strip",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    },
+    {
+      "capture_file": "alternate-results.json",
+      "provider": "kyio_gpt5_public",
+      "case": "complete_id_repeat_2",
+      "adapter": "envelope_and_fenced_object",
+      "parser_accepts": true,
+      "note": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      },
+      "production_note_checks": {
+        "institusi": true,
+        "kontak": true,
+        "role": true,
+        "produk": true,
+        "tahap_deal": true,
+        "followup_date": true
+      },
+      "production_note_mismatches": {}
+    }
+  ]
+}

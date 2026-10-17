@@ -3,9 +3,9 @@ doc: scope
 status: approved
 ---
 
-# Asisten Sales WhatsApp B2B
+# Asisten Sales B2B
 
-Asisten WhatsApp pribadi untuk sales B2B yang mengubah voice note atau pesan teks setelah kunjungan menjadi catatan pipeline yang rapi, lalu membantu follow-up dan rekap harian.
+Asisten Telegram publik untuk sales B2B yang mengubah voice note atau pesan teks setelah kunjungan menjadi catatan pipeline pribadi, lalu membantu follow-up dan rekap harian.
 
 ## The Unique Kernel
 
@@ -17,11 +17,11 @@ Sales B2B yang sering berpindah dari satu kunjungan klien ke kunjungan lain dan 
 
 ## The Core Loop
 
-Sales mengirim voice note atau pesan teks ke nomor WhatsApp uji setelah kunjungan. Agent mengekstrak dan menyimpan empat informasi inti: **institusi atau perusahaan, contact person beserta rolenya, produk/layanan yang dibahas, dan tahap deal yang sedang berlangsung**. Jika ada informasi yang belum lengkap, agent bertanya secara bertahap dan menawarkan Skip. Setelah catatan tersimpan, agent dapat mengingatkan follow-up dan mengirim rekap pipeline pada sore hari, sehingga sales kembali menggunakan asisten setiap selesai kunjungan dan saat memeriksa progres.
+Pengguna mengirim voice note atau pesan teks setelah kunjungan melalui satu bot Telegram publik. Agent mengekstrak dan menyimpan empat informasi inti: **institusi/perusahaan, contact person beserta rolenya, produk/layanan yang dibahas, dan tahap deal saat ini**. Jika informasi belum lengkap, agent bertanya bertahap dan menawarkan Skip. Tiap akun Telegram hanya dapat melihat catatannya sendiri; setelah catatan tersimpan, agent membantu pengingat follow-up dan rekap pipeline.
 
 ## Inspiration & Identity
 
-Interaksi harus terasa seperti chat WhatsApp yang singkat, praktis, dan membantu—bukan seperti mengisi formulir CRM. Agent sebaiknya proaktif saat menemukan informasi yang kurang, tetapi tidak menghambat sales ketika informasi memang belum diketahui.
+Interaksi harus terasa seperti chat Telegram yang singkat, praktis, dan membantu—bukan seperti mengisi formulir CRM. Agent proaktif saat menemukan informasi kurang, tetapi tidak menghambat pengguna ketika informasi memang belum diketahui.
 
 ## Why This Matters to the Learner
 
@@ -29,7 +29,7 @@ Proyek ini memberi kesempatan untuk memahami workflow dan cara kerja AI agent se
 
 ## What "Working" Looks Like
 
-Dalam mode uji coba Meta WhatsApp Cloud API, satu sales mengirim teks atau voice note ke satu nomor WhatsApp uji. Agent membalas, menanyakan field yang kurang dengan opsi Skip, lalu menyimpan catatan yang memuat institusi/perusahaan, contact person dan rolenya, produk/layanan yang dibahas, serta tahap deal saat ini. Sales kemudian dapat menerima pengingat follow-up dan melihat rekap pipeline harian di WhatsApp.
+Dalam bot Telegram publik, pengguna memulai dengan `/start`, mengirim teks atau voice note, lalu agent membalas dengan kartu pipeline, meminta detail yang kurang dengan opsi Skip, dan menyimpan catatan pribadi yang hanya terlihat oleh akun tersebut. Pengguna dapat meminta rekap, detail, ekspor CSV, dan menerima pengingat. Layanan berjalan di hosting gratis best-effort; tidak ada uptime/SLA terjamin.
 
 Momen “oh, ini berguna” adalah ketika voice note yang tidak terstruktur berubah menjadi catatan pipeline yang rapi, dan agent sendiri menemukan detail yang belum disebut tanpa memaksa sales mengisi data yang belum pasti.
 
@@ -37,25 +37,24 @@ Momen “oh, ini berguna” adalah ketika voice note yang tidak terstruktur beru
 
 Yang termasuk:
 
-- Konfigurasi awal Meta Developer dan WhatsApp Cloud API dalam mode uji coba.
-- Satu nomor WhatsApp pengirim uji dan satu alur untuk satu sales.
-- Penerimaan pesan teks dan voice note dari WhatsApp.
-- Ekstraksi empat informasi inti: institusi atau perusahaan, contact person beserta rolenya, produk/layanan yang dibahas, dan tahap deal yang sedang berlangsung.
-- Klarifikasi adaptif untuk field yang belum ada, dengan pilihan Skip.
-- Penyimpanan catatan pipeline untuk demo.
-- Pengingat follow-up dan rekap pipeline harian yang dapat didemokan.
+- Agent tersedia lewat bot Telegram publik dengan username yang dapat dibagikan; pengguna dapat memulai sendiri tanpa allowlist.
+- Setiap akun Telegram hanya dapat melihat dan mengubah profil serta catatan pipeline miliknya sendiri.
+- Penerimaan laporan teks dan voice note, ekstraksi empat informasi inti, klarifikasi dengan Skip, penyimpanan catatan, pengingat follow-up, rekap, dan ekspor CSV.
+- Bot berjalan di satu host gratis dengan target ketersediaan best-effort; hibernasi, pemeliharaan, kuota, dan gangguan layanan gratis dapat membuatnya sementara tidak tersedia.
+- Data harus bertahan dari restart proses dan redeploy; kapasitas, backup, serta jaminan pemulihan tetap terbatas sesuai layanan gratis.
+
+Hosting publik memungkinkan siapa pun mencoba bot, tetapi bukan SLA layanan produksi.
 
 ## Later
 
-- Banyak sales, banyak nomor, dan pembagian akses berdasarkan tim.
-- Integrasi CRM produksi seperti Salesforce atau HubSpot.
+- Tim bersama, peran, dan berbagi catatan antar pengguna.
+- Integrasi CRM produksi seperti Salesforce/HubSpot.
 - Dashboard web dan analitik performa sales.
-- Sinkronisasi kalender, notifikasi multi-channel, dan aturan follow-up yang kompleks.
-- Deployment produksi dengan reliability, monitoring, dan pengelolaan volume tinggi.
+- Sinkronisasi kalender, notifikasi multi-channel, dan aturan follow-up kompleks.
+- SLA, redundansi multi-region, monitoring on-call, serta pengelolaan volume tinggi.
 
 ## Explicitly Cut
 
 - Sistem CRM lengkap: tidak diperlukan untuk membuktikan workflow agent inti.
-- Otomatisasi WhatsApp produksi untuk banyak pengguna: membutuhkan konfigurasi, keamanan, dan operasi yang melampaui proof of concept.
-- Fitur penjualan seperti scoring lead, rekomendasi harga, atau prediksi closing: bukan bagian dari masalah pencatatan dan follow-up yang ingin dibuktikan.
-- Integrasi ke nomor WhatsApp pribadi yang tidak didukung API resmi: berisiko dan tidak diperlukan untuk demo.
+- Catatan pipeline bersama lintas pengguna: data satu pengguna tidak boleh terlihat oleh pengguna lain.
+- Scoring lead, rekomendasi harga, atau prediksi closing: bukan masalah pencatatan dan follow-up yang ingin dibuktikan.

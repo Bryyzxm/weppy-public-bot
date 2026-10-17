@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "weppy-public-bot",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-14",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "weppy-public-bot",
+      "database_id": "425ec848-d1b2-4823-a9cc-443c77af800d"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/1 * * * *"]
+  },
+  "observability": {"enabled": true}
+}

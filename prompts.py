@@ -8,8 +8,15 @@ slices 3-6 append card / clarification / reminder / recap strings.
 
 STRINGS = {
     "id": {
+        "onboarding_welcome": (
+            "Selamat datang di *Asisten Sales B2B* \U0001f44b\n\n"
+            "Saya bantu kamu catat laporan kunjungan jadi rapi — cukup kirim "
+            "teks atau *voice note* setelah kunjungan, saya ekstrak jadi kartu "
+            "4 field (perusahaan, kontak, produk, tahap deal), ingatkan follow-up, "
+            "dan kirim rekap harian otomatis."
+        ),
         "onboarding_name": (
-            "Halo! Saya asisten sales. Siapa nama panggilanmu? "
+            "Siapa nama panggilanmu? "
             '(Balas nama, atau "Skip" untuk lewati.)'
         ),
         "onboarding_lang": (
@@ -116,8 +123,14 @@ STRINGS = {
         ),
     },
     "en": {
+        "onboarding_welcome": (
+            "Welcome to *B2B Sales Assistant* \U0001f44b\n\n"
+            "I turn your visit reports into tidy cards — just send text or a "
+            "*voice note* after a visit. I'll extract 4 fields (company, contact, "
+            "product, deal stage), remind you to follow up, and send a daily recap."
+        ),
         "onboarding_name": (
-            'Hello! I\'m the sales assistant. What\'s your nickname? '
+            'What\'s your nickname? '
             '(Reply with a name, or "Skip" to skip.)'
         ),
         "onboarding_lang": (

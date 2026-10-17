@@ -1,0 +1,17 @@
+{
+  "source": "Observed curl response in this evaluation; no new request made while saving evidence",
+  "request": {
+    "method": "GET",
+    "url": "https://api.kyio.web.id/api/v2/ai/transcribe",
+    "input": "none",
+    "authentication": "none"
+  },
+  "http_status": 400,
+  "response": {
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Parameter 'url' atau unggahan file audio/video wajib disertakan."
+    }
+  },
+  "interpretation": "URL or audio/video upload is required according to this validation response. Only multipart file OGG upload was positively exercised; URL/video mode is not proven."
+}

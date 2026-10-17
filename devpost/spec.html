@@ -1,148 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asisten Sales WhatsApp B2B — Technical Spec</title>
+<title>Weppy — Technical Spec (Draft)</title>
 <style>
-:root{--bg:#fafaf7;--card:#fff;--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--acc:#0e7490;--ok:#15803d;--warn:#b45309}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:960px;margin:0 auto;padding:24px 16px 64px}
-.badge{display:inline-block;font-size:12px;padding:2px 10px;border:1px solid var(--line);border-radius:999px;color:var(--mut);background:#fff}
-h1{font-size:26px;margin:10px 0 4px}h2{font-size:19px;margin:32px 0 8px;border-bottom:2px solid var(--line);padding-bottom:6px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}}
-code{background:#f3f4f6;padding:1px 6px;border-radius:6px;font-size:13px}
-pre{background:#111827;color:#e5e7eb;padding:14px;border-radius:10px;overflow:auto;font-size:12.5px}
-.ref{font-size:12.5px;color:var(--acc)}
-.stepper{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
-.stepper button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13px}
-.stepper button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-#stepBox{border:1px solid var(--line);border-radius:12px;background:#fff;padding:16px;min-height:150px}
-#stepBox h3{margin:0 0 6px;font-size:16px}
-.comp{border:1px solid var(--line);border-radius:10px;background:#fff;margin:8px 0}
-.comp>button{width:100%;text-align:left;background:none;border:0;padding:12px 14px;cursor:pointer;font-size:14.5px;font-weight:600}
-.comp .body{display:none;padding:0 14px 14px;font-size:14px;color:#374151}
-.comp.open .body{display:block}
-.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:8px 0}
-.node{flex:1 1 140px;border:2px solid var(--ink);border-radius:10px;padding:10px;text-align:center;background:#fff;font-size:13px}
-.node small{display:block;color:var(--mut);font-weight:400}
-.arrow{align-self:center;padding:0 6px;font-weight:700}
-table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}th{background:#f9fafb}
-.kv{display:grid;grid-template-columns:180px 1fr;gap:6px 12px;font-size:14px}
-@media(max-width:600px){.kv{grid-template-columns:1fr}}
-footer{color:var(--mut);font-size:12.5px;margin-top:32px}
+:root{color-scheme:light;--bg:#f7f8fa;--card:#fff;--ink:#17211a;--muted:#5d6d62;--accent:#16a34a;--line:#d8e2da;--soft:#e8f5ec;--warn:#fff7ed}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1020px;margin:auto;padding:32px 18px 64px}header,.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin:16px 0}h1{font-size:clamp(2rem,5vw,3.3rem);line-height:1.08;margin:10px 0}h2{margin:0 0 12px}p{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}.node{border:1px solid var(--accent);background:var(--soft);border-radius:13px;padding:14px}.node b{color:#14532d}.warn{background:var(--warn);border-left:4px solid #f59e0b;border-radius:0 10px 10px 0;padding:12px 16px}pre{background:#f3f5f3;border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto}.foot{font-size:13px;color:var(--muted)}code{background:#edf3ed;padding:2px 5px;border-radius:4px}
 </style>
 </head>
-<body>
-<div class="wrap">
-<span class="badge">devpost/spec.md &middot; status: approved &middot; canonical: spec.md</span>
-<h1>Asisten Sales WhatsApp B2B — Technical Spec</h1>
-<p>Blueprint: Python lokal + Groq gratis + file JSON + kartu teks &amp; tombol. Tanpa Flows, tanpa database server, tanpa deploy. <span class="ref">Implements prd.md &gt; The Core Journey, Features and Behavior.</span></p>
-
-<h2>1 &middot; Arsitektur (klik tiap kotak di bawah)</h2>
-<div class="flow" aria-label="diagram alir">
-<div class="node"><b>Sales</b><small>teks / voice note</small></div><div class="arrow">→</div>
-<div class="node"><b>webhook</b><small>app.py :5000</small></div><div class="arrow">→</div>
-<div class="node"><b>Groq</b><small>Whisper + ekstraksi</small></div><div class="arrow">→</div>
-<div class="node"><b>kartu teks</b><small>+ tombol Skip</small></div><div class="arrow">→</div>
-<div class="node"><b>JSON lokal</b><small>profile + notes</small></div>
-</div>
-<svg viewBox="0 0 900 190" width="100%" role="img" aria-label="diagram tunnel webhook" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px">
-<rect x="10" y="30" width="170" height="90" rx="10" fill="#fff" stroke="#1f2937" stroke-width="2"/><text x="95" y="60" text-anchor="middle" font-size="13" font-weight="bold">WhatsApp Cloud</text><text x="95" y="78" text-anchor="middle" font-size="11" fill="#6b7280">mode uji coba</text><text x="95" y="94" text-anchor="middle" font-size="11" fill="#6b7280">POST /webhook</text>
-<text x="200" y="80" font-size="16" font-weight="bold">→</text><text x="215" y="70" font-size="11" fill="#6b7280">ngrok tunnel</text>
-<rect x="300" y="30" width="170" height="90" rx="10" fill="#fff" stroke="#1f2937" stroke-width="2"/><text x="385" y="60" text-anchor="middle" font-size="13" font-weight="bold">app.py :5000</text><text x="385" y="78" text-anchor="middle" font-size="11" fill="#6b7280">Flask webhook</text><text x="385" y="94" text-anchor="middle" font-size="11" fill="#6b7280">router + scheduler</text>
-<text x="490" y="80" font-size="16" font-weight="bold">→</text>
-<rect x="520" y="30" width="170" height="90" rx="10" fill="#fff" stroke="#1f2937" stroke-width="2"/><text x="605" y="60" text-anchor="middle" font-size="13" font-weight="bold">Groq API</text><text x="605" y="78" text-anchor="middle" font-size="11" fill="#6b7280">chat + whisper</text><text x="605" y="94" text-anchor="middle" font-size="11" fill="#6b7280">4 field + tanggal</text>
-<text x="710" y="80" font-size="16" font-weight="bold">→</text>
-<rect x="730" y="30" width="160" height="90" rx="10" fill="#fff" stroke="#1f2937" stroke-width="2"/><text x="810" y="60" text-anchor="middle" font-size="13" font-weight="bold">data/*.json</text><text x="810" y="78" text-anchor="middle" font-size="11" fill="#6b7280">profile + notes</text><text x="810" y="94" text-anchor="middle" font-size="11" fill="#6b7280">rekap + ingat</text>
-<text x="20" y="155" font-size="12" fill="#374151">Balasan keluar lewat Graph API (tidak butuh tunnel). Tunnel hanya untuk pesan MASUK ke laptop.</text>
-</svg>
-
-<h2>2 &middot; Core Journey stepper (klik 0–6)</h2>
-<p class="ref">PRD ref: prd.md &gt; The Core Journey. Tiap langkah tunjukkan file yang dikerjakan 5-build.</p>
-<div class="stepper" id="steps"></div>
-<div id="stepBox"></div>
-
-<h2>3 &middot; Komponen (klik untuk buka)</h2>
-<div id="comps"></div>
-
-<h2>4 &middot; Data &amp; file</h2>
-<div class="grid">
-<div class="card"><b>data/profile.json</b><br><span class="ref">prd.md &gt; 0. Onboarding</span><pre>{
-  "nickname": "Budi",
-  "language": "id",
-  "recap_time": "17:00",
-  "onboarding_stage": "done"
-}</pre></div>
-<div class="card"><b>data/notes.json</b><br><span class="ref">prd.md &gt; 3, 5, 6 + States/Persists</span><pre>[{
-  "institusi": "PT Maju Jaya",
-  "kontak": "Ibu Sari",
-  "role": "Purchasing",
-  "produk": "Kopi 100kg",
-  "tahap_deal": "Penawaran",
-  "followup_date": "2026-10-04",
-  "status": "saved"
-}]</pre></div>
-</div>
-<div class="card"><b>File structure</b><pre>sales-wa-assistant/
-├── app.py            # webhook + router + perintah demo
-├── whatsapp.py       # kirim teks/tombol, download VN
-├── agent.py          # Groq ekstraksi + tanggal follow-up
-├── prompts.py        # instruksi ID/EN, "jangan mengarang"
-├── transcribe.py     # VN → teks (unclear jika gagal)
-├── store.py          # baca/tulis JSON atomik
-├── scheduler.py      # rekap sore + cek follow-up
-├── requirements.txt  # flask, groq, apscheduler, requests, dotenv
-├── .env.example      # key Meta + Groq
-├── README.md         # cara jalan + rekam demo
-└── data/             # profile.json, notes.json</pre></div>
-
-<h2>5 &middot; Cara jalan &amp; demo</h2>
-<div class="card"><div class="kv">
-<div><code>pip install -r requirements.txt</code></div><div>install Flask, Groq, APScheduler</div>
-<div><code>python app.py</code></div><div>nyala di localhost:5000</div>
-<div><code>ngrok http 5000</code></div><div>salin URL → tempel ke Callback URL Meta + Verify Token</div>
-<div>Kirim WA uji</div><div>teks / voice note → kartu → jawab / Skip → <code>rekap sekarang</code></div>
-<div>Direkam</div><div>VN berantakan → kartu rapi → konfirmasi → rekap per tahap + follow-up besok + tunjukkan notes.json</div>
-</div></div>
-
-<h2>6 &middot; Disederhanakan, risiko, keputusan</h2>
-<table>
-<tr><th>Disederhanakan</th><th>Kenapa</th></tr>
-<tr><td>Kartu <b>teks + tombol</b>, bukan Flows</td><td>Flows butuh layar + endpoint ekstra (±1–2 jam). Kernel tetap terbukti.</td></tr>
-<tr><td><b>JSON lokal</b>, bukan DB server</td><td>1 sales, &lt;100 catatan; file bisa dibuka langsung buat belajar.</td></tr>
-<tr><td><b>Jadwal + perintah demo</b> (<code>rekap sekarang</code>)</td><td>Tidak bisa nunggu sore saat rekaman; fungsi yang sama.</td></tr>
-<tr><td><b>Lokal + README</b>, tanpa deploy</td><td>Submission hanya wajib video + repo.</td></tr>
-</table>
-<div class="card"><b>Risiko nyata:</b> (1) tunnel mati/URL berubah → update Callback URL, tes <code>ping</code>; (2) di luar 24 jam tanpa template APPROVED → gagal kirim; pastikan 4 template ID/EN APPROVED; (3) media ~5 mnt → unduh segera; (4) Groq limit/lambat → balas "coba lagi 1 menit", jangan simpan setengah; (5) VN tidak jelas → minta ulangi, jangan karang kartu; (6) token WA kedaluwarsa → generate baru di Meta Developer.</div>
-<div class="card"><b>Ketidakpastianmu (webhook lokal → WA):</b> laptop tak punya alamat publik → <code>ngrok</code> memberi alamat sementara yang meneruskan ketukan Meta ke <code>localhost:5000</code>. Verifikasi kecil saat build: kirim <code>ping</code>, lihat log <code>app.py</code> + balasan <code>pong</code>. Diam = masalah tunnel/URL, bukan AI.<br><b>Belum diverifikasi</b> (cek awal build): nama model Groq aktif, versi Graph API, format audio VN, rate limit gratis.</div>
-
-<footer>Canonical: devpost/spec.md (status: approved). HTML ini pendamping visual — isi resmi di spec.md. Stack docs: Flask, Groq, APScheduler, ngrok, WhatsApp Cloud API (link di spec.md).</footer>
-</div>
-<script>
-var STEPS=[
-{t:"0 · Onboarding",d:"Chat pertama → tanya nama → bahasa → jam rekap, satu per satu, semua bisa Skip (default id / 17:00). Ubah nanti: 'ubah nama ke X', 'ganti ke bahasa Inggris', 'ubah jam rekap ke 16:00'.",f:"app.py → store.py → data/profile.json",r:"prd.md > 0. Onboarding personalisasi"},
-{t:"1 · Buka chat",d:"Histori ditampilkan WhatsApp. Sapa + rekap terakhir dihitung dari notes.json saat sales menyapa.",f:"app.py → store.py",r:"prd.md > 1. Histori dan rekap"},
-{t:"2 · Lapor via teks/VN",d:"Teks langsung diproses. VN: download via media-id → Groq Whisper → teks. Gagal/tak jelas → minta ulangi, jangan karang.",f:"whatsapp.py → transcribe.py → agent.py",r:"prd.md > 2. Kirim laporan"},
-{t:"3 · Kartu teks",d:"Groq ubah teks jadi 4 field + status Terisi/Belum ada + tanggal follow-up tebakan. Kirim kartu teks + instruksi jawab di chat (bukan Flows).",f:"agent.py + prompts.py → whatsapp.py",r:"prd.md > 3. Kartu laporan teks"},
-{t:"4 · Klarifikasi + Skip",d:"Tanya field kosong satu per satu + tombol Skip (maks 3, judul ≤20). Skip = kosong, lanjut. Selesai → status saved + konfirmasi.",f:"app.py → store.py → data/notes.json",r:"prd.md > 4. Klarifikasi dengan Skip"},
-{t:"5 · Follow-up",d:"Tanggal tebakan tersimpan + tampil di kartu. Dalam 24 jam: bebas; di luar: template ID/EN. Demo: cek follow-up.",f:"scheduler.py → whatsapp.py",r:"prd.md > 5. Pengingat follow-up"},
-{t:"6 · Rekap sore",d:"Di jam rekap (atau 'rekap sekarang'): group per tahap deal + daftar follow-up besok. Otomatis = template ID/EN; demo = bebas. Bahasa ikut profil.",f:"scheduler.py → store.py",r:"prd.md > 6. Rekap harian + 7. Dua bahasa"}];
-var COMPS=[
-["Webhook & Chat Router","Terima GET verifikasi + POST pesan, pilah perintah vs laporan vs jawaban. PRD: 1, 2. ↔ whatsapp.py, agent.py, store.py. File: app.py"],
-["WhatsApp Connector","Kirim teks bebas (24 jam), tombol Skip (maks 3, ≤20 karakter), template ID/EN di luar window. Download VN 2 langkah (~5 mnt). Tanpa logika bisnis. PRD: 2, 3, 5, 6. File: whatsapp.py"],
-["Transkripsi VN","VN → teks via Groq Whisper; kosong/gagal = unclear → minta ulangi. PRD: 2. File: transcribe.py"],
-["Agent Otak","Teks → JSON {institusi, kontak, role, produk, tahap, tanggal_followup}. Aturan: tak disebut = kosong. Balasan ikut bahasa profil. PRD: 3, 5, 7. File: agent.py + prompts.py"],
-["Kartu, Skip, Onboarding","Render kartu teks, antrean tanya + Skip, 3 tanya onboarding + perintah ubah. PRD: 0, 3, 4. File: app.py + store.py"],
-["Penyimpanan Lokal","profile.json + notes.json, tulis atomik. Persists antar sesi. PRD: States/Persists, 1, 6. File: store.py + data/"],
-["Penjadwal + Demo","APScheduler harian + 'rekap sekarang' / 'cek follow-up' memanggil fungsi yang sama. Di luar 24 jam pakai template ID/EN. PRD: 5, 6. File: scheduler.py"]];
-var sWrap=document.getElementById('steps'),box=document.getElementById('stepBox');
-STEPS.forEach(function(s,i){var b=document.createElement('button');b.textContent=s.t;b.onclick=function(){show(i)};b.id='st'+i;sWrap.appendChild(b)});
-function show(i){STEPS.forEach(function(_,j){document.getElementById('st'+j).classList.toggle('on',i===j)});var s=STEPS[i];box.innerHTML='<h3>'+s.t+'</h3><p>'+s.d+'</p><p><code>'+s.f+'</code></p><p class=ref>'+s.r+'</p>';}
-show(0);
-var cWrap=document.getElementById('comps');
-COMPS.forEach(function(c){var d=document.createElement('div');d.className='comp';d.innerHTML='<button>'+c[0]+'</button><div class=body>'+c[1]+'</div>';d.firstChild.onclick=function(){d.classList.toggle('open')};cWrap.appendChild(d)});
-</script>
-</body>
-</html>
+<body><main>
+<header><span>devpost/spec.md · status: draft · Markdown is canonical</span><h1>Weppy public Telegram Worker</h1><p>TypeScript Worker · D1 storage · Telegram webhook · Groq extraction/transcription · Asia/Jakarta Cron</p></header>
+<section class="card"><h2>Request path</h2><div class="grid">
+<div class="node"><b>1. Telegram ingress</b><br>Validate <code>X-Telegram-Bot-Api-Secret-Token</code>; reject groups/non-private chats.</div>
+<div class="node"><b>2. D1 identity and replay check</b><br>Claim update ID; resolve private profile by <code>chat_id</code>.</div>
+<div class="node"><b>3. AI report</b><br>Text or Groq-transcribed voice → strict JSON fields; missing facts stay empty.</div>
+<div class="node"><b>4. Owner-only persistence</b><br>Store notes under composite <code>(owner_id, id)</code>.</div>
+<div class="node"><b>5. Chat actions</b><br>Clarify/Skip, recap, follow-up, detail and CSV use same owner.</div>
+<div class="node"><b>6. Scheduled delivery</b><br>Cron claims daily marker atomically before sending to that owner.</div>
+</div></section>
+<section class="card"><h2>D1 ownership model</h2><pre>profiles(owner_id PRIMARY KEY, profile_json, schedule fields)
+notes(owner_id, id, created_at, note_json, PRIMARY KEY(owner_id, id))
+processed_updates(update_id PRIMARY KEY, created_at)</pre><p>Note lookup checks both owner and ID. No shared records, group chat, or public read endpoint.</p></section>
+<section class="card"><h2>Verification and local operation</h2><pre>npm install
+npx wrangler d1 create weppy-public-bot
+# update the local binding ID in wrangler.jsonc
+npx wrangler d1 execute weppy-public-bot --local --file schema.sql
+npm run dev -- --local
+node scripts/smoke-worker.mjs
+npm run test
+npm run typecheck
+npx wrangler deploy --dry-run</pre><p>Tests cover wrong secret, owner-separated profiles/notes, foreign note callbacks, and concurrent Cron delivery claims. Local health/auth smoke is verified; live Telegram/Groq delivery and public deployment still require owner account setup.</p></section>
+<section class="card"><h2>Constraints</h2><p class="warn">Free-tier availability is best effort, not guaranteed 24/7; quotas/outages may halt processing. The service has no managed backup/SLA. Avoid customer-sensitive data on the free demo.</p></section>
+<p class="foot">Source map derived from <code>src/worker.ts</code>, <code>src/delivery.ts</code>, <code>schema.sql</code>, <code>wrangler.jsonc</code>, and Worker tests. Self-contained; readable offline.</p>
+</main></body></html>

@@ -1,189 +1,99 @@
-# Asisten Sales B2B (AI Voice & Pipeline Assistant)
+# Weppy — Public Telegram Sales Assistant
 
-Asisten AI untuk tim sales B2B: voice note/teks setelah kunjungan
-jadi catatan pipeline rapi, plus pengingat follow-up dan rekap harian.
+Weppy turns a B2B sales visit message or voice note into a structured personal pipeline note, asks for missing facts with **Skip**, and sends private follow-up reminders, recaps, and CSV exports.
 
-> **Catatan Pivot POC (Hackathon):** Transport layer default diarahkan ke **Telegram Bot API**
-> agar pengujian dan demo dapat berjalan 100% gratis, instan (1 menit), tanpa kartu kredit,
-> dan tanpa risiko ban nomor pribadi. Logika AI inti (Groq LLM 4 field, Groq Whisper voice note,
-> klarifikasi Skip, follow-up, rekap) bersifat modular dan siap dicolok ke WhatsApp BSP
-> untuk tahap produksi.
+## Try it
 
----
+- **Live demo bot:** [@recap_sales_bot](https://t.me/recap_sales_bot) — private chats only; send `/start`.
+- **Health check:** <https://weppy-public-bot.bryyzxm.workers.dev/healthz> returns `{"ok":true}`.
+- **Status:** best-effort free tier (Cloudflare Workers + D1 free plan, Telegram, Groq). No SLA, no managed backups.
 
-## Cara Cepat: Jalankan via Telegram (Rekomendasi POC)
+## Stack
 
-### 1. Buat Bot Telegram (1 Menit, Gratis)
-1. Buka aplikasi Telegram di HP / Laptop, cari akun resmi **`@BotFather`**.
-2. Kirim perintah `/newbot`.
-3. Masukkan nama tampilan bot (contoh: `Asisten Sales B2B`).
-4. Masukkan username bot berakhiran `bot` (contoh: `asisten_sales_demo_bot`).
-5. `@BotFather` akan memberikan **HTTP API Token** (contoh: `7123456789:ABCdefGHIjkl...`).
+TypeScript Cloudflare Worker (`src/worker.ts`) + Cloudflare D1 (SQLite) + Telegram Bot API + Groq (chat extraction and audio transcription), with a Worker Cron Trigger scheduled in `Asia/Jakarta` (`*/1 * * * *`). Integration tests use Vitest with `@cloudflare/vitest-plugin` against a local D1 emulator (`npm run test`, 11 tests covering owner isolation, webhook-secret rejection, and atomic Cron claims). The earlier Flask/polling prototype (`app.py`, `telegram_poll.py`) is kept as a local demo only.
 
-### 2. Konfigurasi Lingkungan
-1. Install dependencies:
+## Public deployment (Cloudflare Workers + D1)
+
+The demo bot runs as this Cloudflare Worker (`https://weppy-public-bot.bryyzxm.workers.dev`) with D1 storing profiles, notes, drafts, schedules, and processed update IDs. Every profile/note query is scoped to the sender's private Telegram `chat_id`; group chats are rejected. No shared customer data or allowlist.
+
+This repository contains no credentials or API keys. Deploying a separate instance requires a Cloudflare account, a `@BotFather` bot, and a Groq API key; the steps below create the database, set secrets, and deploy. The free service is best-effort, not an uptime guarantee. Quota exhaustion, provider outages, Telegram or Groq limits may interrupt service. No managed backups or SLA are promised; do not enter sensitive customer data in a demo account.
+
+### Required accounts and local tools
+
+- A Cloudflare account on the Workers Free plan. Do not upgrade or enable billing unless you explicitly choose to.
+- `@BotFather` bot token and Telegram webhook secret (1–256 ASCII letters, digits, `_` or `-`).
+- Groq API key. Groq usage/rate limits are independent of Cloudflare quotas.
+- Node.js/npm for the public Worker. Python/`uv` are only needed for the separate legacy local prototype.
+
+### Local Worker development
+
+1. Run `npm install`.
+2. Create `.dev.vars` from `.dev.vars.example` and enter the three local secrets. `.dev.vars` is gitignored; Wrangler reads this file separately from the legacy Python `.env`.
+3. Create a local D1 database and apply the schema:
+
    ```bash
-   python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
+   npx wrangler d1 create weppy-public-bot
+   # Copy database_id into wrangler.jsonc, then apply schema locally:
+   npx wrangler d1 execute weppy-public-bot --local --file schema.sql
+   npm run dev -- --local
    ```
-2. Salin file lingkungan:
+4. Health is available at `http://localhost:8787/healthz`; run `node scripts/smoke-worker.mjs` to verify health and webhook-secret rejection. A reachable HTTPS tunnel is needed to receive real Telegram webhooks locally.
+
+
+### Public deploy (owner-authenticated)
+
+1. Authenticate interactively: `npx wrangler login`.
+2. Create remote D1: `npx wrangler d1 create weppy-public-bot`; put the returned database ID in `wrangler.jsonc`.
+3. Apply schema: `npx wrangler d1 execute weppy-public-bot --remote --file schema.sql`.
+4. Set secrets via Wrangler prompts (never put real values in git, chat, or logs):
+
    ```bash
-   cp .env.example .env
-   ```
-3. Buka `.env` dan isi:
-   ```env
-   GROQ_API_KEY=gsk_xxxxxxx             # API key gratis dari console.groq.com
-   CHAT_TRANSPORT=telegram
-   TELEGRAM_BOT_TOKEN=7123456789:ABC... # Token dari @BotFather
+   npx wrangler secret put TELEGRAM_BOT_TOKEN
+   npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
+   npx wrangler secret put GROQ_API_KEY
    ```
 
-### 3. Jalankan Bot (Dua Opsi)
+5. Deploy: `npx wrangler deploy`.
+6. Configure Telegram `setWebhook` for `<WORKER_URL>/telegram/webhook` with the same webhook `secret_token`. Verify with Telegram `getWebhookInfo` and `npx wrangler tail`; then share the BotFather username.
+7. Cron `*/1 * * * *` runs in UTC and sends messages at per-user Asia/Jakarta schedules. The service stores each user's daily send marker before calling Telegram to prevent duplicate retries. A failed delivery can therefore miss that day's scheduled message; manual `rekap sekarang` / `cek follow-up` remains available.
 
-#### Opsi A: Mode Polling (Paling Mudah, Tanpa ngrok)
-Jalankan langsung script polling:
+### User activity statistics
+
+An owner-only JSON endpoint reports distinct Telegram private-chat users, without exposing chat IDs or profile data. Configure a long random bearer token as `ANALYTICS_ADMIN_TOKEN` with `npx wrangler secret put ANALYTICS_ADMIN_TOKEN` (enter the value at Wrangler's prompt; do not put tokens in shell history), then deploy. Each `wrangler secret put` immediately deploys a Worker version, so apply the updated D1 schema first:
+
 ```bash
-./.venv/bin/python telegram_poll.py
+npx wrangler d1 execute weppy-public-bot --remote --file schema.sql
+npx wrangler secret put ANALYTICS_ADMIN_TOKEN
+npx wrangler deploy
 ```
-Buka bot Telegram yang kamu buat, kirim `ping` atau voice note — bot langsung membalas seketika!
 
-#### Opsi B: Mode Webhook (Server Flask)
-1. Jalankan server Flask:
-   ```bash
-   ./.venv/bin/python app.py
-   ```
-2. Di terminal lain, buka tunnel:
-   ```bash
-   ngrok http 5000
-   ```
-3. Pasang webhook Telegram ke URL ngrok:
-    ```bash
-   curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" -d "url=https://xxx.ngrok-free.app/telegram/webhook"
-    ```
+Token admin yang dibuat untuk deployment ini tersimpan lokal di `.analytics-admin-token` (jangan commit atau bagikan file itu). Dari root repository, jalankan:
 
----
-
-## Alur Demo & Rekaman
-
-1. **Onboarding:** Kirim pesan pertama / `halo` → bot menyapa dan menanyakan nama, bahasa, jam rekap.
-2. **Voice Note Laporan:** Kirim voice note dari HP menceritakan hasil kunjungan (contoh: *"Baru dari PT Maju Jaya ketemu Bu Sari purchasing, bahas kopi 100kg, deal, follow up besok"*).
-3. **Kartu Ekstraksi & Klarifikasi Skip:** Bot membalas kartu teks 4 field rapi. Field yang belum lengkap ditanyakan satu per satu dengan tombol inline **Skip**.
-4. **Pengingat Follow-up:** Ketik `cek follow-up` → bot menampilkan daftar yang jatuh tempo hari ini.
-5. **Rekap Harian:** Ketik `rekap sekarang` → bot menampilkan ringkasan per tahap deal lengkap dengan tombol inline untuk melihat detail tiap catatan.
-6. **Ekspor CSV:** Ketik `ekspor csv` (atau ketuk 📥 Ekspor CSV) → bot mengirim file `catatan-pipeline.csv`, buka di Excel/Sheets.
-7. **Cek Data:** Tunjukkan file `data/notes.json` sebagai bukti persistensi data lokal.
-
----
-
-## Verifikasi Unit Test Offline (Stub Mode)
-
-Untuk memastikan seluruh sistem berjalan mulus tanpa koneksi internet/token asli:
 ```bash
-./.venv/bin/python test_telegram.py
+curl -sS -H "Authorization: Bearer $(cat .analytics-admin-token)" "https://weppy-public-bot.bryyzxm.workers.dev/admin/stats"
 ```
-Script ini mensimulasikan payload webhook Telegram lengkap (ping, onboarding, teks laporan, audio voice note, callback button Skip, hingga perintah rekap).
 
----
+Jika token dibuat ulang, simpan token barunya di file tersebut sebelum memakai perintah di atas. Jangan mengetikkan token langsung ke command line atau membagikan output yang memuatnya.
 
-## Transport Layer Alternatif (WhatsApp)
+Response shape: `{"active_users":<n>,"total_users":<n>,"active_window_minutes":5}`. Active means a private-chat user sent a message or callback during the last five minutes; Telegram does not provide an online/presence signal, so this is recent activity rather than a live-online count. Total counts distinct users with a stored profile or recorded activity. Keep the token private. Omitting `ANALYTICS_ADMIN_TOKEN` disables the endpoint, and unauthorized requests return 403.
 
-1. `python3.12 -m venv .venv && ./.venv/bin/pip install -r requirements.txt`
-2. Salin `.env.example` ke `.env`, isi token.
-3. `./.venv/bin/python app.py` (jalan di `http://localhost:5000`,
-   penjadwal rekap + follow-up ikut nyala di proses yang sama)
-4. Di terminal lain: `ngrok http 5000`, tempel URL ke dashboard
-   Meta Developer → WhatsApp → Configuration:
-   Callback URL `https://xxx.ngrok-free.app/webhook`,
-   Verify Token sama dengan `.env`, subscribe field `messages`.
-5. Kirim `ping` dari WA uji → harus dibalas `pong`. Kalau log diam,
-   masalahnya di tunnel/Callback URL, bukan di AI.
+Never put a token directly into command history. If a bot or API token was exposed, revoke/rotate it at its provider; rotate `ANALYTICS_ADMIN_TOKEN` with `npx wrangler secret put ANALYTICS_ADMIN_TOKEN`.
 
-## Alur demo (untuk rekaman)
+### Free-plan limits
 
-1. Kirim voice note berantakan → kartu teks rapi muncul
-   (field tak disebut = `Belum ada`, bukan karangan).
-2. Jawab pertanyaan klarifikasi / kirim `Skip` → konfirmasi tersimpan.
-3. Ketik `cek follow-up` → pengingat yang jatuh tempo.
-4. Ketik `rekap sekarang` → rekap per tahap deal + follow-up besok.
-5. Tunjukkan `data/notes.json` terbuka sebagai bukti tersimpan.
+Current Cloudflare documentation lists Workers Free at 100,000 requests/day and 10 ms CPU per invocation; D1 Free at 5 million rows read/day, 100,000 rows written/day, and 5 GB total storage. Reaching limits makes requests/queries fail until reset or storage is freed. Provider signup checks and plan terms can change; verify current Cloudflare terms. Free-plan access does not imply a 24/7 SLA or managed backup. Telegram and Groq quotas also apply. Voice files over 20 MB are not transcribed.
 
-Perintah lain: `halo` (sapaan + rekap terakhir), `ubah nama ke X`,
-`ganti ke bahasa Inggris`, `ubah jam rekap ke 17:00`,
-`laporan baru ...` (mulai laporan baru saat klarifikasi berjalan).
+## Local Python demo (legacy prototype)
 
-## Jalur Twilio sandbox (alternatif tanpa verifikasi bisnis)
+The earlier Flask/polling bot remains a local demo only. It uses local JSON and does not run the public D1 service.
 
-1. Daftar trial di twilio.com/try-twilio (gratis, tanpa kartu kredit).
-2. Buka Twilio Console lama → Messaging → Try WhatsApp (sandbox),
-   catat kode join, mis. `join-ab12cd`.
-3. Dari HP kirim `join-ab12cd` ke **+14155238886** (nomor sandbox).
-4. Di pengaturan sandbox isi webhook: `https://xxx/event... (.trycloudflare.com)/twilio/inbound`
-   (method POST). Tunnel yang sama seperti jalur Meta.
-5. `.env`: `WHATSAPP_BACKEND=twilio` + `TWILIO_ACCOUNT_SID`,
-   `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`.
-6. Restart `python app.py`, kirim `ping` dari HP → dibalas `pong`.
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python test_telegram.py
+python telegram_poll.py
+```
 
-Catatan: sesi join kedaluwarsa tiap 3 hari (join ulang); tombol
-Skip tampil sebagai teks biasa (bukan tombol) di jalur ini; nomor
-sandbox bersama kadang dibatasi ke negara tertentu — jika gagal,
-hubungi Twilio Support atau kembali ke simulasi.
-
-## Jalur 360dialog sandbox (tanpa daftar akun)
-
-1. Dari HP kirim `START` (huruf besar semua) via WhatsApp ke **+551146733492**.
-   Balasannya berisi API key sandbox.
-2. `.env`: `WHATSAPP_BACKEND=d360` + `D360_API_KEY=<key dari WA>`.
-3. Set webhook sandbox ke tunnel: (ganti URL + key)
-   `curl -X POST https://waba-sandbox.360dialog.io/v1/configs/webhook -H 'Content-Type: application/json' -H 'D360-API-KEY: KEY_KAMU' -d '{"url": "https://xxx/event... (.trycloudflare.com)/webhook"}'`
-4. Restart `python app.py`, kirim `ping` dari HP ke +551146733492.
-
-Catatan: gratis 200 pesan ke nomor sendiri (cukup untuk POC);
-**voice note tidak didukung** (sandbox tak sediakan unduh media) —
-agent menjawab terus-terang dan meminta ketik teks.
-
-## Jalur Fonnte (nomor WA sendiri)
-
-1. Daftar di fonnte.com, tambah device (nomor WA yang jadi bot),
-   connect via QR, salin token.
-2. `.env`: `WHATSAPP_BACKEND=fonnte` + `FONNTE_TOKEN=<token>`.
-3. Di pengaturan device Fonnte isi webhook:
-   `https://xxx/event...(.trycloudflare.com)/fonnte/inbound`
-   (method POST). Tunnel yang sama seperti jalur Meta.
-4. Restart `python app.py`, kirim `ping` dari HP ke nomor device.
-
-Catatan: nomor milik sendiri jadi bebas blokir negara; tombol Skip
-tampil sebagai teks biasa (bukan tombol) di jalur ini; voice note
-diunduh dari `url` webhook lalu ditranskripsi Groq seperti biasa.
-
-## Jalur Wavio (Meta resmi via wavio.web.id)
-
-1. Daftar di dashboard Wavio, hubungkan nomor WhatsApp via
-   Embedded Signup Meta, lalu buat API key di menu **API Keys**
-   dan salin `numberId` dari menu **Numbers**.
-2. `.env`: `WHATSAPP_BACKEND=wavio` + `WAVIO_API_KEY=wavio_xxxx`
-   + `WAVIO_NUMBER_ID=<id nomor>`.
-3. Daftarkan webhook (event `messages:received`) ke tunnel:
-   `https://xxx/event...(.trycloudflare.com)/wavio/inbound`
-   (method POST). Tunnel yang sama seperti jalur Meta.
-4. Restart `python app.py`, kirim `ping` dari HP ke nomor yang
-   dihubungkan → dibalas `pong`.
-
-Catatan: API resmi Meta (coexistence — CS tetap bisa balas via HP/WA Web
-tanpa logout, tanpa risiko banned); tombol Skip dikirim sebagai tombol
-interaktif asli, fallback teks biasa jika gagal; template di luar 24 jam
-dikirim via API template Wavio; voice note diunduh via `GET /media/{id}`
-lalu ditranskripsi Groq seperti biasa.
-
-## Catatan operasional (jalur Meta)
-
-- Token WhatsApp mode uji kedaluwarsa cepat (error 401 saat kirim):
-  generate ulang di Meta Developer → update `.env` → restart `app.py`.
-- URL ngrok gratis berubah tiap restart → update Callback URL tiap mulai ulang.
-- Media voice note kedaluwarsa ~5 menit: selalu diunduh segera di webhook.
-- Pesan otomatis di luar 24 jam butuh message template berstatus
-  `APPROVED` (kategori Utility), satu `{{1}}` berisi ringkasan:
-  `followup_reminder_id` / `daily_recap_id` (`id`),
-  `followup_reminder_en` / `daily_recap_en` (`en_US`).
-  Tanpa template, pengiriman otomatis gagal tercatat + diberi tahu
-  saat sales chat berikutnya; demo pakai `rekap sekarang` /
-  `cek follow-up` yang selalu dalam window 24 jam.
-- Rekap otomatis dikirim tiap hari di jam `recap_time` (default 17:00,
-  bisa diubah via chat); cek follow-up tiap jam 08:00.
+Configure `GROQ_API_KEY`, `CHAT_TRANSPORT=telegram`, and `TELEGRAM_BOT_TOKEN` in `.env`. This Python regression verifies only the retained local prototype, not the deployed Worker or D1 tenant isolation.

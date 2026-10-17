@@ -23,6 +23,16 @@ data/processed_updates.json
 # Python
 .venv/
 __pycache__/
+.dev.vars
+.analytics-admin-token
+.wrangler/
+node_modules/
+dist/
+/data/users/
 
-# JCE context index runtime state
 .opencode-jce/context/
+
+# Course skill pack and sync tooling (not part of the project)
+.agents/
+skills-lock.json
+weppy-project-sync/

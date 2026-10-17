@@ -25,16 +25,18 @@ from app import app
 def run_tests():
     print("--- Running Telegram Transport Verification ---")
     store.ensure_data()
-    store.save_profile(dict(store.DEFAULT_PROFILE))
-    store.save_notes([])
+    chat_id = "99887766"
+    store.save_user_profile(chat_id, dict(store.DEFAULT_USER_PROFILE))
+    store.save_user_notes(chat_id, [])
     try:
         store.SEEN_PATH.unlink()
     except OSError:
         pass
     telegram.clear_outbox()
-
     c = app.test_client()
-    chat_id = "99887766"
+
+    def prof_user():
+        return {"users": {chat_id: store.load_user_profile(chat_id)}}, store.load_user_profile(chat_id)
 
     def post_tg(payload):
         telegram.clear_outbox()
@@ -52,12 +54,14 @@ def run_tests():
     print("[PASS] 1. Ping -> Pong verified")
 
     # 2. Test Onboarding flow via Telegram
-    # 2a. Sapaan pertama
+    # 2a. Sapaan pertama — sekarang 2 pesan: welcome + tanya nama
     out = post_tg({
         "update_id": 2,
         "message": {"chat": {"id": chat_id}, "text": "halo"}
     })
-    assert "nama panggilan" in out[0]["body"].lower()
+    assert len(out) == 2, f"Expected welcome + ask_name (2 msgs), got {len(out)}"
+    assert "asisten sales" in out[0]["body"].lower() or "sales assistant" in out[0]["body"].lower()
+    assert "nama panggilan" in out[1]["body"].lower()
 
     # 2b. Jawab nama
     out = post_tg({
@@ -84,9 +88,9 @@ def run_tests():
         "message": {"chat": {"id": chat_id}, "text": "17:00"}
     })
     assert "siap, andi" in out[0]["body"].lower()
-    prof = store.load_profile()
-    assert prof["nickname"] == "Andi"
-    assert prof["onboarding_stage"] == "done"
+    g, up = prof_user()
+    assert up["nickname"] == "Andi"
+    assert up["onboarding_stage"] == "done"
     print("[PASS] 2. Onboarding (name, language, recap time) verified")
 
     # 3. Test Text Report Extraction & Clarification with Skip Button
@@ -115,7 +119,7 @@ def run_tests():
         }
     })
     # Clarify next field or confirm saved
-    notes = store.load_notes()
+    notes = store.load_user_notes(chat_id)
     assert len(notes) == 1
     # Skip the remaining fields
     while notes[0]["pending_clarify"]:
@@ -128,7 +132,7 @@ def run_tests():
                 "data": "skip",
             }
         })
-        notes = store.load_notes()
+        notes = store.load_user_notes(chat_id)
     assert notes[0]["status"] == "saved"
     print("[PASS] 4. Inline Skip callback button & draft completion verified")
 
@@ -146,7 +150,7 @@ def run_tests():
     os.environ["TRANSCRIBE_TEXT"] = ""
     assert len(out) >= 1
     assert "cv berkah" in out[0]["body"].lower()
-    notes = store.load_notes()
+    notes = store.load_user_notes(chat_id)
     assert len(notes) == 2
     print("[PASS] 5. Voice note telegram .oga download & Whisper transcription pipeline verified")
 

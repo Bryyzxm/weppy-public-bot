@@ -1,0 +1,431 @@
+{
+  "started_at": "2026-10-15T11:54:21.860228+00:00",
+  "endpoint": "https://api.kyio.web.id/api/v2/ai/transcribe",
+  "discovery": "User screenshot identifies GET/POST AI Speech-to-Text Transcribe (UniScribe). Live GET without input returns 400 requiring url or audio/video upload; POST multipart file succeeds without key.",
+  "request_contract": {
+    "upload": "POST multipart/form-data field file; OGG Opus; no auth/language/model parameter",
+    "url": "GET query url referencing only the provider-issued synthetic fixture object, not Telegram or private/internal addresses",
+    "response_text": "result.text"
+  },
+  "fixtures": [
+    {
+      "file": "voice-id.ogg",
+      "reference": "Saya mengunjungi perusahaan Contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal dua puluh Oktober dua ribu dua puluh enam.",
+      "expected_terms": [
+        "contoh nusantara",
+        "sari",
+        "manajer pembelian",
+        "mesin kopi",
+        "negosiasi",
+        "belum deal"
+      ],
+      "language": "id",
+      "source": "macOS say Damayanti id_ID, 145 words/minute"
+    },
+    {
+      "file": "voice-en.ogg",
+      "reference": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October twentieth, twenty twenty six.",
+      "expected_terms": [
+        "example north",
+        "alice",
+        "procurement manager",
+        "coffee machines",
+        "negotiating",
+        "no contract"
+      ],
+      "language": "en",
+      "source": "macOS say Samantha en_US, 145 words/minute"
+    },
+    {
+      "file": "voice-id-noisy.ogg",
+      "reference": "Saya mengunjungi perusahaan Contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal dua puluh Oktober dua ribu dua puluh enam.",
+      "expected_terms": [
+        "contoh nusantara",
+        "sari",
+        "manajer pembelian",
+        "mesin kopi",
+        "negosiasi",
+        "belum deal"
+      ],
+      "language": "id",
+      "source": "voice-id.ogg mixed with pink noise at amplitude 0.025; not a calibrated SNR test"
+    },
+    {
+      "file": "silence.ogg",
+      "reference": "",
+      "expected_terms": [],
+      "language": "none",
+      "source": "3 seconds generated digital silence"
+    }
+  ],
+  "prior_groq_baseline": "audio-results.json",
+  "limitations": [
+    "Tiny synthetic corpus, no real-user/customer recordings, accent diversity, max-size stress or concurrency test.",
+    "Fresh Groq baseline is paired by fixture, but endpoints and timestamps differ.",
+    "No retry or WAF bypass; request rejection 401/403/429 stops evaluation.",
+    "Signed audio URLs redacted; expiration is not a retention/deletion guarantee.",
+    "No TTS contract tested and no production Worker/Telegram deployment changed."
+  ],
+  "records": [
+    {
+      "observed_at": "2026-10-15T11:52:43.222400+00:00",
+      "fixture": "voice-id.ogg",
+      "sha256": "895030106e63c0bc809f983da1c7d3fac7c358547260eee934462ff953292abe",
+      "request": {
+        "method": "POST",
+        "endpoint": "https://api.kyio.web.id/api/v2/ai/transcribe",
+        "multipart_field": "file",
+        "content_type": "audio/ogg",
+        "authentication": "none"
+      },
+      "http_status": 200,
+      "elapsed_ms": 35487.98,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "963",
+        "x-ratelimit-reset": "60"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "id": "7516465965044375552",
+          "text": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+          "duration": 16.103,
+          "language": "id",
+          "segments": [
+            {
+              "id": "0",
+              "start": 0,
+              "end": 16.096,
+              "text": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+              "speaker": null
+            }
+          ],
+          "audioUrl": {
+            "redacted_signed_url": true,
+            "scheme": "https",
+            "host": "shiyin.bf922d70183b00570ae0ab7e483fcf84.r2.cloudflarestorage.com",
+            "path_suffix": ".ogg",
+            "expires_seconds": "86400",
+            "sha256": "35fabe71ce16852a1d56e5127c611c1d941eb08a85fcaacedd195a190380bbe7",
+            "note": "Signed URL expiry is not proof of audio deletion or retention period."
+          },
+          "fileType": "ogg",
+          "fileSize": 49933
+        },
+        "timestamp": "2026-10-15T11:52:43.320Z",
+        "response_time": "34235ms"
+      },
+      "provider": "kyio_uniscribe",
+      "input_mode": "POST multipart file",
+      "transcript": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "score": {
+        "literal_word_error_rate": 0.2593,
+        "key_terms": {
+          "contoh nusantara": true,
+          "sari": true,
+          "manajer pembelian": true,
+          "mesin kopi": true,
+          "negosiasi": true,
+          "belum deal": true
+        },
+        "date_preserved": true,
+        "hallucination_on_silence": null
+      }
+    },
+    {
+      "provider": "groq_fresh",
+      "fixture": "voice-id.ogg",
+      "started_at": "2026-10-15T11:54:21.860503+00:00",
+      "sha256": "895030106e63c0bc809f983da1c7d3fac7c358547260eee934462ff953292abe",
+      "input_mode": "POST multipart file",
+      "http_status": 200,
+      "elapsed_ms": 549.2,
+      "headers": {
+        "Content-Type": "application/json",
+        "x-ratelimit-limit-requests": "2000",
+        "x-ratelimit-remaining-requests": "1999",
+        "x-ratelimit-reset-requests": "43.2s"
+      },
+      "response": {
+        "text": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+        "x_groq": {
+          "id": "req_01m4zpkmm4ec79f4v36p21b1hy"
+        }
+      },
+      "transcript": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "score": {
+        "literal_word_error_rate": 0.2593,
+        "key_terms": {
+          "contoh nusantara": true,
+          "sari": true,
+          "manajer pembelian": true,
+          "mesin kopi": true,
+          "negosiasi": true,
+          "belum deal": true
+        },
+        "date_preserved": true,
+        "hallucination_on_silence": null
+      }
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-en.ogg",
+      "started_at": "2026-10-15T11:54:22.412333+00:00",
+      "sha256": "013776e3890383d8abf646f22a5056f215256ca0c5e1506472570883e61be186",
+      "input_mode": "POST multipart file",
+      "http_status": 200,
+      "elapsed_ms": 25613.31,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "962",
+        "x-ratelimit-reset": "60"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "id": "7516466516855398400",
+          "text": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+          "duration": 14.5485,
+          "language": "id",
+          "segments": [
+            {
+              "id": "0",
+              "start": 0,
+              "end": 14.542,
+              "text": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+              "speaker": null
+            }
+          ],
+          "audioUrl": {
+            "redacted_signed_url": true,
+            "scheme": "https",
+            "host": "shiyin.bf922d70183b00570ae0ab7e483fcf84.r2.cloudflarestorage.com",
+            "path_suffix": ".ogg",
+            "expires_seconds": "86400",
+            "sha256": "5e0a37a9b1476dae75be4399181f04f7b25383e31d99d99f674e0d4be79222d3",
+            "note": "Signed URL expiry is not proof of audio deletion or retention period."
+          },
+          "fileType": "ogg",
+          "fileSize": 44647
+        },
+        "timestamp": "2026-10-15T11:54:48.160Z",
+        "response_time": "24690ms"
+      },
+      "transcript": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+      "score": {
+        "literal_word_error_rate": 0.1212,
+        "key_terms": {
+          "example north": true,
+          "alice": true,
+          "procurement manager": true,
+          "coffee machines": true,
+          "negotiating": true,
+          "no contract": true
+        },
+        "date_preserved": true,
+        "hallucination_on_silence": null
+      }
+    },
+    {
+      "provider": "groq_fresh",
+      "fixture": "voice-en.ogg",
+      "started_at": "2026-10-15T11:54:48.030285+00:00",
+      "sha256": "013776e3890383d8abf646f22a5056f215256ca0c5e1506472570883e61be186",
+      "input_mode": "POST multipart file",
+      "http_status": 200,
+      "elapsed_ms": 474.56,
+      "headers": {
+        "Content-Type": "application/json",
+        "x-ratelimit-limit-requests": "2000",
+        "x-ratelimit-remaining-requests": "1998",
+        "x-ratelimit-reset-requests": "1m26.4s"
+      },
+      "response": {
+        "text": " I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+        "x_groq": {
+          "id": "req_01m4zpme4kehv9485ctsjs6bw2"
+        }
+      },
+      "transcript": " I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+      "score": {
+        "literal_word_error_rate": 0.1212,
+        "key_terms": {
+          "example north": true,
+          "alice": true,
+          "procurement manager": true,
+          "coffee machines": true,
+          "negotiating": true,
+          "no contract": true
+        },
+        "date_preserved": true,
+        "hallucination_on_silence": null
+      }
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-id-noisy.ogg",
+      "started_at": "2026-10-15T11:54:48.507129+00:00",
+      "sha256": "5b7e20c6a72eeba2c5a572586bcba1e236c44157f295ad70590f8d5ffe07cf61",
+      "input_mode": "POST multipart file",
+      "http_status": 200,
+      "elapsed_ms": 16897.77,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "961",
+        "x-ratelimit-reset": "60"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "id": "7516466652293689344",
+          "text": "Saya mengunjungi perusahaan contoh Nusantara, bertemu Sari, manajer pembelian, menawarkan mesin kopi, masih negosiasi, belum deal, hubungi lagi tanggal 20 Oktober 2026.",
+          "duration": 16.103,
+          "language": "id",
+          "segments": [
+            {
+              "id": "0",
+              "start": 0,
+              "end": 16.096,
+              "text": "Saya mengunjungi perusahaan contoh Nusantara, bertemu Sari, manajer pembelian, menawarkan mesin kopi, masih negosiasi, belum deal, hubungi lagi tanggal 20 Oktober 2026.",
+              "speaker": null
+            }
+          ],
+          "audioUrl": {
+            "redacted_signed_url": true,
+            "scheme": "https",
+            "host": "shiyin.bf922d70183b00570ae0ab7e483fcf84.r2.cloudflarestorage.com",
+            "path_suffix": ".ogg",
+            "expires_seconds": "86400",
+            "sha256": "b7ab86c6cca849bd15973ef0742ebcea33755149c9b90e63d576822b4e2cd979",
+            "note": "Signed URL expiry is not proof of audio deletion or retention period."
+          },
+          "fileType": "ogg",
+          "fileSize": 48927
+        },
+        "timestamp": "2026-10-15T11:55:05.533Z",
+        "response_time": "15999ms"
+      },
+      "transcript": "Saya mengunjungi perusahaan contoh Nusantara, bertemu Sari, manajer pembelian, menawarkan mesin kopi, masih negosiasi, belum deal, hubungi lagi tanggal 20 Oktober 2026.",
+      "score": {
+        "literal_word_error_rate": 0.2593,
+        "key_terms": {
+          "contoh nusantara": true,
+          "sari": true,
+          "manajer pembelian": true,
+          "mesin kopi": true,
+          "negosiasi": true,
+          "belum deal": true
+        },
+        "date_preserved": true,
+        "hallucination_on_silence": null
+      }
+    },
+    {
+      "provider": "groq_fresh",
+      "fixture": "voice-id-noisy.ogg",
+      "started_at": "2026-10-15T11:55:05.408259+00:00",
+      "sha256": "5b7e20c6a72eeba2c5a572586bcba1e236c44157f295ad70590f8d5ffe07cf61",
+      "input_mode": "POST multipart file",
+      "http_status": 200,
+      "elapsed_ms": 591.18,
+      "headers": {
+        "Content-Type": "application/json",
+        "x-ratelimit-limit-requests": "2000",
+        "x-ratelimit-remaining-requests": "1997",
+        "x-ratelimit-reset-requests": "2m9.6s"
+      },
+      "response": {
+        "text": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+        "x_groq": {
+          "id": "req_01m4zpmz3reagt8wwysamg074k"
+        }
+      },
+      "transcript": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "score": {
+        "literal_word_error_rate": 0.2593,
+        "key_terms": {
+          "contoh nusantara": true,
+          "sari": true,
+          "manajer pembelian": true,
+          "mesin kopi": true,
+          "negosiasi": true,
+          "belum deal": true
+        },
+        "date_preserved": true,
+        "hallucination_on_silence": null
+      }
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "silence.ogg",
+      "started_at": "2026-10-15T11:55:13.510339+00:00",
+      "sha256": "e52cd34a96181fc896b832a67dbf1e9b2fa781c668c789ad0711932e217f9546",
+      "input_mode": "POST multipart file",
+      "http_status": 429,
+      "elapsed_ms": 4153.43,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "960",
+        "x-ratelimit-reset": "60"
+      },
+      "response": {
+        "error": {
+          "code": "ERR_BAD_REQUEST",
+          "message": "Request failed with status code 429"
+        }
+      },
+      "transcript": "",
+      "score": null
+    }
+  ],
+  "stop_reason": "Provider rejected access or quota; stopped without retry",
+  "summary": {
+    "kyio_uniscribe": {
+      "attempts_total": 4,
+      "base_attempts": 4,
+      "base_http_200": 3,
+      "speech_median_ms": 25613.31,
+      "speech_key_terms": 18,
+      "speech_expected_terms": 18,
+      "speech_dates_preserved": 3,
+      "silence": [
+        {
+          "status": 429,
+          "transcript": "",
+          "hallucination": null,
+          "scored": false
+        }
+      ]
+    },
+    "groq_fresh": {
+      "attempts_total": 3,
+      "base_attempts": 3,
+      "base_http_200": 3,
+      "speech_median_ms": 549.2,
+      "speech_key_terms": 18,
+      "speech_expected_terms": 18,
+      "speech_dates_preserved": 3,
+      "silence": []
+    }
+  },
+  "finished_at": "2026-10-15T11:56:16.242442+00:00",
+  "remaining_checks": "URL mode, repeated upload, fresh Groq silence, and live Worker upload not executed after Kyio HTTP 429. Prior Groq silence result is historical only.",
+  "stopped_at": "2026-10-15T11:55:13.510339+00:00",
+  "finished_at_note": "Offline finalization timestamp; live requests stopped at the final recorded rejected request.",
+  "metadata_findings": {
+    "reported_language_for_english": [
+      "id"
+    ],
+    "signed_url_expiration_is_not_retention": true,
+    "response_text_field": "result.text"
+  }
+}

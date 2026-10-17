@@ -65,6 +65,18 @@ def _recipient(profile: dict) -> str:
     return profile.get("last_sender", "")
 
 
+def _is_telegram() -> bool:
+    return transport_module() == telegram
+
+
+def _persist_recap_picklist(sender: str, profile: dict) -> None:
+    profile["recap_picklist"] = list(profile.get("recap_picklist") or [])
+    if _is_telegram():
+        store.save_user_profile(sender, profile)
+    else:
+        store.save_profile(profile)
+
+
 # --- Message builders (pure: notes + lang + date -> text) ---
 
 
@@ -191,14 +203,18 @@ def _send_window_aware(profile: dict, sender: str, lang: str, kind: str, body: s
         notices = profile.get("pending_notices") or []
         notices.append(body)
         profile["pending_notices"] = notices
-        store.save_profile(profile)
+        if _is_telegram():
+            store.save_user_profile(sender, profile)
+        else:
+            store.save_profile(profile)
         return False
 
 
 def send_recap_to(profile: dict, sender: str, ref=None) -> bool:
     ref = ref or _today()
     lang = profile.get("language", "id")
-    body = build_recap_text(store.load_notes(), lang, ref)
+    notes = store.load_user_notes(sender) if _is_telegram() else store.load_notes()
+    body = build_recap_text(notes, lang, ref)
     if not _send_window_aware(profile, sender, lang, "recap", body):
         return False
     trans = transport_module()
@@ -210,7 +226,8 @@ def send_recap_to(profile: dict, sender: str, ref=None) -> bool:
 def send_followups_to(profile: dict, sender: str, ref=None) -> bool:
     ref = ref or _today()
     lang = profile.get("language", "id")
-    body = build_followup_text(store.load_notes(), lang, ref)
+    notes = store.load_user_notes(sender) if _is_telegram() else store.load_notes()
+    body = build_followup_text(notes, lang, ref)
     return _send_window_aware(profile, sender, lang, "followup", body)
 
 
@@ -237,12 +254,15 @@ def send_recap_details(profile: dict, sender: str, lang: str) -> bool:
     even where buttons don't render. Best-effort: if the channel rejects
     interactive messages, the numbered text still goes out.
     """
-    notes = store.load_notes()
+    notes = store.load_user_notes(sender) if _is_telegram() else store.load_notes()
     if not notes:
         return True
     pick = [(n.get("id", ""), _display_name(n, lang)) for n in notes]
     profile["recap_picklist"] = [nid for nid, _ in pick]
-    store.save_profile(profile)
+    if _is_telegram():
+        _persist_recap_picklist(sender, profile)
+    else:
+        store.save_profile(profile)
     chunks = [pick[i:i + 3] for i in range(0, len(pick), 3)]
     base = 0
     for ci, chunk in enumerate(chunks):
@@ -262,8 +282,9 @@ def send_recap_details(profile: dict, sender: str, lang: str) -> bool:
     return True
 
 
-def find_note(note_id: str) -> dict | None:
-    return next((n for n in store.load_notes() if n.get("id") == note_id), None)
+def find_note(note_id: str, owner_id: str | None = None) -> dict | None:
+    notes = store.load_user_notes(owner_id) if owner_id is not None else store.load_notes()
+    return next((n for n in notes if n.get("id") == note_id), None)
 
 
 def flush_notices(sender: str, profile: dict) -> None:
@@ -271,43 +292,42 @@ def flush_notices(sender: str, profile: dict) -> None:
     if not notices:
         return
     lang = profile.get("language", "id")
-    head = (
-        "Failed to deliver while you were away:"
-        if lang == "en"
-        else "Gagal terkirim saat kamu offline:"
-    )
+    head = "Failed to deliver while you were away:" if lang == "en" else "Gagal terkirim saat kamu offline:"
     transport_module().send_text(sender, head + "\n" + "\n---\n".join(notices))
     profile["pending_notices"] = []
-    store.save_profile(profile)
-
-
-# --- Background jobs (APScheduler calls run_daily_jobs every minute) ---
+    if _is_telegram():
+        store.save_user_profile(sender, profile)
+    else:
+        store.save_profile(profile)
 
 
 def run_daily_jobs(now=None) -> None:
+    """Legacy local scheduler entry point; Worker deployments use Cron."""
     now = now or _dt.datetime.now()
+    if _is_telegram():
+        return
     profile = store.load_profile()
     if profile.get("onboarding_stage") != "done":
         return
-    to = _recipient(profile)
-    if not to:
+    sender = _recipient(profile)
+    if not sender:
         return
     hm = now.strftime("%H:%M")
     today_s = now.date().isoformat()
     if hm == profile.get("recap_time", "17:00") and profile.get("last_recap_date") != today_s:
-        if send_recap_to(profile, to, now.date()):
-            profile = store.load_profile()
+        if send_recap_to(profile, sender, now.date()):
             profile["last_recap_date"] = today_s
             store.save_profile(profile)
     if hm == FOLLOWUP_CHECK_TIME and profile.get("last_followup_date") != today_s:
-        if send_followups_to(profile, to, now.date()):
-            profile = store.load_profile()
+        if send_followups_to(profile, sender, now.date()):
             profile["last_followup_date"] = today_s
             store.save_profile(profile)
 
 
 def start():
-    """Start the minute-tick scheduler. Idempotent; only called from __main__."""
+    """Start the background scheduler for local WhatsApp mode only."""
+    if _is_telegram():
+        return None
     from apscheduler.schedulers.background import BackgroundScheduler
 
     global _sched

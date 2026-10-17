@@ -1,0 +1,6 @@
+# Local Worker secrets. Copy to .dev.vars; never commit actual values.
+TELEGRAM_BOT_TOKEN=replace-with-botfather-token
+TELEGRAM_WEBHOOK_SECRET=replace-with-telegram-webhook-secret
+GROQ_API_KEY=replace-with-groq-api-key
+# Optional bearer token for the private /admin/stats endpoint.
+ANALYTICS_ADMIN_TOKEN=replace-with-a-long-random-secret

@@ -29,7 +29,6 @@ def is_stub() -> bool:
     low = tok.lower()
     return "dummy" in low or "test" in low
 
-
 def clear_outbox() -> None:
     OUTBOX.clear()
 

@@ -8,10 +8,8 @@ Issues (ping-pong proof before AI work).
 import os
 import re
 
-from dotenv import load_dotenv
-from flask import Flask, jsonify, request
 
-load_dotenv()
+from flask import Flask, jsonify, request
 
 import store
 import telegram
@@ -34,8 +32,38 @@ def transport_module():
     mode = os.getenv("CHAT_TRANSPORT", "telegram").strip().lower()
     return telegram if mode == "telegram" else whatsapp
 
+
+def _use_per_user() -> bool:
+    """Telegram = multi-user (satu profil per chat_id).
+
+    WhatsApp = legacy single-profile global (satu nomor sales uji).
+    Pemisahan ini yang memperbaiki bug: akun Telegram kedua tidak lagi
+    mewarisi onboarding_stage=done milik akun pertama.
+    """
+    return transport_module() == telegram
+
+
+def _load_state(sender: str):
+    if _use_per_user():
+        profile = store.load_user_profile(sender)
+        return {"users": {str(sender): profile}}, profile
+    profile = store.load_profile()
+    return profile, profile
+
+
+def _save_state(sender: str, g: dict, u: dict) -> None:
+    if _use_per_user():
+        store.save_user_profile(sender, u)
+    else:
+        store.save_profile(g)
+
+
+def _reload_state(sender: str):
+    """Load ulang setelah scheduler/external save agar tidak stale."""
+    return _load_state(sender)
+
+
 app = Flask(__name__)
-store.ensure_data()
 
 GREETINGS = {"halo", "hallo", "hai", "hello", "hi", "p", "assalamualaikum", "tes", "test"}
 
@@ -107,7 +135,7 @@ def _handle_export(sender: str, profile: dict) -> None:
 
     lang = profile.get("language", "id")
     trans = transport_module()
-    notes = store.load_notes()
+    notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
     if not notes:
         trans.send_text(sender, t(lang, "export_empty"))
         _send_main_menu(sender, lang)
@@ -184,8 +212,7 @@ def verify():
 
 
 def _is_allowed(sender: str, profile: dict) -> bool:
-    allow = profile.get("sender_allowlist") or []
-    return not allow or sender in allow
+    return _use_per_user() or not profile.get("sender_allowlist") or sender in profile["sender_allowlist"]
 
 
 def _refuse_message(profile: dict) -> str:
@@ -373,27 +400,37 @@ def fonnte_inbound():
         print(f"[fonnte] handler error: {e}")
     return jsonify({"ok": True})
 
-
 def _handle_message(msg: dict) -> None:
     sender = msg.get("from", "")
     if not sender:
         return
-    profile = store.load_profile()
-    trans = transport_module()
-    if not _is_allowed(sender, profile):
-        trans.send_text(sender, _refuse_message(profile))
+    sender = str(sender)
+    if _use_per_user():
+        with store.user_scope(sender):
+            _handle_message_scoped(sender, msg)
         return
+    _handle_message_scoped(sender, msg)
 
-    # Track the 24h free-message window + flush queued failure notices.
-    import datetime as _dt_seen
 
-    profile["last_sender"] = sender
-    seen = profile.get("last_seen") or {}
-    seen[sender] = _dt_seen.datetime.now().isoformat(timespec="seconds")
-    profile["last_seen"] = seen
-    store.save_profile(profile)
-    scheduler.flush_notices(sender, profile)
-    profile = store.load_profile()
+def _handle_message_scoped(sender: str, msg: dict) -> None:
+    g, u = _load_state(sender)
+    trans = transport_module()
+    if not _use_per_user() and not _is_allowed(sender, g):
+        transport_module().send_text(sender, _refuse_message(g))
+        return
+    if _use_per_user():
+        u["last_seen"] = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+        store.save_user_profile(sender, u)
+    else:
+        import datetime as _dt_seen
+
+        g["last_sender"] = sender
+        seen = g.get("last_seen") or {}
+        seen[sender] = _dt_seen.datetime.now().isoformat(timespec="seconds")
+        g["last_seen"] = seen
+        store.save_profile(g)
+    scheduler.flush_notices(sender, u if _use_per_user() else g)
+    g, u = _load_state(sender)
 
     msg_type = msg.get("type", "")
     text = ""
@@ -412,70 +449,61 @@ def _handle_message(msg: dict) -> None:
 
     # Slice 4: voice note -> download -> transcribe -> same pipeline.
     if msg_type == "audio":
-        _handle_voice_note(sender, msg, profile)
+        _handle_voice_note(sender, msg, g, u)
         return
 
-    if profile.get("onboarding_stage", "new") != "done":
-        _handle_onboarding(sender, text, profile)
+    if u.get("onboarding_stage", "new") != "done":
+        _handle_onboarding(sender, text, g, u)
         return
 
     # Two-step button settings (tap Pengaturan -> tap opsi -> jawab).
-    if _handle_pending_setting(sender, text, profile):
+    if _handle_pending_setting(sender, text, g, u):
         return
 
-    if _handle_menu_action(sender, text, profile):
+    if _handle_menu_action(sender, text, g, u):
         return
 
-    if _handle_settings_command(sender, text, profile):
+    if _handle_settings_command(sender, text, g, u):
         # After a typed settings command, offer the menu for follow-up.
-        profile = store.load_profile()
-        _send_main_menu(sender, profile.get("language", "id"))
+        g, u = _reload_state(sender)
+        _send_main_menu(sender, u.get("language", "id"))
         return
 
     if low in GREETINGS:
-        trans.send_text(sender, _greeting_for(profile, store.load_notes()))
-        _send_main_menu(sender, profile.get("language", "id"))
+        notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
+        trans.send_text(sender, _greeting_for(u, notes))
+        _send_main_menu(sender, u.get("language", "id"))
         return
 
-    # Slice 6: demo commands call the same functions as the scheduler.
-    # English aliases included — an unrecognized "recap now" must never
-    # become a bogus empty report (see _handle_report empty-guard).
     if low in ("rekap sekarang", "rekap", "recap", "recap now",
-               "send recap", "send me the recap", "recap please",
-               "minta rekap"):
-        scheduler.send_recap_to(profile, sender)
+               "send recap", "send me the recap", "recap please", "minta rekap"):
+        scheduler.send_recap_to(u, sender)
         return
     if low in ("cek follow-up", "cek follow up", "cek followup",
-               "check follow-up", "check follow-ups", "follow-up",
-               "follow up", "follow-ups", "followups", "cek pengingat"):
-        scheduler.send_followups_to(profile, sender)
+               "check follow-up", "check follow-ups", "follow-up", "follow up",
+               "follow-ups", "followups", "cek pengingat"):
+        scheduler.send_followups_to(u, sender)
         return
-
-    # Slice 12: ekspor CSV (perintah ketik, semua bahasa).
     if low in EXPORT_COMMANDS:
-        _handle_export(sender, profile)
+        _handle_export(sender, u)
         return
-
-    # A tap on a recap detail button always means "show that note",
-    # even mid-clarification (the draft stays active afterwards).
     if low.startswith("view_"):
-        _handle_view_note(sender, profile, text.strip()[5:])
+        _handle_view_note(sender, u, text.strip()[5:], u)
         return
 
-    # An answer to pending clarification wins over a new report. To start
-    # a fresh report instead, prefix with "laporan baru".
     if low.startswith("laporan baru") or low.startswith("new report"):
-        _finalize_draft(store.load_notes())
-        _handle_report(sender, text.split(None, 2)[-1], profile)
+        notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
+        _finalize_draft(sender, notes)
+        _handle_report(sender, text.split(None, 2)[-1], g, u)
         return
 
-    active = _active_draft(store.load_notes())
+    notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
+    active = _active_draft(notes)
     if active is not None:
-        _handle_clarify_answer(sender, text, profile, active)
+        _handle_clarify_answer(sender, text, u, active)
         return
 
-    # A typed number (or "lihat N"/"view N") picks a recap detail entry.
-    pick = profile.get("recap_picklist") or []
+    pick = u.get("recap_picklist") or []
     num = None
     if low.isdigit():
         num = int(low)
@@ -484,19 +512,19 @@ def _handle_message(msg: dict) -> None:
         if m:
             num = int(m.group(1))
     if num is not None and pick and 1 <= num <= len(pick):
-        _handle_view_note(sender, profile, pick[num - 1])
-        profile = store.load_profile()
-        profile["recap_picklist"] = []
-        store.save_profile(profile)
+        _handle_view_note(sender, u, pick[num - 1], u)
+        g, u = _reload_state(sender)
+        u["recap_picklist"] = []
+        _save_state(sender, g, u)
         return
+    _handle_report(sender, text, g, u)
 
-    _handle_report(sender, text, profile)
 
 
 # --- Button menu actions (post-onboarding) ---
 
 
-def _handle_menu_action(sender: str, text: str, profile: dict) -> bool:
+def _handle_menu_action(sender: str, text: str, g: dict, u: dict) -> bool:
     """Route menu button taps + typed menu/help/settings shortcuts.
 
     Returns True if handled. Works for Telegram inline buttons and
@@ -504,7 +532,7 @@ def _handle_menu_action(sender: str, text: str, profile: dict) -> bool:
     On plain-text fallbacks (Twilio/Fonnte) the same actions are reachable
     by typing: menu / bantuan / pengaturan / rekap / cek follow-up.
     """
-    lang = profile.get("language", "id")
+    lang = u.get("language", "id")
     low = (text or "").strip().lower()
     trans = transport_module()
 
@@ -521,14 +549,14 @@ def _handle_menu_action(sender: str, text: str, profile: dict) -> bool:
 
     # Settings submenu.
     if text in ("menu_settings",) or low in SETTINGS_MENU_COMMANDS:
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
         _send_settings_menu(sender, lang)
         return True
 
-    # Lapor: prompt for a report; keep active draft (don't lose progress).
     if text in ("menu_lapor",) or low in LAPOR_COMMANDS:
-        active = _active_draft(store.load_notes())
+        notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
+        active = _active_draft(notes)
         _send_lapor_prompt(sender, lang, has_draft=active is not None)
         if active is not None:
             _ask_field(sender, lang, active["pending_clarify"][0])
@@ -536,52 +564,52 @@ def _handle_menu_action(sender: str, text: str, profile: dict) -> bool:
 
     # Recap / follow-up via button (same functions as scheduler/demo).
     if text in ("menu_recap",):
-        scheduler.send_recap_to(profile, sender)
+        scheduler.send_recap_to(u, sender)
         return True
     if text in ("menu_followup",):
-        scheduler.send_followups_to(profile, sender)
+        scheduler.send_followups_to(u, sender)
         return True
     if text in ("menu_export",) or low in EXPORT_COMMANDS:
-        _handle_export(sender, profile)
+        _handle_export(sender, u)
         return True
 
     # Settings options (two-step).
     if text in ("settings_name",):
-        profile["pending_setting"] = "nickname"
-        store.save_profile(profile)
+        u["pending_setting"] = "nickname"
+        _save_state(sender, g, u)
         trans.send_text(sender, t(lang, "setting_name_ask"))
         return True
     if text in ("settings_lang",):
-        profile["pending_setting"] = "language"
-        store.save_profile(profile)
+        u["pending_setting"] = "language"
+        _save_state(sender, g, u)
         trans.send_quick_reply(sender, t(lang, "onboarding_lang"), LANG_BUTTONS)
         return True
     if text in ("settings_time",):
-        profile["pending_setting"] = "recap_time"
-        store.save_profile(profile)
+        u["pending_setting"] = "recap_time"
+        _save_state(sender, g, u)
         _send_buttons(sender, t(lang, "setting_time_ask"), time_preset_buttons())
         return True
 
     # Language choice (settings flow or general tap).
     if text in ("lang_id", "lang_en"):
-        profile["language"] = "en" if text == "lang_en" else "id"
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
-        trans.send_text(sender, t(profile["language"], "lang_updated"))
-        _send_main_menu(sender, profile["language"])
+        u["language"] = "en" if text == "lang_en" else "id"
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
+        trans.send_text(sender, t(u["language"], "lang_updated"))
+        _send_main_menu(sender, u["language"])
         return True
 
     # Time preset (settings flow or general tap outside onboarding).
     if text.startswith("time_"):
         parsed = _parse_time(text[5:])
         if parsed:
-            profile["recap_time"] = parsed
-            profile["pending_setting"] = ""
-            store.save_profile(profile)
+            u["recap_time"] = parsed
+            u["pending_setting"] = ""
+            _save_state(sender, g, u)
             trans.send_text(
-                sender, t(profile.get("language", "id"), "time_updated").format(time=parsed)
+                sender, t(u.get("language", "id"), "time_updated").format(time=parsed)
             )
-            _send_main_menu(sender, profile.get("language", "id"))
+            _send_main_menu(sender, u.get("language", "id"))
         else:
             trans.send_text(sender, t(lang, "time_invalid"))
         return True
@@ -589,16 +617,16 @@ def _handle_menu_action(sender: str, text: str, profile: dict) -> bool:
     return False
 
 
-def _handle_pending_setting(sender: str, text: str, profile: dict) -> bool:
+def _handle_pending_setting(sender: str, text: str, g: dict, u: dict) -> bool:
     """Consume the answer to a two-step button setting (name/time/language).
 
     Menu/help button taps always escape the pending state.
     Returns True if the message was consumed here.
     """
-    pending = (profile.get("pending_setting") or "").strip()
+    pending = (u.get("pending_setting") or "").strip()
     if not pending:
         return False
-    lang = profile.get("language", "id")
+    lang = u.get("language", "id")
     low = (text or "").strip().lower()
     trans = transport_module()
 
@@ -606,9 +634,9 @@ def _handle_pending_setting(sender: str, text: str, profile: dict) -> bool:
     if text.startswith("menu_") or text in ("settings_name", "settings_lang",
                                             "settings_time") or low in (
             MENU_COMMANDS | HELP_COMMANDS | SETTINGS_MENU_COMMANDS):
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
-        return _handle_menu_action(sender, text, profile)
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
+        return _handle_menu_action(sender, text, g, u)
 
     # Operational commands/reports bypass a stale pending setting instead
     # of being swallowed as a name/time answer (e.g. user taps an old
@@ -622,26 +650,26 @@ def _handle_pending_setting(sender: str, text: str, profile: dict) -> bool:
                        "cek followup", "check follow-up", "check follow-ups",
                        "follow-up", "follow up", "follow-ups", "followups",
                        "cek pengingat")):
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
         return False
 
     # Language pending is answered via lang_* buttons (handled in menu action).
     if pending == "language":
         if text in ("lang_id", "lang_en"):
-            return _handle_menu_action(sender, text, profile)
+            return _handle_menu_action(sender, text, g, u)
         if _is_skip(text) or not (text or "").strip():
-            profile["language"] = "id"
-            profile["pending_setting"] = ""
-            store.save_profile(profile)
+            u["language"] = "id"
+            u["pending_setting"] = ""
+            _save_state(sender, g, u)
             trans.send_text(sender, t("id", "lang_updated"))
             _send_main_menu(sender, "id")
             return True
         # Typed language name.
         if low in ("english", "inggris", "en", "2"):
-            return _handle_menu_action(sender, "lang_en", profile)
+            return _handle_menu_action(sender, "lang_en", g, u)
         if low in ("indonesia", "bahasa indonesia", "id", "1"):
-            return _handle_menu_action(sender, "lang_id", profile)
+            return _handle_menu_action(sender, "lang_id", g, u)
         trans.send_quick_reply(sender, t(lang, "onboarding_lang"), LANG_BUTTONS)
         return True
 
@@ -649,13 +677,13 @@ def _handle_pending_setting(sender: str, text: str, profile: dict) -> bool:
         if not (text or "").strip():
             trans.send_text(sender, t(lang, "setting_name_ask"))
             return True
-        profile["nickname"] = text.strip()[:30]
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
+        u["nickname"] = text.strip()[:30]
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
         trans.send_text(
-            sender, t(profile.get("language", "id"), "name_updated").format(name=profile["nickname"])
+            sender, t(u.get("language", "id"), "name_updated").format(name=u["nickname"])
         )
-        _send_main_menu(sender, profile.get("language", "id"))
+        _send_main_menu(sender, u.get("language", "id"))
         return True
 
     if pending == "recap_time":
@@ -666,25 +694,25 @@ def _handle_pending_setting(sender: str, text: str, profile: dict) -> bool:
         if not parsed:
             _send_buttons(sender, t(lang, "setting_time_ask"), time_preset_buttons())
             return True
-        profile["recap_time"] = parsed
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
+        u["recap_time"] = parsed
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
         trans.send_text(
-            sender, t(profile.get("language", "id"), "time_updated").format(time=parsed)
+            sender, t(u.get("language", "id"), "time_updated").format(time=parsed)
         )
-        _send_main_menu(sender, profile.get("language", "id"))
+        _send_main_menu(sender, u.get("language", "id"))
         return True
 
-    profile["pending_setting"] = ""
-    store.save_profile(profile)
+    u["pending_setting"] = ""
+    _save_state(sender, g, u)
     return False
 
 
-def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
+def _handle_voice_note(sender: str, msg: dict, g: dict, u: dict) -> None:
     """Slice 4: audio.id -> immediate download -> Whisper -> _handle_report."""
     from transcribe import transcribe_audio
 
-    lang = profile.get("language", "id")
+    lang = u.get("language", "id")
     trans = transport_module()
     media = (msg.get("audio") or {})
     try:
@@ -718,13 +746,20 @@ def _handle_voice_note(sender: str, msg: dict, profile: dict) -> None:
     if result.get("status") != "ok" or not result.get("text"):
         trans.send_text(sender, t(lang, "vn_unclear"))
         return
-    _handle_report(sender, result["text"], profile)
+    _handle_report(sender, result["text"], g, u)
 
 
-def _handle_view_note(sender: str, profile: dict, note_id: str) -> None:
+def _handle_view_note(sender: str, profile: dict | None, note_id: str, grain: dict | None = None) -> None:
     """Resend the full card for one recap entry (button tap or number)."""
-    lang = profile.get("language", "id")
-    note = scheduler.find_note(note_id)
+    src = grain if isinstance(grain, dict) else profile
+    if not isinstance(src, dict):
+        try:
+            g0, u0 = _load_state(sender)
+            src = u0
+        except Exception:
+            src = {"language": "id"}
+    lang = src.get("language", "id")
+    note = scheduler.find_note(note_id, sender) if _use_per_user() else scheduler.find_note(note_id)
     trans = transport_module()
     if note is None:
         trans.send_text(sender, scheduler.NOTE_GONE.get(lang, scheduler.NOTE_GONE["id"]))
@@ -734,11 +769,11 @@ def _handle_view_note(sender: str, profile: dict, note_id: str) -> None:
     _send_main_menu(sender, lang)
 
 
-def _handle_report(sender: str, text: str, profile: dict) -> None:
+def _handle_report(sender: str, text: str, g: dict, u: dict) -> None:
     """Slice 3: free text -> Groq extraction -> card + draft note."""
     import datetime as _dt
 
-    lang = profile.get("language", "id")
+    lang = u.get("language", "id")
     trans = transport_module()
     try:
         fields = extract_report(text)
@@ -753,7 +788,7 @@ def _handle_report(sender: str, text: str, profile: dict) -> None:
         _send_main_menu(sender, lang)
         return
 
-    notes = store.load_notes()
+    notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
     note = {
         "id": new_note_id(notes),
         "created_at": _dt.datetime.now().isoformat(timespec="seconds"),
@@ -767,7 +802,10 @@ def _handle_report(sender: str, text: str, profile: dict) -> None:
         "pending_clarify": missing_fields(fields),
     }
     notes.append(note)
-    store.save_notes(notes)
+    if _use_per_user():
+        store.save_user_notes(sender, notes)
+    else:
+        store.save_notes(notes)
     trans.send_text(sender, render_card(note, lang))
     if note["pending_clarify"]:
         _ask_field(sender, lang, note["pending_clarify"][0])
@@ -783,7 +821,7 @@ def _active_draft(notes: list) -> dict | None:
     return None
 
 
-def _finalize_draft(notes: list) -> None:
+def _finalize_draft(sender: str, notes: list) -> None:
     changed = False
     for note in notes:
         if note.get("status") == "draft":
@@ -791,7 +829,10 @@ def _finalize_draft(notes: list) -> None:
             note["pending_clarify"] = []
             changed = True
     if changed:
-        store.save_notes(notes)
+        if _use_per_user():
+            store.save_user_notes(sender, notes)
+        else:
+            store.save_notes(notes)
 
 
 def _ask_field(sender: str, lang: str, field: str) -> None:
@@ -801,70 +842,81 @@ def _ask_field(sender: str, lang: str, field: str) -> None:
     transport_module().send_quick_reply(sender, clarify_question(lang, field), SKIP_BUTTON)
 
 
-def _handle_clarify_answer(sender: str, text: str, profile: dict, active: dict) -> None:
-    """Slice 5: one answer (or Skip) -> update note -> next question or done."""
-    lang = profile.get("language", "id")
-    notes = store.load_notes()
+def _handle_clarify_answer(sender: str, text: str, u: dict, active: dict) -> None:
+    lang = u.get("language", "id")
+    notes = store.load_user_notes(sender) if _use_per_user() else store.load_notes()
     note = next((n for n in notes if n.get("id") == active.get("id")), None)
     if note is None or not note.get("pending_clarify"):
-        _handle_report(sender, text, profile)
+        g, profile = _load_state(sender)
+        _handle_report(sender, text, g, profile)
         return
 
     field = note["pending_clarify"][0]
-    # Tahap-deal preset buttons map id -> canonical Indonesian stage.
     answer = DEAL_ID_MAP.get(text, text) if field == "tahap_deal" else text
     if not _is_skip(text) and (answer or "").strip():
         note[field] = answer.strip()[:80]
     note["pending_clarify"] = note["pending_clarify"][1:]
     if not note["pending_clarify"]:
         note["status"] = "saved"
-    store.save_notes(notes)
+    if _use_per_user():
+        store.save_user_notes(sender, notes)
+    else:
+        store.save_notes(notes)
 
     if note["pending_clarify"]:
         _ask_field(sender, lang, note["pending_clarify"][0])
         return
-    filled = sum(1 for f in FIELD_ORDER if (note.get(f) or "").strip())
+    filled = sum(1 for field in FIELD_ORDER if (note.get(field) or "").strip())
     transport_module().send_text(
         sender, clarify_question(lang, "saved").format(filled=filled)
     )
     _send_main_menu(sender, lang)
 
 
+
 # --- Onboarding (PRD 0): name -> language -> recap time, each skippable ---
 
 
-def _handle_onboarding(sender: str, text: str, profile: dict) -> None:
-    lang = profile.get("language", "id")
-    stage = profile.get("onboarding_stage", "new")
+def _handle_onboarding(sender: str, text: str, g: dict, u: dict) -> None:
+    lang = u.get("language", "id")
+    stage = u.get("onboarding_stage", "new")
     trans = transport_module()
 
-    # Button-based navigation stays available mid-onboarding: menu/help
-    # taps show the menu without losing the current onboarding stage.
+    # Fresh user (new) — /start /menu /halo dll langsung mulai onboarding,
+    # diawali sapaan + penjelasan fungsi bot, lalu minta nama.
+    # Jangan tampilkan Menu Utama dulu. Menu hanya untuk yang sudah mulai
+    # onboarding (ask_*) atau sudah done.
+    if stage == "new":
+        u["onboarding_stage"] = "ask_name"
+        _save_state(sender, g, u)
+        trans.send_text(sender, t(lang, "onboarding_welcome"))
+        trans.send_quick_reply(sender, t(lang, "onboarding_name"), SKIP_BUTTON)
+        return
+
+    # Button-based navigation stays available mid-onboarding,
+    # tapi selama onboarding BELUM done, /start dan "menu" JANGAN
+    # menampilkan Menu Utama (yang di screenshot kamu).
+    # Cukup ulangi prompt tahap saat ini saja — Menu hanya untuk after-done.
     low_onb = (text or "").strip().lower()
-    if text in ("menu_main", "menu_help", "menu_settings", "menu_lapor",
-                "menu_recap", "menu_followup") or low_onb in (
-            MENU_COMMANDS | HELP_COMMANDS | SETTINGS_MENU_COMMANDS):
-        if text in ("menu_help",) or low_onb in HELP_COMMANDS:
+    is_menu_cmd = text in ("menu_main", "menu_help", "menu_settings", "menu_lapor",
+                           "menu_recap", "menu_followup") or low_onb in MENU_COMMANDS
+    is_help_cmd = low_onb in HELP_COMMANDS
+    is_settings_cmd = low_onb in SETTINGS_MENU_COMMANDS
+    if is_menu_cmd or is_help_cmd or is_settings_cmd:
+        # Selama onboarding, hanya help yang boleh tampil; menu/settings
+        # ditahan sampai done supaya tidak bocor seperti di screenshot.
+        if is_help_cmd:
             _send_help(sender, lang)
-        else:
-            _send_main_menu(sender, lang)
-        # Re-send the current stage prompt so onboarding doesn't stall.
-        if stage == "new" or stage == "ask_name":
+        elif is_menu_cmd or is_settings_cmd:
+            # Jangan kirim Menu Utama selama ask_* — langsung re-prompt saja
+            pass
+        if stage == "ask_name":
             trans.send_quick_reply(sender, t(lang, "onboarding_name"), SKIP_BUTTON)
-            if stage == "new":
-                profile["onboarding_stage"] = "ask_name"
-                store.save_profile(profile)
         elif stage == "ask_language":
             trans.send_quick_reply(sender, t(lang, "onboarding_lang"), LANG_BUTTONS)
         elif stage == "ask_time":
-            _send_buttons(sender, t(profile.get("language", "id"), "onboarding_time"),
+            _send_buttons(sender, t(u.get("language", "id"), "onboarding_time"),
                           time_preset_buttons())
-        return
-
-    if stage == "new":
-        profile["onboarding_stage"] = "ask_name"
-        store.save_profile(profile)
-        trans.send_quick_reply(sender, t(lang, "onboarding_name"), SKIP_BUTTON)
         return
 
     if stage == "ask_name":
@@ -874,70 +926,70 @@ def _handle_onboarding(sender: str, text: str, profile: dict) -> None:
             trans.send_quick_reply(sender, t(lang, "onboarding_name"), SKIP_BUTTON)
             return
         if not _is_skip(text) and text:
-            profile["nickname"] = text.strip()[:30]
-        profile["onboarding_stage"] = "ask_language"
-        store.save_profile(profile)
+            u["nickname"] = text.strip()[:30]
+        u["onboarding_stage"] = "ask_language"
+        _save_state(sender, g, u)
         trans.send_quick_reply(sender, t(lang, "onboarding_lang"), LANG_BUTTONS)
         return
 
     if stage == "ask_language":
         low = (text or "").strip().lower()
         if low in ("lang_en", "english", "inggris", "en", "2"):
-            profile["language"] = "en"
+            u["language"] = "en"
         elif _is_skip(text) or low in ("", "lang_id"):
-            profile["language"] = "id"
+            u["language"] = "id"
         elif low in ("indonesia", "bahasa indonesia", "id", "1"):
-            profile["language"] = "id"
+            u["language"] = "id"
         else:
             # Unrecognized: keep asking once, don't advance.
             trans.send_quick_reply(
-                sender, t(profile.get("language", "id"), "onboarding_lang"), LANG_BUTTONS
+                sender, t(u.get("language", "id"), "onboarding_lang"), LANG_BUTTONS
             )
             return
-        profile["onboarding_stage"] = "ask_time"
-        store.save_profile(profile)
-        _send_buttons(sender, t(profile["language"], "onboarding_time"),
+        u["onboarding_stage"] = "ask_time"
+        _save_state(sender, g, u)
+        _send_buttons(sender, t(u["language"], "onboarding_time"),
                       time_preset_buttons())
         return
 
     if stage == "ask_time":
         raw = text[5:] if text.startswith("time_") else text
         if _is_skip(text) or not (text or "").strip():
-            profile["recap_time"] = "17:00"
+            u["recap_time"] = "17:00"
         else:
             parsed = _parse_time(raw)
             if not parsed:
-                _send_buttons(sender, t(profile.get("language", "id"),
+                _send_buttons(sender, t(u.get("language", "id"),
                                         "onboarding_time_invalid"),
                               time_preset_buttons())
                 return
-            profile["recap_time"] = parsed
-        profile["onboarding_stage"] = "done"
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
-        name = profile.get("nickname") or ("kamu" if profile["language"] == "id" else "there")
+            u["recap_time"] = parsed
+        u["onboarding_stage"] = "done"
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
+        name = u.get("nickname") or ("kamu" if u["language"] == "id" else "there")
         trans.send_text(
             sender,
-            t(profile["language"], "onboarding_done").format(
+            t(u["language"], "onboarding_done").format(
                 name=name,
-                lang_label=t(profile["language"], "lang_label"),
-                time=profile["recap_time"],
+                lang_label=t(u["language"], "lang_label"),
+                time=u["recap_time"],
             ),
         )
-        _send_main_menu(sender, profile["language"])
+        _send_main_menu(sender, u["language"])
         return
 
     # Unknown stage: reset safely.
-    profile["onboarding_stage"] = "new"
-    store.save_profile(profile)
-    _handle_onboarding(sender, text, profile)
+    u["onboarding_stage"] = "new"
+    _save_state(sender, g, u)
+    _handle_onboarding(sender, text, g, u)
 
 
 # --- Settings commands after onboarding ---
 
 
-def _handle_settings_command(sender: str, text: str, profile: dict) -> bool:
-    lang = profile.get("language", "id")
+def _handle_settings_command(sender: str, text: str, g: dict, u: dict) -> bool:
+    lang = u.get("language", "id")
     low = (text or "").strip().lower()
     trans = transport_module()
 
@@ -945,36 +997,36 @@ def _handle_settings_command(sender: str, text: str, profile: dict) -> bool:
     if not m:
         m = re.match(r"(?:change\s+name\s+to|my\s+name\s+is)\s+(.+)", text, re.IGNORECASE)
     if m:
-        profile["nickname"] = m.group(1).strip().strip('"').strip()[:30]
-        profile["pending_setting"] = ""
-        store.save_profile(profile)
+        u["nickname"] = m.group(1).strip().strip('"').strip()[:30]
+        u["pending_setting"] = ""
+        _save_state(sender, g, u)
         trans.send_text(
-            sender, t(profile.get("language", "id"), "name_updated").format(name=profile["nickname"])
+            sender, t(u.get("language", "id"), "name_updated").format(name=u["nickname"])
         )
         return True
 
     if any(k in low for k in ("ganti ke bahasa", "ganti bahasa ke", "switch to", "change language to")):
         if "inggris" in low or "english" in low:
-            profile["language"] = "en"
-            profile["pending_setting"] = ""
-            store.save_profile(profile)
+            u["language"] = "en"
+            u["pending_setting"] = ""
+            _save_state(sender, g, u)
             trans.send_text(sender, t("en", "lang_updated"))
             return True
         if "indonesia" in low or "indonesian" in low:
-            profile["language"] = "id"
-            profile["pending_setting"] = ""
-            store.save_profile(profile)
+            u["language"] = "id"
+            u["pending_setting"] = ""
+            _save_state(sender, g, u)
             trans.send_text(sender, t("id", "lang_updated"))
             return True
 
     if any(k in low for k in ("ubah jam rekap", "ganti jam rekap", "change recap time", "recap time")):
         parsed = _parse_time(text)
         if parsed:
-            profile["recap_time"] = parsed
-            profile["pending_setting"] = ""
-            store.save_profile(profile)
+            u["recap_time"] = parsed
+            u["pending_setting"] = ""
+            _save_state(sender, g, u)
             trans.send_text(
-                sender, t(profile.get("language", "id"), "time_updated").format(time=parsed)
+                sender, t(u.get("language", "id"), "time_updated").format(time=parsed)
             )
         else:
             trans.send_text(sender, t(lang, "time_invalid"))
@@ -985,6 +1037,10 @@ def _handle_settings_command(sender: str, text: str, profile: dict) -> bool:
 
 @app.post("/telegram/webhook")
 def telegram_webhook():
+    expected = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+    provided = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if expected and not __import__("hmac").compare_digest(provided, expected):
+        return jsonify({"ok": False}), 403
     payload = request.get_json(force=True, silent=True) or {}
     _process_telegram_update(payload)
     return jsonify({"ok": True})

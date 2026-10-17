@@ -1,0 +1,765 @@
+{
+  "started_at": "2026-10-15T09:46:04.540770+00:00",
+  "endpoint": "https://api.kyio.web.id/api/ai/gpt-5",
+  "source": "https://api.kyio.web.id/docs/api-keys regular-endpoint example",
+  "limitations": [
+    "Public GET q, not authenticated role-separated /v1/chat/completions.",
+    "Diagnostic comparisons use the same production prompt, fixtures and scorer as main evaluation.",
+    "Provider model labels do not verify actual upstream model identity.",
+    "10 attempts, 9 distinct fixtures; not a load/reliability test."
+  ],
+  "fixtures": [
+    {
+      "id": "complete_id",
+      "today": "2026-10-15",
+      "report": "Mengunjungi PT Demo Nusantara. Kontak Budi, jabatan manajer pembelian. Produk printer. Tahap Negosiasi. Follow-up tanggal 20 Oktober 2026.",
+      "expected": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      }
+    },
+    {
+      "id": "missing_facts",
+      "today": "2026-10-15",
+      "report": "Berkunjung ke PT Contoh Sejahtera. Nama kontak, jabatan, produk, dan tahap deal belum diketahui.",
+      "expected": {
+        "institusi": "PT Contoh Sejahtera",
+        "kontak": "",
+        "role": "",
+        "produk": "",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      }
+    },
+    {
+      "id": "tomorrow",
+      "today": "2026-10-15",
+      "report": "Perusahaan PT Contoh Pagi, kontak Sari, jabatan direktur, produk kopi, tahap Kunjungan awal. Follow-up besok.",
+      "expected": {
+        "institusi": "PT Contoh Pagi",
+        "kontak": "Sari",
+        "role": "direktur",
+        "produk": "kopi",
+        "tahap_deal": "Kunjungan awal",
+        "followup_date": "2026-10-16"
+      }
+    },
+    {
+      "id": "explicit_beats_relative",
+      "today": "2026-10-15",
+      "report": "PT Contoh Jadwal, kontak Dedi, jabatan pembeli, produk kertas, tahap Penawaran harga. Rencana follow-up minggu depan, tetapi tanggal yang pasti adalah 2 November 2026.",
+      "expected": {
+        "institusi": "PT Contoh Jadwal",
+        "kontak": "Dedi",
+        "role": "pembeli",
+        "produk": "kertas",
+        "tahap_deal": "Penawaran harga",
+        "followup_date": "2026-11-02"
+      }
+    },
+    {
+      "id": "english",
+      "today": "2026-10-15",
+      "report": "Company: Example North Ltd. Contact: Alice. Role: procurement manager. Product: coffee beans. Sales stage: Deal, the contract has been signed. Follow-up on 23 October 2026.",
+      "expected": {
+        "institusi": "Example North Ltd",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee beans",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-23"
+      }
+    },
+    {
+      "id": "negated_deal",
+      "today": "2026-10-15",
+      "report": "PT Contoh Diskusi. Kontak Wati, jabatan direktur, produk komputer. Belum deal dan belum ada kontrak; tahapnya masih Negosiasi. Tidak ada tanggal follow-up yang disebutkan.",
+      "expected": {
+        "institusi": "PT Contoh Diskusi",
+        "kontak": "Wati",
+        "role": "direktur",
+        "produk": "komputer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-18"
+      }
+    },
+    {
+      "id": "month_boundary",
+      "today": "2026-10-31",
+      "report": "Perusahaan PT Demo Bulan, kontak Bima, jabatan pemilik, produk susu, tahap Follow-up. Follow-up besok.",
+      "expected": {
+        "institusi": "PT Demo Bulan",
+        "kontak": "Bima",
+        "role": "pemilik",
+        "produk": "susu",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2026-11-01"
+      }
+    },
+    {
+      "id": "leap_day",
+      "today": "2028-02-28",
+      "report": "Perusahaan PT Demo Kabisat, kontak Dian, jabatan pemilik, produk gula, tahap Follow-up. Follow-up besok.",
+      "expected": {
+        "institusi": "PT Demo Kabisat",
+        "kontak": "Dian",
+        "role": "pemilik",
+        "produk": "gula",
+        "tahap_deal": "Follow-up",
+        "followup_date": "2028-02-29"
+      }
+    },
+    {
+      "id": "long_report",
+      "today": "2026-10-15",
+      "report": "Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan. Keterangan perjalanan yang tidak menambahkan fakta penjualan.  Laporan inti: perusahaan PT Contoh Panjang. Kontak Tono. Jabatan pemilik. Produk kursi. Tahap Deal. Follow-up 26 Oktober 2026.",
+      "expected": {
+        "institusi": "PT Contoh Panjang",
+        "kontak": "Tono",
+        "role": "pemilik",
+        "produk": "kursi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-26"
+      }
+    },
+    {
+      "id": "complete_id_repeat_2",
+      "today": "2026-10-15",
+      "report": "Mengunjungi PT Demo Nusantara. Kontak Budi, jabatan manajer pembelian. Produk printer. Tahap Negosiasi. Follow-up tanggal 20 Oktober 2026.",
+      "expected": {
+        "institusi": "PT Demo Nusantara",
+        "kontak": "Budi",
+        "role": "manajer pembelian",
+        "produk": "printer",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      }
+    }
+  ],
+  "records": [
+    {
+      "provider": "kyio_public",
+      "case": "complete_id",
+      "started_at": "2026-10-15T09:46:04.540929+00:00",
+      "http_status": 200,
+      "elapsed_ms": 5527.51,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "985",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057567-d66bf1a07dd60601",
+          "result": "{\"institusi\":\"PT Demo Nusantara\",\"kontak\":\"Budi\",\"role\":\"manajer pembelian\",\"produk\":\"printer\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}"
+        },
+        "timestamp": "2026-10-15T09:46:10.056Z",
+        "response_time": "4719ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Demo Nusantara\",\"kontak\":\"Budi\",\"role\":\"manajer pembelian\",\"produk\":\"printer\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Demo Nusantara",
+          "kontak": "Budi",
+          "role": "manajer pembelian",
+          "produk": "printer",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "missing_facts",
+      "started_at": "2026-10-15T09:46:29.542613+00:00",
+      "http_status": 200,
+      "elapsed_ms": 4685.62,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "983",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057591-bc3fe7363aa8736c",
+          "result": "{\"institusi\":\"PT Contoh Sejahtera\",\"kontak\":\"\",\"role\":\"\",\"produk\":\"\",\"tahap_deal\":\"\",\"followup_date\":\"\"}"
+        },
+        "timestamp": "2026-10-15T09:46:34.114Z",
+        "response_time": "3813ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Contoh Sejahtera\",\"kontak\":\"\",\"role\":\"\",\"produk\":\"\",\"tahap_deal\":\"\",\"followup_date\":\"\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": false,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": false
+        },
+        "mismatches": {
+          "followup_date": {
+            "expected": "2026-10-18",
+            "actual": ""
+          }
+        },
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Sejahtera",
+          "kontak": "",
+          "role": "",
+          "produk": "",
+          "tahap_deal": "",
+          "followup_date": ""
+        },
+        "all_fields_correct_diagnostic": false,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "tomorrow",
+      "started_at": "2026-10-15T09:46:54.546399+00:00",
+      "http_status": 200,
+      "elapsed_ms": 4392.49,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "981",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057616-ecb9f9cdd57225dd",
+          "result": "{\"institusi\":\"PT Contoh Pagi\",\"kontak\":\"Sari\",\"role\":\"direktur\",\"produk\":\"kopi\",\"tahap_deal\":\"Kunjungan awal\",\"followup_date\":\"2026-10-16\"}"
+        },
+        "timestamp": "2026-10-15T09:46:58.897Z",
+        "response_time": "3273ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Contoh Pagi\",\"kontak\":\"Sari\",\"role\":\"direktur\",\"produk\":\"kopi\",\"tahap_deal\":\"Kunjungan awal\",\"followup_date\":\"2026-10-16\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Pagi",
+          "kontak": "Sari",
+          "role": "direktur",
+          "produk": "kopi",
+          "tahap_deal": "Kunjungan awal",
+          "followup_date": "2026-10-16"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "explicit_beats_relative",
+      "started_at": "2026-10-15T09:47:19.547960+00:00",
+      "http_status": 200,
+      "elapsed_ms": 6085.16,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "979",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057642-17f7fb8aafa9afc6",
+          "result": "{\n  \"institusi\": \"PT Contoh Jadwal\",\n  \"kontak\": \"Dedi\",\n  \"role\": \"pembeli\",\n  \"produk\": \"kertas\",\n  \"tahap_deal\": \"Penawaran harga\",\n  \"followup_date\": \"2026-11-02\"\n}"
+        },
+        "timestamp": "2026-10-15T09:47:25.537Z",
+        "response_time": "5271ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\n  \"institusi\": \"PT Contoh Jadwal\",\n  \"kontak\": \"Dedi\",\n  \"role\": \"pembeli\",\n  \"produk\": \"kertas\",\n  \"tahap_deal\": \"Penawaran harga\",\n  \"followup_date\": \"2026-11-02\"\n}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Jadwal",
+          "kontak": "Dedi",
+          "role": "pembeli",
+          "produk": "kertas",
+          "tahap_deal": "Penawaran harga",
+          "followup_date": "2026-11-02"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "english",
+      "started_at": "2026-10-15T09:47:44.551499+00:00",
+      "http_status": 200,
+      "elapsed_ms": 5127.79,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "977",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057666-85a659c49cc3ceeb",
+          "result": "```json\n{\n  \"institusi\": \"Example North Ltd.\",\n  \"kontak\": \"Alice\",\n  \"role\": \"procurement manager\",\n  \"produk\": \"coffee beans\",\n  \"tahap_deal\": \"Deal\",\n  \"followup_date\": \"2026-10-23\"\n}\n```"
+        },
+        "timestamp": "2026-10-15T09:47:49.673Z",
+        "response_time": "4315ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "```json\n{\n  \"institusi\": \"Example North Ltd.\",\n  \"kontak\": \"Alice\",\n  \"role\": \"procurement manager\",\n  \"produk\": \"coffee beans\",\n  \"tahap_deal\": \"Deal\",\n  \"followup_date\": \"2026-10-23\"\n}\n```",
+      "score": {
+        "strict_json": false,
+        "schema_ok": false,
+        "worker_parser_ok": false,
+        "diagnostic_unfenced_json": true,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "Example North Ltd.",
+          "kontak": "Alice",
+          "role": "procurement manager",
+          "produk": "coffee beans",
+          "tahap_deal": "Deal",
+          "followup_date": "2026-10-23"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "negated_deal",
+      "started_at": "2026-10-15T09:48:09.555139+00:00",
+      "http_status": 200,
+      "elapsed_ms": 4411.13,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "974",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057691-05c1f3336b877694",
+          "result": "{\"institusi\":\"PT Contoh Diskusi\",\"kontak\":\"Wati\",\"role\":\"direktur\",\"produk\":\"komputer\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-18\"}"
+        },
+        "timestamp": "2026-10-15T09:48:13.842Z",
+        "response_time": "3371ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Contoh Diskusi\",\"kontak\":\"Wati\",\"role\":\"direktur\",\"produk\":\"komputer\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-18\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Diskusi",
+          "kontak": "Wati",
+          "role": "direktur",
+          "produk": "komputer",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-18"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "month_boundary",
+      "started_at": "2026-10-15T09:48:34.559105+00:00",
+      "http_status": 200,
+      "elapsed_ms": 5417.21,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "971",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057717-e5d9dabd287b6c6b",
+          "result": "{\"institusi\":\"PT Demo Bulan\",\"kontak\":\"Bima\",\"role\":\"pemilik\",\"produk\":\"susu\",\"tahap_deal\":\"Follow-up\",\"followup_date\":\"2026-11-01\"}"
+        },
+        "timestamp": "2026-10-15T09:48:39.893Z",
+        "response_time": "4500ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Demo Bulan\",\"kontak\":\"Bima\",\"role\":\"pemilik\",\"produk\":\"susu\",\"tahap_deal\":\"Follow-up\",\"followup_date\":\"2026-11-01\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Demo Bulan",
+          "kontak": "Bima",
+          "role": "pemilik",
+          "produk": "susu",
+          "tahap_deal": "Follow-up",
+          "followup_date": "2026-11-01"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "leap_day",
+      "started_at": "2026-10-15T09:48:59.563959+00:00",
+      "http_status": 200,
+      "elapsed_ms": 4757.81,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "968",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057741-a52f44e58e209a81",
+          "result": "{\"institusi\":\"PT Demo Kabisat\",\"kontak\":\"Dian\",\"role\":\"pemilik\",\"produk\":\"gula\",\"tahap_deal\":\"Follow-up\",\"followup_date\":\"2028-02-29\"}"
+        },
+        "timestamp": "2026-10-15T09:49:04.266Z",
+        "response_time": "3704ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Demo Kabisat\",\"kontak\":\"Dian\",\"role\":\"pemilik\",\"produk\":\"gula\",\"tahap_deal\":\"Follow-up\",\"followup_date\":\"2028-02-29\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Demo Kabisat",
+          "kontak": "Dian",
+          "role": "pemilik",
+          "produk": "gula",
+          "tahap_deal": "Follow-up",
+          "followup_date": "2028-02-29"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "long_report",
+      "started_at": "2026-10-15T09:49:24.567007+00:00",
+      "http_status": 200,
+      "elapsed_ms": 4151.64,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "966",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057765-56a587ef8d75c6c7",
+          "result": "{\"institusi\":\"PT Contoh Panjang\",\"kontak\":\"Tono\",\"role\":\"pemilik\",\"produk\":\"kursi\",\"tahap_deal\":\"Deal\",\"followup_date\":\"2026-10-26\"}"
+        },
+        "timestamp": "2026-10-15T09:49:28.687Z",
+        "response_time": "3373ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Contoh Panjang\",\"kontak\":\"Tono\",\"role\":\"pemilik\",\"produk\":\"kursi\",\"tahap_deal\":\"Deal\",\"followup_date\":\"2026-10-26\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Panjang",
+          "kontak": "Tono",
+          "role": "pemilik",
+          "produk": "kursi",
+          "tahap_deal": "Deal",
+          "followup_date": "2026-10-26"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    },
+    {
+      "provider": "kyio_public",
+      "case": "complete_id_repeat_2",
+      "started_at": "2026-10-15T09:49:49.568933+00:00",
+      "http_status": 200,
+      "elapsed_ms": 3214.57,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "965",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "sessionId": "yp7lPkXl-1792057567-d66bf1a07dd60601",
+          "result": "{\"institusi\":\"PT Demo Nusantara\",\"kontak\":\"Budi\",\"role\":\"manajer pembelian\",\"produk\":\"printer\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}"
+        },
+        "timestamp": "2026-10-15T09:49:52.734Z",
+        "response_time": "2286ms"
+      },
+      "openai_envelope": false,
+      "reported_model": null,
+      "content": "{\"institusi\":\"PT Demo Nusantara\",\"kontak\":\"Budi\",\"role\":\"manajer pembelian\",\"produk\":\"printer\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Demo Nusantara",
+          "kontak": "Budi",
+          "role": "manajer pembelian",
+          "produk": "printer",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      },
+      "candidate": "kyio_gpt5_public"
+    }
+  ],
+  "summary": {
+    "groq": {
+      "attempts": 0,
+      "http_200": 0,
+      "strict_json": 0,
+      "schema_ok": 0,
+      "usable_exact_reports": 0,
+      "correct_fields_including_unfenced_diagnostics": 0,
+      "diagnostic_objects": 0,
+      "total_expected_fields": 0,
+      "fabricated_missing_fields": 0,
+      "latency_median_ms": null,
+      "latency_p95_ms": null,
+      "latency_max_ms": null,
+      "transport_failures": 0,
+      "non_200": [],
+      "repeats": {
+        "complete_id": {
+          "attempts": 0,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": false
+        },
+        "missing_facts": {
+          "attempts": 0,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": false
+        }
+      }
+    },
+    "kyio_public": {
+      "attempts": 10,
+      "http_200": 10,
+      "strict_json": 9,
+      "schema_ok": 8,
+      "usable_exact_reports": 8,
+      "correct_fields_including_unfenced_diagnostics": 59,
+      "diagnostic_objects": 10,
+      "total_expected_fields": 60,
+      "fabricated_missing_fields": 0,
+      "latency_median_ms": 4721.72,
+      "latency_p95_ms": 6085.16,
+      "latency_max_ms": 6085.16,
+      "transport_failures": 0,
+      "non_200": [],
+      "repeats": {
+        "complete_id": {
+          "attempts": 2,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": true
+        },
+        "missing_facts": {
+          "attempts": 1,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": true
+        }
+      }
+    }
+  },
+  "finished_at": "2026-10-15T09:49:52.785736+00:00",
+  "scoring_notes": [
+    "Offline rescoring only; original raw responses retained and no new provider calls.",
+    "Strict JSON excludes Markdown; diagnostic accuracy extracts a leading fenced JSON object even when prose follows.",
+    "Observed public GPT5 content is result.result, Claude content is result.answer.",
+    "Accuracy normalization ignores case, whitespace and final periods, but does not rewrite entity names."
+  ]
+}

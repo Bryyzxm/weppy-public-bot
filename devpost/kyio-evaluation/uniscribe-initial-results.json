@@ -1,0 +1,68 @@
+{
+  "observed_at": "2026-10-15T11:52:43.222400+00:00",
+  "fixture": "voice-id.ogg",
+  "sha256": "895030106e63c0bc809f983da1c7d3fac7c358547260eee934462ff953292abe",
+  "request": {
+    "method": "POST",
+    "endpoint": "https://api.kyio.web.id/api/v2/ai/transcribe",
+    "multipart_field": "file",
+    "content_type": "audio/ogg",
+    "authentication": "none"
+  },
+  "http_status": 200,
+  "elapsed_ms": 35487.98,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "x-ratelimit-limit": "1000",
+    "x-ratelimit-remaining": "963",
+    "x-ratelimit-reset": "60"
+  },
+  "response": {
+    "status": true,
+    "result": {
+      "id": "7516465965044375552",
+      "text": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "duration": 16.103,
+      "language": "id",
+      "segments": [
+        {
+          "id": "0",
+          "start": 0,
+          "end": 16.096,
+          "text": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+          "speaker": null
+        }
+      ],
+      "audioUrl": {
+        "redacted_signed_url": true,
+        "scheme": "https",
+        "host": "shiyin.bf922d70183b00570ae0ab7e483fcf84.r2.cloudflarestorage.com",
+        "path_suffix": ".ogg",
+        "expires_seconds": "86400",
+        "sha256": "35fabe71ce16852a1d56e5127c611c1d941eb08a85fcaacedd195a190380bbe7",
+        "note": "Signed URL expiry is not proof of audio deletion or retention period."
+      },
+      "fileType": "ogg",
+      "fileSize": 49933
+    },
+    "timestamp": "2026-10-15T11:52:43.320Z",
+    "response_time": "34235ms"
+  },
+  "provider": "kyio_uniscribe",
+  "input_mode": "POST multipart file",
+  "transcript": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+  "score": {
+    "literal_word_error_rate": 0.2593,
+    "key_terms": {
+      "contoh nusantara": true,
+      "sari": true,
+      "manajer pembelian": true,
+      "mesin kopi": true,
+      "negosiasi": true,
+      "belum deal": true
+    },
+    "date_preserved": true,
+    "hallucination_on_silence": null
+  }
+}

@@ -1,0 +1,702 @@
+{
+  "started_at": "2026-10-15T09:47:53.241764+00:00",
+  "description": "Two actual Groq audio transcripts chained into real report extraction for both providers, plus 80-character and unknown-stage boundaries",
+  "limitations": [
+    "Voice chain starts from real Groq STT, not Kyio STT; cannot prove full Kyio voice replacement.",
+    "Long-field exact truncation is a deliberately stricter check than any possible semantic shortening.",
+    "Kyio uses public q adapter, not paid OpenAI-compatible API."
+  ],
+  "fixtures": [
+    {
+      "id": "voice_id_chained",
+      "today": "2026-10-15",
+      "report": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "expected": {
+        "institusi": [
+          "Contoh Nusantara",
+          "perusahaan Contoh Nusantara"
+        ],
+        "kontak": "Sari",
+        "role": "manajer pembelian",
+        "produk": "mesin kopi",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      }
+    },
+    {
+      "id": "voice_en_chained",
+      "today": "2026-10-15",
+      "report": " I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+      "expected": {
+        "institusi": "Example North Limited",
+        "kontak": "Alice",
+        "role": "procurement manager",
+        "produk": "coffee machines",
+        "tahap_deal": "Negosiasi",
+        "followup_date": "2026-10-20"
+      }
+    },
+    {
+      "id": "field_length_80",
+      "today": "2026-10-15",
+      "report": "Institusi persis: PT ContohContohContohContohContohContohContohContohContohContohContohContohContohContohContohContoh. Kontak Budi, jabatan pemilik, produk kopi, tahap Deal, follow-up 20 Oktober 2026.",
+      "expected": {
+        "institusi": "PT ContohContohContohContohContohContohContohContohContohContohContohContohConto",
+        "kontak": "Budi",
+        "role": "pemilik",
+        "produk": "kopi",
+        "tahap_deal": "Deal",
+        "followup_date": "2026-10-20"
+      }
+    },
+    {
+      "id": "unknown_stage",
+      "today": "2026-10-15",
+      "report": "Institusi PT Contoh Baru. Kontak Ana. Jabatan pemilik. Produk teh. Tahap tidak diketahui, tidak ada informasi apakah kunjungan, penawaran, negosiasi, deal atau follow-up. Tidak disebutkan jadwal lanjutan.",
+      "expected": {
+        "institusi": "PT Contoh Baru",
+        "kontak": "Ana",
+        "role": "pemilik",
+        "produk": "teh",
+        "tahap_deal": "",
+        "followup_date": "2026-10-18"
+      }
+    }
+  ],
+  "records": [
+    {
+      "provider": "groq",
+      "case": "voice_id_chained",
+      "started_at": "2026-10-15T09:47:53.241865+00:00",
+      "http_status": 200,
+      "elapsed_ms": 775.29,
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=0, no-store, no-cache, must-revalidate",
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "981",
+        "x-ratelimit-remaining-tokens": "7421",
+        "x-ratelimit-reset-requests": "27m21.6s",
+        "x-ratelimit-reset-tokens": "4.342s",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "id": "chatcmpl-fc7d978a-53d8-46b6-b784-c6e509441624",
+        "object": "chat.completion",
+        "created": 1792057673,
+        "model": "openai/gpt-oss-20b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"institusi\":\"Nusantara\",\"kontak\":\"Sari\",\"role\":\"manajer pembelian\",\"produk\":\"mesin kopi\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}",
+              "reasoning": "We need to extract into JSON with keys: institusi, kontak, role, produk, tahap_deal, followup_date. Use empty string if not stated. Stage must be one of Kunjungan awal, Penawaran harga, Negosiasi, Deal, Follow-up or empty. The report: \"Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.\"\n\nSo institusi: \"perusahaan contoh Nusantara\" maybe \"Nusantara\" but keep <=80 chars. Use \"Nusantara\". kontak: \"Sari\". role: \"manajer pembelian\". produk: \"mesin kopi\". tahap_deal: \"Negosiasi\". followup_date: \"2026-10-20\".\n\nCheck date: 20 Oktober 2026 => 2026-10-20. Good.\n\nReturn compact JSON. Ensure valid JSON."
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.312866474,
+          "prompt_tokens": 258,
+          "prompt_time": 0.012527114,
+          "completion_tokens": 266,
+          "completion_time": 0.281664959,
+          "total_tokens": 524,
+          "total_time": 0.294192073,
+          "completion_tokens_details": {
+            "reasoning_tokens": 208
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_e594c51153",
+        "x_groq": {
+          "id": "req_01m4zfc1mzem39hp7pbvphwk7x",
+          "seed": 218221462
+        },
+        "service_tier": "on_demand"
+      },
+      "openai_envelope": true,
+      "reported_model": "openai/gpt-oss-20b",
+      "usage": {
+        "queue_time": 0.312866474,
+        "prompt_tokens": 258,
+        "prompt_time": 0.012527114,
+        "completion_tokens": 266,
+        "completion_time": 0.281664959,
+        "total_tokens": 524,
+        "total_time": 0.294192073,
+        "completion_tokens_details": {
+          "reasoning_tokens": 208
+        }
+      },
+      "content": "{\"institusi\":\"Nusantara\",\"kontak\":\"Sari\",\"role\":\"manajer pembelian\",\"produk\":\"mesin kopi\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": false,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {
+          "institusi": {
+            "expected": [
+              "Contoh Nusantara",
+              "perusahaan Contoh Nusantara"
+            ],
+            "actual": "Nusantara"
+          }
+        },
+        "parsed_for_diagnostics": {
+          "institusi": "Nusantara",
+          "kontak": "Sari",
+          "role": "manajer pembelian",
+          "produk": "mesin kopi",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": false,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      }
+    },
+    {
+      "provider": "kyio_public",
+      "case": "voice_id_chained",
+      "started_at": "2026-10-15T09:47:54.020126+00:00",
+      "http_status": 200,
+      "elapsed_ms": 12606.61,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "976",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "answer": "```json\n{\n  \"institusi\": \"Perusahaan Contoh Nusantara\",\n  \"kontak\": \"Sari\",\n  \"role\": \"Manajer Pembelian\",\n  \"produk\": \"Mesin Kopi\",\n  \"tahap_deal\": \"Negosiasi\",\n  \"followup_date\": \"2026-10-20\"\n}\n```",
+          "model": "claude-haiku-4-5",
+          "result": {
+            "model": "claude-haiku-4-5",
+            "response": "```json\n{\n  \"institusi\": \"Perusahaan Contoh Nusantara\",\n  \"kontak\": \"Sari\",\n  \"role\": \"Manajer Pembelian\",\n  \"produk\": \"Mesin Kopi\",\n  \"tahap_deal\": \"Negosiasi\",\n  \"followup_date\": \"2026-10-20\"\n}\n```"
+          }
+        },
+        "timestamp": "2026-10-15T09:48:06.574Z",
+        "response_time": "11510ms"
+      },
+      "openai_envelope": false,
+      "reported_model": "claude-haiku-4-5",
+      "content": "```json\n{\n  \"institusi\": \"Perusahaan Contoh Nusantara\",\n  \"kontak\": \"Sari\",\n  \"role\": \"Manajer Pembelian\",\n  \"produk\": \"Mesin Kopi\",\n  \"tahap_deal\": \"Negosiasi\",\n  \"followup_date\": \"2026-10-20\"\n}\n```",
+      "score": {
+        "strict_json": false,
+        "schema_ok": false,
+        "worker_parser_ok": false,
+        "diagnostic_unfenced_json": true,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "Perusahaan Contoh Nusantara",
+          "kontak": "Sari",
+          "role": "Manajer Pembelian",
+          "produk": "Mesin Kopi",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      }
+    },
+    {
+      "provider": "groq",
+      "case": "voice_en_chained",
+      "started_at": "2026-10-15T09:48:06.630660+00:00",
+      "http_status": 200,
+      "elapsed_ms": 986.47,
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=0, no-store, no-cache, must-revalidate",
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "979",
+        "x-ratelimit-remaining-tokens": "7369",
+        "x-ratelimit-reset-requests": "30m14.4s",
+        "x-ratelimit-reset-tokens": "4.732s",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "id": "chatcmpl-90484ff9-2859-4ad4-adc4-cdd79082b2be",
+        "object": "chat.completion",
+        "created": 1792057687,
+        "model": "openai/gpt-oss-20b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"institusi\":\"Example North Limited\",\"kontak\":\"Alice\",\"role\":\"procurement manager\",\"produk\":\"coffee machines\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}",
+              "reasoning": "We need to extract into JSON with keys: institusi, kontak, role, produk, tahap_deal, followup_date. Provide empty string if not stated. Stage must be one of Kunjungan awal, Penawaran harga, Negosiasi, Deal, Follow-up or empty. In the report: \"I visited Example North Limited.\" => institusi: \"Example North Limited\". \"I met Alice, the procurement manager\" => kontak: \"Alice\", role: \"procurement manager\". \"to offer coffee machines\" => produk: \"coffee machines\". \"We are still negotiating and no contract has been signed.\" => tahap_deal: \"Negosiasi\". \"Follow up on October 20, 2026.\" => followup_date: \"2026-10-20\". Ensure each value <=80 chars. All good. JSON must be compact. Let's produce: {\"institusi\":\"Example North Limited\",\"kontak\":\"Alice\",\"role\":\"procurement manager\",\"produk\":\"coffee machines\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.386618055,
+          "prompt_tokens": 254,
+          "prompt_time": 0.014599529,
+          "completion_tokens": 278,
+          "completion_time": 0.375601434,
+          "total_tokens": 532,
+          "total_time": 0.390200963,
+          "completion_tokens_details": {
+            "reasoning_tokens": 224
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_d23c14756c",
+        "x_groq": {
+          "id": "req_01m4zfceptea8tkj9d4k7q5n4x",
+          "seed": 556533412
+        },
+        "service_tier": "on_demand"
+      },
+      "openai_envelope": true,
+      "reported_model": "openai/gpt-oss-20b",
+      "usage": {
+        "queue_time": 0.386618055,
+        "prompt_tokens": 254,
+        "prompt_time": 0.014599529,
+        "completion_tokens": 278,
+        "completion_time": 0.375601434,
+        "total_tokens": 532,
+        "total_time": 0.390200963,
+        "completion_tokens_details": {
+          "reasoning_tokens": 224
+        }
+      },
+      "content": "{\"institusi\":\"Example North Limited\",\"kontak\":\"Alice\",\"role\":\"procurement manager\",\"produk\":\"coffee machines\",\"tahap_deal\":\"Negosiasi\",\"followup_date\":\"2026-10-20\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "Example North Limited",
+          "kontak": "Alice",
+          "role": "procurement manager",
+          "produk": "coffee machines",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      }
+    },
+    {
+      "provider": "kyio_public",
+      "case": "voice_en_chained",
+      "started_at": "2026-10-15T09:48:19.025434+00:00",
+      "http_status": 200,
+      "elapsed_ms": 7741.54,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "972",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "answer": "```json\n{\n  \"institusi\": \"Example North Limited\",\n  \"kontak\": \"Alice\",\n  \"role\": \"procurement manager\",\n  \"produk\": \"coffee machines\",\n  \"tahap_deal\": \"Negosiasi\",\n  \"followup_date\": \"2026-10-20\"\n}\n```",
+          "model": "claude-haiku-4-5",
+          "result": {
+            "model": "claude-haiku-4-5",
+            "response": "```json\n{\n  \"institusi\": \"Example North Limited\",\n  \"kontak\": \"Alice\",\n  \"role\": \"procurement manager\",\n  \"produk\": \"coffee machines\",\n  \"tahap_deal\": \"Negosiasi\",\n  \"followup_date\": \"2026-10-20\"\n}\n```"
+          }
+        },
+        "timestamp": "2026-10-15T09:48:26.675Z",
+        "response_time": "6870ms"
+      },
+      "openai_envelope": false,
+      "reported_model": "claude-haiku-4-5",
+      "content": "```json\n{\n  \"institusi\": \"Example North Limited\",\n  \"kontak\": \"Alice\",\n  \"role\": \"procurement manager\",\n  \"produk\": \"coffee machines\",\n  \"tahap_deal\": \"Negosiasi\",\n  \"followup_date\": \"2026-10-20\"\n}\n```",
+      "score": {
+        "strict_json": false,
+        "schema_ok": false,
+        "worker_parser_ok": false,
+        "diagnostic_unfenced_json": true,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "Example North Limited",
+          "kontak": "Alice",
+          "role": "procurement manager",
+          "produk": "coffee machines",
+          "tahap_deal": "Negosiasi",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      }
+    },
+    {
+      "provider": "groq",
+      "case": "field_length_80",
+      "started_at": "2026-10-15T09:48:26.769941+00:00",
+      "http_status": 400,
+      "elapsed_ms": 1076.74,
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=0, no-store, no-cache, must-revalidate",
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "977",
+        "x-ratelimit-remaining-tokens": "7402",
+        "x-ratelimit-reset-requests": "33m7.2s",
+        "x-ratelimit-reset-tokens": "4.484s",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "error": {
+          "message": "Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.",
+          "type": "invalid_request_error",
+          "code": "json_validate_failed",
+          "failed_generation": ""
+        }
+      },
+      "score": {
+        "strict_json": false,
+        "schema_ok": false,
+        "usable_exact_report": false
+      }
+    },
+    {
+      "provider": "kyio_public",
+      "case": "field_length_80",
+      "started_at": "2026-10-15T09:48:44.030709+00:00",
+      "http_status": 200,
+      "elapsed_ms": 8849.46,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "969",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "answer": "```json\n{\n  \"institusi\": \"PT ContohContohContohContohContohContohContohContohContohContohC\",\n  \"kontak\": \"Budi\",\n  \"role\": \"pemilik\",\n  \"produk\": \"kopi\",\n  \"tahap_deal\": \"Deal\",\n  \"followup_date\": \"2026-10-20\"\n}\n```\n\n**Notes on extraction:**\n- **institusi**: Truncated to 80 characters (original exceeds limit)\n- **tahap_deal**: Mapped to \"Deal\" (valid stage)\n- **followup_date**: Used explicit date provided (20 Oktober 2026 = 2026-10-20)",
+          "model": "claude-haiku-4-5",
+          "result": {
+            "model": "claude-haiku-4-5",
+            "response": "```json\n{\n  \"institusi\": \"PT ContohContohContohContohContohContohContohContohContohContohC\",\n  \"kontak\": \"Budi\",\n  \"role\": \"pemilik\",\n  \"produk\": \"kopi\",\n  \"tahap_deal\": \"Deal\",\n  \"followup_date\": \"2026-10-20\"\n}\n```\n\n**Notes on extraction:**\n- **institusi**: Truncated to 80 characters (original exceeds limit)\n- **tahap_deal**: Mapped to \"Deal\" (valid stage)\n- **followup_date**: Used explicit date provided (20 Oktober 2026 = 2026-10-20)"
+          }
+        },
+        "timestamp": "2026-10-15T09:48:52.758Z",
+        "response_time": "7725ms"
+      },
+      "openai_envelope": false,
+      "reported_model": "claude-haiku-4-5",
+      "content": "```json\n{\n  \"institusi\": \"PT ContohContohContohContohContohContohContohContohContohContohC\",\n  \"kontak\": \"Budi\",\n  \"role\": \"pemilik\",\n  \"produk\": \"kopi\",\n  \"tahap_deal\": \"Deal\",\n  \"followup_date\": \"2026-10-20\"\n}\n```\n\n**Notes on extraction:**\n- **institusi**: Truncated to 80 characters (original exceeds limit)\n- **tahap_deal**: Mapped to \"Deal\" (valid stage)\n- **followup_date**: Used explicit date provided (20 Oktober 2026 = 2026-10-20)",
+      "score": {
+        "strict_json": false,
+        "schema_ok": false,
+        "worker_parser_ok": false,
+        "diagnostic_unfenced_json": true,
+        "checks": {
+          "institusi": false,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {
+          "institusi": {
+            "expected": "PT ContohContohContohContohContohContohContohContohContohContohContohContohConto",
+            "actual": "PT ContohContohContohContohContohContohContohContohContohContohC"
+          }
+        },
+        "parsed_for_diagnostics": {
+          "institusi": "PT ContohContohContohContohContohContohContohContohContohContohC",
+          "kontak": "Budi",
+          "role": "pemilik",
+          "produk": "kopi",
+          "tahap_deal": "Deal",
+          "followup_date": "2026-10-20"
+        },
+        "all_fields_correct_diagnostic": false,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      }
+    },
+    {
+      "provider": "groq",
+      "case": "unknown_stage",
+      "started_at": "2026-10-15T09:48:52.883140+00:00",
+      "http_status": 200,
+      "elapsed_ms": 918.73,
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=0, no-store, no-cache, must-revalidate",
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "976",
+        "x-ratelimit-remaining-tokens": "7379",
+        "x-ratelimit-reset-requests": "34m33.6s",
+        "x-ratelimit-reset-tokens": "4.657s",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "id": "chatcmpl-b850fd0d-8648-4568-832e-3a504f4ddc9f",
+        "object": "chat.completion",
+        "created": 1792057733,
+        "model": "openai/gpt-oss-20b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"institusi\":\"PT Contoh Baru\",\"kontak\":\"Ana\",\"role\":\"pemilik\",\"produk\":\"teh\",\"tahap_deal\":\"\",\"followup_date\":\"2026-10-18\"}",
+              "reasoning": "We need to produce JSON with keys: institusi, kontak, role, produk, tahap_deal, followup_date. Use empty string for missing facts. Stage must be one of Kunjungan awal, Penawaran harga, Negosiasi, Deal, Follow-up or empty. followup_date: explicit dates win; tomorrow is +1 day, next week +7 days, otherwise +3 days from today 2026-10-15. No explicit date given, so +3 days => 2026-10-18. But the instruction says \"Tidak disebutkan jadwal lanjutan.\" So no followup date? But rule says if no explicit date, we set +3 days. But maybe we should set empty string because no mention. The instruction: \"followup_date is YYYY-MM-DD; explicit dates win; tomorrow is +1 day, next week +7 days, otherwise +3 days from today 2026-10-15.\" So if no explicit date, we default +3 days. So we set 2026-10-18. But the user says \"Tidak disebutkan jadwal lanjutan.\" That means no followup date. But rule overrides? The instruction says \"followup_date is YYYY-MM-DD; explicit dates win; tomorrow is +1 day, next week +7 days, otherwise +3 days from today 2026-10-15.\" So we should set +3 days. So 2026-10-18.\n\nAlso stage unknown: empty string.\n\nEnsure each value <=80 chars. All fine.\n\nReturn compact JSON."
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.308282231,
+          "prompt_tokens": 266,
+          "prompt_time": 0.018288877,
+          "completion_tokens": 375,
+          "completion_time": 0.422030636,
+          "total_tokens": 641,
+          "total_time": 0.440319513,
+          "completion_tokens_details": {
+            "reasoning_tokens": 325
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_66891002f6",
+        "x_groq": {
+          "id": "req_01m4zfdvw9ejmvx2r2001ka9b6",
+          "seed": 2031232953
+        },
+        "service_tier": "on_demand"
+      },
+      "openai_envelope": true,
+      "reported_model": "openai/gpt-oss-20b",
+      "usage": {
+        "queue_time": 0.308282231,
+        "prompt_tokens": 266,
+        "prompt_time": 0.018288877,
+        "completion_tokens": 375,
+        "completion_time": 0.422030636,
+        "total_tokens": 641,
+        "total_time": 0.440319513,
+        "completion_tokens_details": {
+          "reasoning_tokens": 325
+        }
+      },
+      "content": "{\"institusi\":\"PT Contoh Baru\",\"kontak\":\"Ana\",\"role\":\"pemilik\",\"produk\":\"teh\",\"tahap_deal\":\"\",\"followup_date\":\"2026-10-18\"}",
+      "score": {
+        "strict_json": true,
+        "schema_ok": true,
+        "worker_parser_ok": true,
+        "diagnostic_unfenced_json": false,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Baru",
+          "kontak": "Ana",
+          "role": "pemilik",
+          "produk": "teh",
+          "tahap_deal": "",
+          "followup_date": "2026-10-18"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": true,
+        "fabricated_missing_fields": []
+      }
+    },
+    {
+      "provider": "kyio_public",
+      "case": "unknown_stage",
+      "started_at": "2026-10-15T09:49:09.035999+00:00",
+      "http_status": 200,
+      "elapsed_ms": 9954.89,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
+        "access-control-max-age": "86400",
+        "x-ratelimit-limit": "1000",
+        "x-ratelimit-remaining": "967",
+        "x-ratelimit-reset": "60",
+        "cf-cache-status": "DYNAMIC"
+      },
+      "response": {
+        "status": true,
+        "result": {
+          "answer": "```json\n{\n  \"institusi\": \"PT Contoh Baru\",\n  \"kontak\": \"Ana\",\n  \"role\": \"pemilik\",\n  \"produk\": \"teh\",\n  \"tahap_deal\": \"\",\n  \"followup_date\": \"2026-10-18\"\n}\n```\n\n**Reasoning:**\n- **institusi**: Extracted directly from \"PT Contoh Baru\"\n- **kontak**: Name \"Ana\" stated\n- **role**: \"pemilik\" (owner) from \"Jabatan pemilik\"\n- **produk**: \"teh\" explicitly mentioned\n- **tahap_deal**: Empty because the report explicitly states tahap is unknown with no information about visit type, offer, negotiation, deal, or follow-up\n- **followup_date**: No explicit date or relative reference (like \"tomorrow\" or \"next week\") was mentioned, so default to +3 days from today (2026-10-15 + 3 = **2026-10-18**)",
+          "model": "claude-haiku-4-5",
+          "result": {
+            "model": "claude-haiku-4-5",
+            "response": "```json\n{\n  \"institusi\": \"PT Contoh Baru\",\n  \"kontak\": \"Ana\",\n  \"role\": \"pemilik\",\n  \"produk\": \"teh\",\n  \"tahap_deal\": \"\",\n  \"followup_date\": \"2026-10-18\"\n}\n```\n\n**Reasoning:**\n- **institusi**: Extracted directly from \"PT Contoh Baru\"\n- **kontak**: Name \"Ana\" stated\n- **role**: \"pemilik\" (owner) from \"Jabatan pemilik\"\n- **produk**: \"teh\" explicitly mentioned\n- **tahap_deal**: Empty because the report explicitly states tahap is unknown with no information about visit type, offer, negotiation, deal, or follow-up\n- **followup_date**: No explicit date or relative reference (like \"tomorrow\" or \"next week\") was mentioned, so default to +3 days from today (2026-10-15 + 3 = **2026-10-18**)"
+          }
+        },
+        "timestamp": "2026-10-15T09:49:18.925Z",
+        "response_time": "9087ms"
+      },
+      "openai_envelope": false,
+      "reported_model": "claude-haiku-4-5",
+      "content": "```json\n{\n  \"institusi\": \"PT Contoh Baru\",\n  \"kontak\": \"Ana\",\n  \"role\": \"pemilik\",\n  \"produk\": \"teh\",\n  \"tahap_deal\": \"\",\n  \"followup_date\": \"2026-10-18\"\n}\n```\n\n**Reasoning:**\n- **institusi**: Extracted directly from \"PT Contoh Baru\"\n- **kontak**: Name \"Ana\" stated\n- **role**: \"pemilik\" (owner) from \"Jabatan pemilik\"\n- **produk**: \"teh\" explicitly mentioned\n- **tahap_deal**: Empty because the report explicitly states tahap is unknown with no information about visit type, offer, negotiation, deal, or follow-up\n- **followup_date**: No explicit date or relative reference (like \"tomorrow\" or \"next week\") was mentioned, so default to +3 days from today (2026-10-15 + 3 = **2026-10-18**)",
+      "score": {
+        "strict_json": false,
+        "schema_ok": false,
+        "worker_parser_ok": false,
+        "diagnostic_unfenced_json": true,
+        "checks": {
+          "institusi": true,
+          "kontak": true,
+          "role": true,
+          "produk": true,
+          "tahap_deal": true,
+          "followup_date": true
+        },
+        "mismatches": {},
+        "parsed_for_diagnostics": {
+          "institusi": "PT Contoh Baru",
+          "kontak": "Ana",
+          "role": "pemilik",
+          "produk": "teh",
+          "tahap_deal": "",
+          "followup_date": "2026-10-18"
+        },
+        "all_fields_correct_diagnostic": true,
+        "usable_exact_report": false,
+        "fabricated_missing_fields": []
+      }
+    }
+  ],
+  "finished_at": "2026-10-15T09:49:18.993213+00:00",
+  "summary": {
+    "groq": {
+      "attempts": 4,
+      "http_200": 3,
+      "strict_json": 3,
+      "schema_ok": 3,
+      "usable_exact_reports": 2,
+      "correct_fields_including_unfenced_diagnostics": 17,
+      "diagnostic_objects": 3,
+      "total_expected_fields": 24,
+      "fabricated_missing_fields": 0,
+      "latency_median_ms": 952.6,
+      "latency_p95_ms": 1076.74,
+      "latency_max_ms": 1076.74,
+      "transport_failures": 0,
+      "non_200": [
+        {
+          "case": "field_length_80",
+          "status": 400
+        }
+      ],
+      "repeats": {
+        "complete_id": {
+          "attempts": 0,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": false
+        },
+        "missing_facts": {
+          "attempts": 0,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": false
+        }
+      }
+    },
+    "kyio_public": {
+      "attempts": 4,
+      "http_200": 4,
+      "strict_json": 0,
+      "schema_ok": 0,
+      "usable_exact_reports": 0,
+      "correct_fields_including_unfenced_diagnostics": 23,
+      "diagnostic_objects": 4,
+      "total_expected_fields": 24,
+      "fabricated_missing_fields": 0,
+      "latency_median_ms": 9402.17,
+      "latency_p95_ms": 12606.61,
+      "latency_max_ms": 12606.61,
+      "transport_failures": 0,
+      "non_200": [],
+      "repeats": {
+        "complete_id": {
+          "attempts": 0,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": false
+        },
+        "missing_facts": {
+          "attempts": 0,
+          "all_valid_diagnostic": true,
+          "identical_diagnostic_objects": false
+        }
+      }
+    }
+  },
+  "scoring_notes": [
+    "Offline rescoring only; original raw responses retained and no new provider calls.",
+    "Strict JSON excludes Markdown; diagnostic accuracy extracts a leading fenced JSON object even when prose follows.",
+    "Observed public GPT5 content is result.result, Claude content is result.answer.",
+    "Accuracy normalization ignores case, whitespace and final periods, but does not rewrite entity names."
+  ]
+}

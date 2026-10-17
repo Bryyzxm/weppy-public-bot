@@ -1,0 +1,8 @@
+{
+  "origin": "local workerd",
+  "http_status": 200,
+  "elapsed_ms": 6113,
+  "content_type": "application/json",
+  "response_text": "{\"status\":true,\"result\":{\"sessionId\":\"yp7lPkXl-1792058079-1c2c0f388c0964e1\",\"result\":\"{\\\"ok\\\":true}\"},\"timestamp\":\"2026-10-15T09:54:41.905Z\",\"response_time\":\"5209ms\"}",
+  "scope": "Actual outbound HTTP from locally installed Cloudflare workerd; does not prove deployed edge egress, whitelist, D1, or Telegram operation."
+}

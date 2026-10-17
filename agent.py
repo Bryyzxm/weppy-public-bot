@@ -16,7 +16,11 @@ import os
 import re
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+DEFAULT_MODEL = "openai/gpt-oss-20b"
+
+
+def _runtime_env_value(name: str, default: str = "") -> str:
+    return os.getenv(name, default)
 
 FIELD_ORDER = ["institusi", "kontak", "role", "produk", "tahap_deal"]
 
@@ -49,9 +53,9 @@ class GroqError(RuntimeError):
 
 
 def is_stub() -> bool:
-    if os.getenv("GROQ_STUB", "0") == "1":
+    if _runtime_env_value("GROQ_STUB", "0") == "1":
         return True
-    key = os.getenv("GROQ_API_KEY", "")
+    key = _runtime_env_value("GROQ_API_KEY", "")
     return not key or "dummy" in key.lower() or "test" in key.lower()
 
 
@@ -75,10 +79,10 @@ def _extract_via_groq(text: str) -> dict:
     today = _dt.date.today().isoformat()
     resp = requests.post(
         GROQ_URL,
-        headers={"Authorization": f"Bearer {os.getenv('GROQ_API_KEY', '')}",
+        headers={"Authorization": f"Bearer {_runtime_env_value('GROQ_API_KEY')}",
                  "Content-Type": "application/json"},
         json={
-            "model": os.getenv("GROQ_MODEL", DEFAULT_MODEL),
+            "model": _runtime_env_value("GROQ_MODEL", DEFAULT_MODEL),
             "temperature": 0,
             "max_tokens": 500,
             "response_format": {"type": "json_object"},

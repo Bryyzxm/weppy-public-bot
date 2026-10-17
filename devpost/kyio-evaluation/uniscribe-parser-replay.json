@@ -1,0 +1,101 @@
+{
+  "source": "Unmodified production transcribe() bundled in memory and invoked with saved provider responses",
+  "limitations": "Telegram getFile/download are offline test doubles; proves response parser behavior only, not real Telegram integration, media upload, timeout or deployed Worker egress.",
+  "records": [
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-id.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 200,
+      "transcript": "",
+      "matches_captured_transcript": false,
+      "nonempty": false
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-id.ogg",
+      "adapter": "result_text_adapter",
+      "http_status": 200,
+      "transcript": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "matches_captured_transcript": true,
+      "nonempty": true
+    },
+    {
+      "provider": "groq_fresh",
+      "fixture": "voice-id.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 200,
+      "transcript": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "matches_captured_transcript": true,
+      "nonempty": true
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-en.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 200,
+      "transcript": "",
+      "matches_captured_transcript": false,
+      "nonempty": false
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-en.ogg",
+      "adapter": "result_text_adapter",
+      "http_status": 200,
+      "transcript": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+      "matches_captured_transcript": true,
+      "nonempty": true
+    },
+    {
+      "provider": "groq_fresh",
+      "fixture": "voice-en.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 200,
+      "transcript": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+      "matches_captured_transcript": true,
+      "nonempty": true
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-id-noisy.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 200,
+      "transcript": "",
+      "matches_captured_transcript": false,
+      "nonempty": false
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "voice-id-noisy.ogg",
+      "adapter": "result_text_adapter",
+      "http_status": 200,
+      "transcript": "Saya mengunjungi perusahaan contoh Nusantara, bertemu Sari, manajer pembelian, menawarkan mesin kopi, masih negosiasi, belum deal, hubungi lagi tanggal 20 Oktober 2026.",
+      "matches_captured_transcript": true,
+      "nonempty": true
+    },
+    {
+      "provider": "groq_fresh",
+      "fixture": "voice-id-noisy.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 200,
+      "transcript": "Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "matches_captured_transcript": true,
+      "nonempty": true
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "silence.ogg",
+      "adapter": "unchanged_response",
+      "http_status": 429,
+      "error": "Groq transcription failed"
+    },
+    {
+      "provider": "kyio_uniscribe",
+      "fixture": "silence.ogg",
+      "adapter": "result_text_adapter",
+      "http_status": 429,
+      "error": "Groq transcription failed"
+    }
+  ]
+}

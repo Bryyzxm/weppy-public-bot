@@ -1,0 +1,215 @@
+{
+  "started_at": "2026-10-15T09:43:34.820376+00:00",
+  "provider": "Groq",
+  "model": "whisper-large-v3",
+  "endpoint": "https://api.groq.com/openai/v1/audio/transcriptions",
+  "production_contract": "multipart model + response_format=json + file voice.ogg audio/ogg; no language or prompt field",
+  "kyio": {
+    "status": "blocked",
+    "reason": "No accessible exact official STT/TTS endpoint contract and no Kyio key; no endpoint guessing or audio requests."
+  },
+  "limitations": [
+    "Synthetic speech, not real Telegram microphone speech or accent diversity.",
+    "Word error rate is literal, so number formatting can count as an error despite preserved meaning.",
+    "No production Telegram or Cloudflare deployment exercised."
+  ],
+  "fixtures": [
+    {
+      "file": "voice-id.ogg",
+      "reference": "Saya mengunjungi perusahaan Contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal dua puluh Oktober dua ribu dua puluh enam.",
+      "expected_terms": [
+        "contoh nusantara",
+        "sari",
+        "manajer pembelian",
+        "mesin kopi",
+        "negosiasi",
+        "belum deal"
+      ],
+      "language": "id",
+      "source": "macOS say Damayanti id_ID, 145 words/minute"
+    },
+    {
+      "file": "voice-en.ogg",
+      "reference": "I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October twentieth, twenty twenty six.",
+      "expected_terms": [
+        "example north",
+        "alice",
+        "procurement manager",
+        "coffee machines",
+        "negotiating",
+        "no contract"
+      ],
+      "language": "en",
+      "source": "macOS say Samantha en_US, 145 words/minute"
+    },
+    {
+      "file": "voice-id-noisy.ogg",
+      "reference": "Saya mengunjungi perusahaan Contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal dua puluh Oktober dua ribu dua puluh enam.",
+      "expected_terms": [
+        "contoh nusantara",
+        "sari",
+        "manajer pembelian",
+        "mesin kopi",
+        "negosiasi",
+        "belum deal"
+      ],
+      "language": "id",
+      "source": "voice-id.ogg mixed with pink noise at amplitude 0.025; not a calibrated SNR test"
+    },
+    {
+      "file": "silence.ogg",
+      "reference": "",
+      "expected_terms": [],
+      "language": "none",
+      "source": "3 seconds generated digital silence"
+    }
+  ],
+  "records": [
+    {
+      "fixture": "voice-id.ogg",
+      "sha256": "895030106e63c0bc809f983da1c7d3fac7c358547260eee934462ff953292abe",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "opus",
+            "sample_rate": "48000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "16.103021",
+          "size": "49933"
+        }
+      },
+      "http_status": 200,
+      "elapsed_ms": 571.65,
+      "response": {
+        "text": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+        "x_groq": {
+          "id": "req_01m4zf45bmehg94cd61y2kek7z"
+        }
+      },
+      "transcript": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "literal_word_error_rate": 0.2593,
+      "key_terms": {
+        "contoh nusantara": true,
+        "sari": true,
+        "manajer pembelian": true,
+        "mesin kopi": true,
+        "negosiasi": true,
+        "belum deal": true
+      },
+      "hallucination_on_silence": null
+    },
+    {
+      "fixture": "voice-en.ogg",
+      "sha256": "013776e3890383d8abf646f22a5056f215256ca0c5e1506472570883e61be186",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "opus",
+            "sample_rate": "48000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "14.548458",
+          "size": "44647"
+        }
+      },
+      "http_status": 200,
+      "elapsed_ms": 621.1,
+      "response": {
+        "text": " I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+        "x_groq": {
+          "id": "req_01m4zf45xre3mvz8cccvbzz6h4"
+        }
+      },
+      "transcript": " I visited Example North Limited. I met Alice, the procurement manager, to offer coffee machines. We are still negotiating and no contract has been signed. Follow up on October 20, 2026.",
+      "literal_word_error_rate": 0.1212,
+      "key_terms": {
+        "example north": true,
+        "alice": true,
+        "procurement manager": true,
+        "coffee machines": true,
+        "negotiating": true,
+        "no contract": true
+      },
+      "hallucination_on_silence": null
+    },
+    {
+      "fixture": "voice-id-noisy.ogg",
+      "sha256": "5b7e20c6a72eeba2c5a572586bcba1e236c44157f295ad70590f8d5ffe07cf61",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "opus",
+            "sample_rate": "48000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "16.103021",
+          "size": "48927"
+        }
+      },
+      "http_status": 200,
+      "elapsed_ms": 568.39,
+      "response": {
+        "text": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+        "x_groq": {
+          "id": "req_01m4zf46hxepnsffdqa1vgzwgh"
+        }
+      },
+      "transcript": " Saya mengunjungi perusahaan contoh Nusantara. Bertemu Sari, manajer pembelian. Menawarkan mesin kopi. Masih negosiasi, belum deal. Hubungi lagi tanggal 20 Oktober 2026.",
+      "literal_word_error_rate": 0.2593,
+      "key_terms": {
+        "contoh nusantara": true,
+        "sari": true,
+        "manajer pembelian": true,
+        "mesin kopi": true,
+        "negosiasi": true,
+        "belum deal": true
+      },
+      "hallucination_on_silence": null
+    },
+    {
+      "fixture": "silence.ogg",
+      "sha256": "e52cd34a96181fc896b832a67dbf1e9b2fa781c668c789ad0711932e217f9546",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "opus",
+            "sample_rate": "48000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "3.006500",
+          "size": "847"
+        }
+      },
+      "http_status": 200,
+      "elapsed_ms": 330.17,
+      "response": {
+        "text": " you",
+        "x_groq": {
+          "id": "req_01m4zf473yec7vf0wsb295byqp"
+        }
+      },
+      "transcript": " you",
+      "literal_word_error_rate": null,
+      "key_terms": {},
+      "hallucination_on_silence": true
+    }
+  ],
+  "finished_at": "2026-10-15T09:43:37.030623+00:00"
+}
