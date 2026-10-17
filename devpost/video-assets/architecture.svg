@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <text x="800" y="86" text-anchor="middle" font-size="46" font-weight="700" fill="#0f172a">How Weppy works</text>
+  <text x="800" y="126" text-anchor="middle" font-size="24" fill="#64748b">Serverless Telegram bot on the Cloudflare free tier</text>
+
+  <!-- Telegram -->
+  <g>
+    <rect x="80" y="300" width="300" height="180" rx="18" fill="#e7f0fb" stroke="#2aabee" stroke-width="3"/>
+    <text x="230" y="356" text-anchor="middle" font-size="30" font-weight="700" fill="#0f172a">Telegram</text>
+    <text x="230" y="396" text-anchor="middle" font-size="21" fill="#334155">voice note or text</text>
+    <text x="230" y="428" text-anchor="middle" font-size="21" fill="#334155">private chat only</text>
+  </g>
+
+  <!-- Worker -->
+  <g>
+    <rect x="520" y="260" width="380" height="260" rx="18" fill="#fff7ed" stroke="#f97316" stroke-width="3"/>
+    <text x="710" y="316" text-anchor="middle" font-size="30" font-weight="700" fill="#0f172a">Cloudflare Worker</text>
+    <text x="710" y="360" text-anchor="middle" font-size="21" fill="#334155">verifies webhook secret</text>
+    <text x="710" y="392" text-anchor="middle" font-size="21" fill="#334155">onboarding, menu, recap</text>
+    <text x="710" y="424" text-anchor="middle" font-size="21" fill="#334155">clarifying questions + Skip</text>
+    <text x="710" y="468" text-anchor="middle" font-size="20" fill="#9a3412">TypeScript, Fetch handler</text>
+  </g>
+
+  <!-- Groq -->
+  <g>
+    <rect x="1040" y="150" width="420" height="170" rx="18" fill="#f1f5f9" stroke="#475569" stroke-width="3"/>
+    <text x="1250" y="206" text-anchor="middle" font-size="30" font-weight="700" fill="#0f172a">Groq API</text>
+    <text x="1250" y="248" text-anchor="middle" font-size="21" fill="#334155">voice transcription</text>
+    <text x="1250" y="280" text-anchor="middle" font-size="21" fill="#334155">strict-JSON field extraction</text>
+  </g>
+
+  <!-- D1 -->
+  <g>
+    <rect x="1040" y="420" width="420" height="170" rx="18" fill="#f0fdf4" stroke="#16a34a" stroke-width="3"/>
+    <text x="1250" y="476" text-anchor="middle" font-size="30" font-weight="700" fill="#0f172a">Cloudflare D1 (SQLite)</text>
+    <text x="1250" y="518" text-anchor="middle" font-size="21" fill="#334155">notes keyed by owner_id + id</text>
+    <text x="1250" y="550" text-anchor="middle" font-size="21" fill="#334155">owner_id = Telegram chat_id</text>
+  </g>
+
+  <!-- Cron -->
+  <g>
+    <rect x="520" y="620" width="380" height="170" rx="18" fill="#faf5ff" stroke="#9333ea" stroke-width="3"/>
+    <text x="710" y="676" text-anchor="middle" font-size="30" font-weight="700" fill="#0f172a">Cron Trigger</text>
+    <text x="710" y="718" text-anchor="middle" font-size="21" fill="#334155">every minute, Asia/Jakarta</text>
+    <text x="710" y="750" text-anchor="middle" font-size="21" fill="#334155">atomic per-day claim per user</text>
+  </g>
+
+  <!-- arrows -->
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <line x1="380" y1="390" x2="512" y2="390" stroke="#475569" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="900" y1="330" x2="1032" y2="255" stroke="#475569" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="1032" y1="480" x2="900" y2="430" stroke="#475569" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="710" y1="520" x2="710" y2="612" stroke="#475569" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="900" y1="700" x2="1032" y2="560" stroke="#475569" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="1040" y1="540" x2="1040" y2="600" stroke="#475569" stroke-width="3" fill="none"/>
+  <path d="M1040,600 Q1040,820 700,820 Q380,820 230,480" stroke="#475569" stroke-width="3" fill="none" marker-end="url(#a)" stroke-dasharray="8 6"/>
+  <text x="640" y="858" text-anchor="middle" font-size="20" fill="#64748b">replies and scheduled reminders go back to the owner's own chat</text>
+
+  <text x="80" y="836" font-size="20" fill="#64748b">No servers to keep awake. No shared customer data.</text>
+</svg>
