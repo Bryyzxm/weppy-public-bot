@@ -126,9 +126,16 @@ CREATE TABLE user_activity (
   last_seen_at TEXT NOT NULL
 );
 CREATE INDEX user_activity_by_last_seen ON user_activity(last_seen_at);
+CREATE TABLE user_days (
+  owner_id TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (owner_id, day)
+);
+CREATE INDEX user_days_by_day ON user_days(day);
+-- Applying the schema also backfills one row per owner per note-creation day.
 ```
 
-Every note query includes the owner ID. D1 has no public read endpoint; CSV is generated in memory and sent to its owner. The owner-only `/admin/stats` endpoint requires the `ANALYTICS_ADMIN_TOKEN` secret and returns aggregate counts only, never chat IDs or profiles. “Active” means a private chat interaction in the last five minutes, not a Telegram online-presence signal. Legacy Python JSON is not migrated into D1 automatically.
+Every note query includes the owner ID. D1 has no public read endpoint; CSV is generated in memory and sent to its owner. The owner-only `/admin/stats` endpoint requires the `ANALYTICS_ADMIN_TOKEN` secret and returns aggregate counts only, never chat IDs or profiles. “Active” means a private chat interaction in the last five minutes, not a Telegram online-presence signal; per-day actives, returning users, and note authors come from aggregate counts in `user_days`. Legacy Python JSON is not migrated into D1 automatically.
 
 ### Cron Scheduler
 
@@ -138,7 +145,7 @@ Cron `*/1 * * * *` selects due onboarded profiles through indexed schedule field
 
 ### Worker Configuration and Tests
 
-`src/worker.ts` owns webhook, private admin stats, and scheduled handlers. `/admin/stats` returns active private-chat users (last five minutes) and total distinct users with a profile or activity record. It requires `Authorization: Bearer <ANALYTICS_ADMIN_TOKEN>` and returns aggregate counts only. `src/delivery.ts` owns the atomic per-user schedule claim. `schema.sql` creates D1 tables/indexes; `wrangler.jsonc` binds D1 and Cron. `tests/worker.test.ts` covers the real D1 runtime, owner isolation, protected aggregate stats, callbacks, and concurrent delivery claims.
+`src/worker.ts` owns webhook, private admin stats, and scheduled handlers. `/admin/stats` returns active private-chat users (last five minutes), total distinct users with a profile or activity record, distinct users active on the current WIB day and within 7/30 days, users active on two or more WIB days, note authors, and a 14-day per-day active series. It requires `Authorization: Bearer <ANALYTICS_ADMIN_TOKEN>` and returns aggregate counts only. `src/delivery.ts` owns the atomic per-user schedule claim. `schema.sql` creates D1 tables/indexes; `wrangler.jsonc` binds D1 and Cron. `tests/worker.test.ts` covers the real D1 runtime, owner isolation, protected aggregate stats, callbacks, and concurrent delivery claims.
 
 ## Failure Modes and Limits
 

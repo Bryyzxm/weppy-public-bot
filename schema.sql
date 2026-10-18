@@ -28,6 +28,19 @@ CREATE TABLE IF NOT EXISTS user_activity (
 CREATE INDEX IF NOT EXISTS user_activity_by_last_seen
   ON user_activity(last_seen_at);
 
+CREATE TABLE IF NOT EXISTS user_days (
+  owner_id TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (owner_id, day)
+);
+CREATE INDEX IF NOT EXISTS user_days_by_day
+  ON user_days(day);
+
+-- Backfill: one row per owner per day a note was created, so usage that
+-- predates user_days stays countable. Idempotent; safe to re-apply.
+INSERT OR IGNORE INTO user_days(owner_id, day)
+  SELECT DISTINCT owner_id, substr(created_at, 1, 10) FROM notes;
+
 CREATE TABLE IF NOT EXISTS processed_updates (
   update_id INTEGER PRIMARY KEY,
   created_at TEXT NOT NULL

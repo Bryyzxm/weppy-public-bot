@@ -10,7 +10,7 @@ Weppy turns a B2B sales visit message or voice note into a structured personal p
 
 ## Stack
 
-TypeScript Cloudflare Worker (`src/worker.ts`) + Cloudflare D1 (SQLite) + Telegram Bot API + Groq (chat extraction and audio transcription), with a Worker Cron Trigger scheduled in `Asia/Jakarta` (`*/1 * * * *`). Integration tests use Vitest with `@cloudflare/vitest-plugin` against a local D1 emulator (`npm run test`, 11 tests covering owner isolation, webhook-secret rejection, and atomic Cron claims). The earlier Flask/polling prototype (`app.py`, `telegram_poll.py`) is kept as a local demo only.
+TypeScript Cloudflare Worker (`src/worker.ts`) + Cloudflare D1 (SQLite) + Telegram Bot API + Groq (chat extraction and audio transcription), with a Worker Cron Trigger scheduled in `Asia/Jakarta` (`*/1 * * * *`). Integration tests use Vitest with `@cloudflare/vitest-plugin` against a local D1 emulator (`npm run test`, 12 tests covering owner isolation, webhook-secret rejection, atomic Cron claims, and usage statistics). The earlier Flask/polling prototype (`app.py`, `telegram_poll.py`) is kept as a local demo only.
 
 ## Public deployment (Cloudflare Workers + D1)
 
@@ -67,7 +67,14 @@ npx wrangler secret put ANALYTICS_ADMIN_TOKEN
 npx wrangler deploy
 ```
 
-Token admin yang dibuat untuk deployment ini tersimpan lokal di `.analytics-admin-token` (jangan commit atau bagikan file itu). Dari root repository, jalankan:
+Token admin yang dibuat untuk deployment ini tersimpan lokal di `.analytics-admin-token` (jangan commit atau bagikan file itu). Dari root repository, jalankan `npm run stats` untuk ringkasan yang mudah dibaca:
+
+```bash
+npm run stats                                            # pakai Worker publik + .analytics-admin-token
+WORKER_URL=http://127.0.0.1:8787 npm run stats           # Worker lokal (ANALYTICS_ADMIN_TOKEN dari .dev.vars)
+```
+
+Untuk JSON mentah:
 
 ```bash
 curl -sS -H "Authorization: Bearer $(cat .analytics-admin-token)" "https://weppy-public-bot.bryyzxm.workers.dev/admin/stats"
@@ -75,7 +82,20 @@ curl -sS -H "Authorization: Bearer $(cat .analytics-admin-token)" "https://weppy
 
 Jika token dibuat ulang, simpan token barunya di file tersebut sebelum memakai perintah di atas. Jangan mengetikkan token langsung ke command line atau membagikan output yang memuatnya.
 
-Response shape: `{"active_users":<n>,"total_users":<n>,"active_window_minutes":5}`. Active means a private-chat user sent a message or callback during the last five minutes; Telegram does not provide an online/presence signal, so this is recent activity rather than a live-online count. Total counts distinct users with a stored profile or recorded activity. Keep the token private. Omitting `ANALYTICS_ADMIN_TOKEN` disables the endpoint, and unauthorized requests return 403.
+Response shape:
+
+```json
+{"active_users":0,"active_window_minutes":5,"total_users":2,"active_today":1,"active_7d":2,"active_30d":2,"returning_users":1,"note_users":2,"daily_active":[{"day":"2026-10-14","users":2},{"day":"2026-10-18","users":1}],"generated_at":"2026-10-18T11:10:50.484Z"}
+```
+
+- `active_users` — distinct private-chat users who sent a message or callback in the last five minutes. Telegram offers no online/presence signal, so this is recent activity, not a live-online count.
+- `total_users` — distinct users with a stored profile or recorded activity, i.e. everyone who ever contacted the bot.
+- `active_today` / `active_7d` / `active_30d` — distinct users with at least one message or callback on the current WIB day, or within the last 7 / 30 days.
+- `returning_users` — distinct users active on two or more different WIB days, i.e. people who came back.
+- `note_users` — distinct users with at least one stored pipeline note, i.e. people who used the core flow rather than only `/start`.
+- `daily_active` — per-day distinct users for the last 14 WIB days, oldest first.
+
+`user_days` stores one row per user per active WIB day; applying `schema.sql` also backfills note-creation days, so history from before that table existed stays countable. No chat IDs, names, or note contents are returned. Keep the token private. Omitting `ANALYTICS_ADMIN_TOKEN` disables the endpoint, and unauthorized requests return 403.
 
 Never put a token directly into command history. If a bot or API token was exposed, revoke/rotate it at its provider; rotate `ANALYTICS_ADMIN_TOKEN` with `npx wrangler secret put ANALYTICS_ADMIN_TOKEN`.
 

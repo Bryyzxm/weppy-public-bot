@@ -13,6 +13,7 @@ Weppy turns a sales visit message or voice note into a structured personal pipel
 - Voice notes → Groq transcription → structured four-field report
 - Clarification prompts and Skip, with persistent private drafts
 - User-specific follow-up reminders and daily recaps
+- Owner-only usage statistics (distinct users, 7/30-day actives, returning users, note authors) via `/admin/stats`
 - Owner-scoped note detail callbacks and CSV export
 - Indonesia / English replies
 - Cloudflare Worker + D1 persistence, best-effort free tier
@@ -38,6 +39,10 @@ Weppy turns a sales visit message or voice note into a structured personal pipel
 - No shared notes, group chats, public data endpoints or managed backups.
 - Do not invite customers to enter sensitive data in the free/demo service.
 - Real deploy needs owner-controlled Cloudflare account/secrets and BotFather/Groq credentials; none are committed.
+
+## Revisions
+
+- Usage statistics now cover real usage, not just a 5-minute window: `user_days` records one row per user per WIB day, and `/admin/stats` reports `active_today`, `active_7d`, `active_30d`, `returning_users`, `note_users`, and a 14-day `daily_active` series. `npm run stats` prints it for humans; applying `schema.sql` backfills note-creation days.
 
 ## Submission checklist
 - [x] Public-service scope and isolation documented

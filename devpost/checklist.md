@@ -51,6 +51,7 @@ Activity mode: Cloudflare local Worker with D1 emulator; no account credentials.
 
 ## Revisions
 
+- Added real-usage statistics: the Worker records one `user_days` row per private-chat user per WIB day, and `/admin/stats` reports `total_users`, `active_users` (5 min), `active_today`, `active_7d`, `active_30d`, `returning_users`, `note_users`, and a 14-day `daily_active` series. `npm run stats` renders it; `schema.sql` backfills note days so pre-existing history counts. Verified locally (12 Worker tests, local Worker HTTP smoke with real D1 writes) and live after `npx wrangler d1 execute --remote --file schema.sql` + `npx wrangler deploy`.
 - Replaced the local Python/JSON deploy plan with a TypeScript Cloudflare Worker + D1 public-service target after the learner accepted free, best-effort hosting without a payment card. Python remains a local prototype; public notes are owner-isolated.
 - Added conditional D1 schedule claims and a concurrency regression test: overlapping Cron events can claim each owner/kind/date at most once.
 - Verified locally: six Worker/D1 tests pass, typecheck passes, D1 schema applies, health/auth smoke passes, and deploy dry-run packages successfully.

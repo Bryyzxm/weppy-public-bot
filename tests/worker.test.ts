@@ -6,6 +6,9 @@ import { network } from "./network";
 import { requests, telegramMocks } from "./telegram-mocks";
 
 const database = env.DB;
+const jakartaDay = (offsetDays = 0): string =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta", year: "numeric", month: "2-digit", day: "2-digit" })
+    .format(new Date(Date.now() + offsetDays * 86_400_000));
 const testEnv = {
   DB: database,
   TELEGRAM_BOT_TOKEN: "test-token",
@@ -72,10 +75,13 @@ beforeEach(async () => {
   await database.prepare("CREATE INDEX IF NOT EXISTS profiles_followup_schedule ON profiles(onboarding_stage, last_followup_date)").run();
   await database.prepare("CREATE TABLE IF NOT EXISTS processed_updates (update_id INTEGER PRIMARY KEY, created_at TEXT NOT NULL)").run();
   await database.prepare("CREATE TABLE IF NOT EXISTS user_activity (owner_id TEXT PRIMARY KEY, last_seen_at TEXT NOT NULL)").run();
+  await database.prepare("CREATE TABLE IF NOT EXISTS user_days (owner_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (owner_id, day))").run();
+  await database.prepare("CREATE INDEX IF NOT EXISTS user_days_by_day ON user_days(day)").run();
   await database.prepare("DELETE FROM notes").run();
   await database.prepare("DELETE FROM profiles").run();
   await database.prepare("DELETE FROM processed_updates").run();
   await database.prepare("DELETE FROM user_activity").run();
+  await database.prepare("DELETE FROM user_days").run();
   requests.length = 0;
   network.use(...telegramMocks);
 });
@@ -108,8 +114,18 @@ describe("public Telegram Worker", () => {
     }), testEnv, createExecutionContext());
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    const stats = await response.json() as Record<string, unknown>;
-    expect(stats).toMatchObject({ active_users: 1, total_users: 2, active_window_minutes: 5 });
+    const stats = await response.json() as Record<string, unknown> & { daily_active: { day: string; users: number }[] };
+    expect(stats).toMatchObject({
+      active_users: 1,
+      active_window_minutes: 5,
+      total_users: 2,
+      active_today: 1,
+      active_7d: 1,
+      active_30d: 1,
+      returning_users: 0,
+      note_users: 0,
+    });
+    expect(stats.daily_active).toEqual([{ day: jakartaDay(), users: 1 }]);
     expect(JSON.stringify(stats)).not.toContain("303");
     expect(JSON.stringify(stats)).not.toContain("historical-user");
 
@@ -117,7 +133,42 @@ describe("public Telegram Worker", () => {
     const repeated = await worker.fetch(new Request("https://weppy.test/admin/stats", {
       headers: { Authorization: `Bearer ${testEnv.ANALYTICS_ADMIN_TOKEN}` },
     }), testEnv, createExecutionContext());
-    expect(await repeated.json()).toMatchObject({ active_users: 1, total_users: 2 });
+    const repeatedStats = await repeated.json() as { daily_active: { day: string; users: number }[] };
+    expect(repeatedStats).toMatchObject({ active_users: 1, total_users: 2 });
+    expect(repeatedStats.daily_active).toEqual([{ day: jakartaDay(), users: 1 }]);
+  });
+
+  it("counts note authors, returning users, and WIB day windows", async () => {
+    const today = jakartaDay();
+    const threeDaysAgo = jakartaDay(-3);
+    await database.batch([
+      // Pressed /start months ago and never came back: counted, never engaged.
+      database.prepare("INSERT INTO user_activity(owner_id, last_seen_at) VALUES (?, ?)").bind("801", "2026-01-01T00:00:00.000Z"),
+      database.prepare("INSERT INTO user_days(owner_id, day) VALUES (?, ?)").bind("801", "2026-01-01"),
+      // Real user: stored a note, active today and three days ago, twice today.
+      database.prepare("INSERT INTO profiles(owner_id, profile_json, onboarding_stage) VALUES (?, ?, ?)").bind("802", "{}", "done"),
+      database.prepare("INSERT INTO user_activity(owner_id, last_seen_at) VALUES (?, ?)").bind("802", new Date().toISOString()),
+      database.prepare("INSERT INTO user_days(owner_id, day) VALUES (?, ?)").bind("802", today),
+      database.prepare("INSERT INTO user_days(owner_id, day) VALUES (?, ?)").bind("802", threeDaysAgo),
+      database.prepare("INSERT INTO notes(owner_id, id, created_at, note_json) VALUES (?, ?, ?, ?)")
+        .bind("802", "note-802", new Date().toISOString(), "{}"),
+    ]);
+
+    const response = await worker.fetch(new Request("https://weppy.test/admin/stats", {
+      headers: { Authorization: `Bearer ${testEnv.ANALYTICS_ADMIN_TOKEN}` },
+    }), testEnv, createExecutionContext());
+    const stats = await response.json() as Record<string, unknown> & { daily_active: { day: string; users: number }[] };
+    expect(stats).toMatchObject({
+      active_users: 1,
+      total_users: 2,
+      active_today: 1,
+      active_7d: 1,
+      active_30d: 1,
+      returning_users: 1,
+      note_users: 1,
+    });
+    expect(stats.daily_active).toEqual([{ day: threeDaysAgo, users: 1 }, { day: today, users: 1 }]);
+    expect(JSON.stringify(stats)).not.toContain("802");
   });
 
   it("does not expose the first account's pipeline in the second account greeting", async () => {

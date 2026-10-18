@@ -543,10 +543,15 @@ async function handleUpdate(env: Env, update: unknown): Promise<void> {
   const message = telegramMessage(callback ? callback.message : update.message);
   if (!message || message.chat.type !== "private") return;
   const chatId = String(message.chat.id);
-  await env.DB.prepare(
-    "INSERT INTO user_activity(owner_id, last_seen_at) VALUES (?, ?) " +
-    "ON CONFLICT(owner_id) DO UPDATE SET last_seen_at = excluded.last_seen_at",
-  ).bind(chatId, new Date().toISOString()).run();
+  await env.DB.batch([
+    env.DB.prepare(
+      "INSERT INTO user_activity(owner_id, last_seen_at) VALUES (?, ?) " +
+      "ON CONFLICT(owner_id) DO UPDATE SET last_seen_at = excluded.last_seen_at",
+    ).bind(chatId, new Date().toISOString()),
+    env.DB.prepare(
+      "INSERT INTO user_days(owner_id, day) VALUES (?, ?) ON CONFLICT(owner_id, day) DO NOTHING",
+    ).bind(chatId, localDateString()),
+  ]);
   const profile = await loadProfile(env.DB, chatId);
   let input = callback && typeof callback.data === "string" ? callback.data.trim() : (message.text || "").trim();
 
@@ -772,15 +777,41 @@ async function handleAdminStats(request: Request, env: Env): Promise<Response> {
     return new Response("Forbidden", { status: 403 });
   }
 
-  const cutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-  const [active, total] = await Promise.all([
+  const now = new Date();
+  const today = localDateString(now);
+  const cutoff = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
+  const [active, total, todayActive, weekActive, monthActive, returning, noteAuthors, daily] = await Promise.all([
     env.DB.prepare("SELECT COUNT(*) AS count FROM user_activity WHERE last_seen_at >= ?")
       .bind(cutoff).first<{ count: number }>(),
     env.DB.prepare(
       "SELECT COUNT(*) AS count FROM (SELECT owner_id FROM profiles UNION SELECT owner_id FROM user_activity)",
     ).first<{ count: number }>(),
+    env.DB.prepare("SELECT COUNT(DISTINCT owner_id) AS count FROM user_days WHERE day = ?")
+      .bind(today).first<{ count: number }>(),
+    env.DB.prepare("SELECT COUNT(DISTINCT owner_id) AS count FROM user_days WHERE day >= ?")
+      .bind(dateAfter(today, -6)).first<{ count: number }>(),
+    env.DB.prepare("SELECT COUNT(DISTINCT owner_id) AS count FROM user_days WHERE day >= ?")
+      .bind(dateAfter(today, -29)).first<{ count: number }>(),
+    env.DB.prepare(
+      "SELECT COUNT(*) AS count FROM (SELECT owner_id FROM user_days GROUP BY owner_id HAVING COUNT(*) > 1)",
+    ).first<{ count: number }>(),
+    env.DB.prepare("SELECT COUNT(DISTINCT owner_id) AS count FROM notes").first<{ count: number }>(),
+    env.DB.prepare("SELECT day, COUNT(*) AS users FROM user_days WHERE day >= ? GROUP BY day ORDER BY day DESC LIMIT 14")
+      .bind(dateAfter(today, -13)).all<{ day: string; users: number }>(),
   ]);
-  return Response.json({ active_users: active?.count ?? 0, total_users: total?.count ?? 0, active_window_minutes: 5 }, {
+  const count = (row: { count: number } | null): number => row?.count ?? 0;
+  return Response.json({
+    active_users: count(active),
+    active_window_minutes: 5,
+    total_users: count(total),
+    active_today: count(todayActive),
+    active_7d: count(weekActive),
+    active_30d: count(monthActive),
+    returning_users: count(returning),
+    note_users: count(noteAuthors),
+    daily_active: [...daily.results].reverse(),
+    generated_at: now.toISOString(),
+  }, {
     headers: { "Cache-Control": "no-store" },
   });
 }
