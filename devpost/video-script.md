@@ -18,7 +18,6 @@ Batas aturan: **maksimal 4 menit**, wajib menjelaskan **problem, solution, how i
 
 | Waktu | Di layar | Aksi | Narasi (English) |
 |---|---|---|---|
-| 0:00–0:20 | Chat kosong / judul "Weppy" | — | "A sales visit ends. The customer agreed to a follow-up next week. By the time the salesperson reaches the next appointment, the details are gone — and the follow-up never happens. Not because salespeople are lazy: after a visit, filling a CRM form is the last thing anyone wants to do." |
 | 0:20–0:35 | Bot dibuka | — | "Weppy fixes that with one thing every salesperson already uses: a voice note. Send one to this Telegram bot. It becomes a clean pipeline note — and Weppy asks for whatever is missing, so nothing gets invented." |
 | 0:35–0:55 | `/start` → onboarding | Klik: nama → 🇬🇧 English → 🕔 17:00 | "Setup takes twenty seconds: a first name, a reply language, and the time for a daily recap." |
 | 0:55–1:45 | **Inti demo** | Kirim voice note (lihat baris di bawah) → tunggu kartu → jawab pertanyaan tahap deal, klik 📌 Penawaran harga → pertanyaan role, klik ⏭️ Skip → "Note saved. 4 of 5 fields filled." | "Now the real test: a voice note, in Indonesian, straight after a visit. *(voice note plays)* Weppy transcribes it, extracts the company, the contact, the product and the deal stage, and replies with a structured card. It noticed two facts were missing. Deal stage — I pick 'Penawaran harga'. Role — I don't know it yet, so I press Skip. The note is saved with four of five fields filled. Nothing is invented." |

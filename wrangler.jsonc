@@ -3,6 +3,12 @@
   "name": "weppy-public-bot",
   "main": "src/worker.ts",
   "compatibility_date": "2026-10-14",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": ["/api/*", "/admin/*", "/telegram/*", "/healthz"]
+  },
   "d1_databases": [
     {
       "binding": "DB",

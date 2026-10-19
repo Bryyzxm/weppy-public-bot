@@ -9,14 +9,16 @@
 </style>
 </head>
 <body><main>
-<header><span>devpost/spec.md · status: draft · Markdown is canonical</span><h1>Weppy public Telegram Worker</h1><p>TypeScript Worker · D1 storage · Telegram webhook · Groq extraction/transcription · Asia/Jakarta Cron</p></header>
+<header><span>devpost/spec.md · status: draft · Markdown is canonical</span><h1>Weppy public Worker — Telegram + Web</h1><p>TypeScript Worker · shared conversation engine · D1 storage · Telegram webhook · web API · Groq extraction/transcription · Asia/Jakarta Cron</p></header>
 <section class="card"><h2>Request path</h2><div class="grid">
 <div class="node"><b>1. Telegram ingress</b><br>Validate <code>X-Telegram-Bot-Api-Secret-Token</code>; reject groups/non-private chats.</div>
-<div class="node"><b>2. D1 identity and replay check</b><br>Claim update ID; resolve private profile by <code>chat_id</code>.</div>
-<div class="node"><b>3. AI report</b><br>Text or Groq-transcribed voice → strict JSON fields; missing facts stay empty.</div>
-<div class="node"><b>4. Owner-only persistence</b><br>Store notes under composite <code>(owner_id, id)</code>.</div>
-<div class="node"><b>5. Chat actions</b><br>Clarify/Skip, recap, follow-up, detail and CSV use same owner.</div>
-<div class="node"><b>6. Scheduled delivery</b><br>Cron claims daily marker atomically before sending to that owner.</div>
+<div class="node"><b>2. Web ingress</b><br><code>/api/session</code>, <code>/api/message</code>, <code>/api/voice</code>, <code>/api/export</code>; a <code>localStorage</code> token maps to owner <code>web:&lt;token&gt;</code>.</div>
+<div class="node"><b>3. D1 identity and replay check</b><br>Claim Telegram update ID; resolve the owner profile by chat ID or web token.</div>
+<div class="node"><b>4. Shared engine</b><br><code>src/chat.ts</code>: onboarding, AI report, clarification, recap, follow-ups, settings, CSV.</div>
+<div class="node"><b>5. AI report</b><br>Text or Groq-transcribed voice → strict JSON fields; missing facts stay empty.</div>
+<div class="node"><b>6. Owner-only persistence</b><br>Store notes under composite <code>(owner_id, id)</code>.</div>
+<div class="node"><b>7. Chat actions</b><br>Clarify/Skip, recap, follow-up, detail and CSV use the same owner.</div>
+<div class="node"><b>8. Scheduled delivery</b><br>Cron claims the daily marker atomically before sending; web owners are skipped.</div>
 </div></section>
 <section class="card"><h2>D1 ownership model</h2><pre>profiles(owner_id PRIMARY KEY, profile_json, schedule fields)
 notes(owner_id, id, created_at, note_json, PRIMARY KEY(owner_id, id))
@@ -26,10 +28,12 @@ npx wrangler d1 create weppy-public-bot
 # update the local binding ID in wrangler.jsonc
 npx wrangler d1 execute weppy-public-bot --local --file schema.sql
 npm run dev -- --local
+# landing page: http://localhost:8787/   web app: http://localhost:8787/app
 node scripts/smoke-worker.mjs
 npm run test
 npm run typecheck
-npx wrangler deploy --dry-run</pre><p>Tests cover wrong secret, owner-separated profiles/notes, foreign note callbacks, and concurrent Cron delivery claims. Local health/auth smoke is verified; live Telegram/Groq delivery and public deployment still require owner account setup.</p></section>
+npx wrangler deploy --dry-run
+npx wrangler deploy</pre><p>Tests cover wrong secret, owner-separated profiles/notes, foreign note callbacks, concurrent Cron delivery claims, web session isolation, report/clarification/recap, CSV export and voice upload. Local and deployed smoke cover health, webhook rejection, served pages and web-session startup. Web delivery is live; live Telegram delivery still needs owner secrets and <code>setWebhook</code>.</p></section>
 <section class="card"><h2>Constraints</h2><p class="warn">Free-tier availability is best effort, not guaranteed 24/7; quotas/outages may halt processing. The service has no managed backup/SLA. Avoid customer-sensitive data on the free demo.</p></section>
-<p class="foot">Source map derived from <code>src/worker.ts</code>, <code>src/delivery.ts</code>, <code>schema.sql</code>, <code>wrangler.jsonc</code>, and Worker tests. Self-contained; readable offline.</p>
+<p class="foot">Source map derived from <code>src/worker.ts</code>, <code>src/chat.ts</code>, <code>public/</code>, <code>src/delivery.ts</code>, <code>schema.sql</code>, <code>wrangler.jsonc</code>, and the tests. Self-contained; readable offline.</p>
 </main></body></html>

@@ -17,6 +17,7 @@ console.log(`Data per: ${stats.generated_at}\n`);
 
 const rows = [
   ["Total pernah chat", stats.total_users],
+  ["Dari web", stats.web_users],
   ["Aktif <=5 menit", stats.active_users],
   ["Aktif hari ini (WIB)", stats.active_today],
   ["Aktif 7 hari", stats.active_7d],

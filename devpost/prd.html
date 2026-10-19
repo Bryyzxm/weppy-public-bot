@@ -10,19 +10,20 @@
 </head>
 <body><main class="wrap">
 <span class="badge">devpost/prd.md · status: draft · kanonis: Markdown</span>
-<h1>Weppy — Sales pipeline pribadi melalui Telegram</h1>
-<p class="sub">Bot publik; data tiap private chat terisolasi dari pengguna lain.</p>
+<h1>Weppy — Sales pipeline pribadi via Telegram &amp; web</h1>
+<p class="sub">Bot publik dan aplikasi web; data tiap private chat atau sesi browser terisolasi dari pengguna lain.</p>
 <section class="card"><h2>Perjalanan pengguna</h2><div class="grid">
-<div class="node"><b>1. Mulai</b><br>/start → onboarding nama, bahasa, jam WIB</div>
-<div class="node"><b>2. Lapor</b><br>Teks atau voice note → Groq ekstraksi/transkripsi</div>
+<div class="node"><b>1. Mulai</b><br>/start di Telegram atau buka <code>/app</code> → onboarding nama, bahasa, jam WIB</div>
+<div class="node"><b>2. Lapor</b><br>Teks atau voice note (Telegram atau rekam di browser) → Groq ekstraksi/transkripsi</div>
 <div class="node"><b>3. Lengkapi</b><br>Kartu empat field → klarifikasi satu per satu + Skip</div>
 <div class="node"><b>4. Tindak lanjuti</b><br>Rekap, pengingat, detail, CSV pribadi</div>
-</div><p>Setiap operasi data memakai pemilik Telegram <code>chat_id</code>.</p></section>
+</div><p>Setiap operasi data memakai pemilik <code>chat_id</code> Telegram atau token sesi web (<code>web:&lt;token&gt;</code>).</p></section>
 <section class="card"><h2>Perilaku dan penerimaan</h2>
-<details open><summary>Isolasi pengguna</summary><ul><li>Profil, catatan, dan draf tersimpan per private chat.</li><li>Greeting/recap/export hanya membaca catatan pemilik.</li><li>Callback detail dengan ID pengguna lain menghasilkan “not found”.</li></ul></details>
+<details open><summary>Isolasi pengguna</summary><ul><li>Profil, catatan, dan draf tersimpan per private chat atau sesi browser.</li><li>Greeting/recap/export hanya membaca catatan pemilik.</li><li>Callback detail dengan ID pengguna lain menghasilkan “not found”.</li><li>Dua sesi web tidak saling melihat catatan.</li></ul></details>
 <details><summary>Laporan dan klarifikasi</summary><ul><li>Teks/voice note menjadi kartu empat field; fakta tak disebut tetap kosong.</li><li>Field kurang ditanya satu per satu; jawaban/Skip hanya memperbarui draf pemilik.</li><li>Voice note gagal meminta input ulang/teks.</li></ul></details>
-<details><summary>Jadwal dan hosting</summary><ul><li>Cron menjadwalkan rekap/pengingat per profil dalam zona Asia/Jakarta.</li><li>Hosting gratis best-effort, bukan jaminan uptime 24/7 atau SLA.</li></ul></details>
+<details><summary>Web</summary><ul><li>Landing di <code>/</code>, chat di <code>/app</code>, dengan kartu catatan, aksi cepat, panel pipeline, dialog pengaturan, dan unduh CSV.</li><li>Sesi disimpan di <code>localStorage</code>; mulai sesi baru = data baru.</li></ul></details>
+<details><summary>Jadwal dan hosting</summary><ul><li>Cron menjadwalkan rekap/pengingat per profil Telegram dalam zona Asia/Jakarta.</li><li>Sesi web tidak menerima push terjadwal; rekap diminta dari aplikasi.</li><li>Hosting gratis best-effort, bukan jaminan uptime 24/7 atau SLA.</li></ul></details>
 </section>
-<section class="card"><h2>Boundary</h2><div class="callout">Tidak termasuk grup Telegram, berbagi catatan, akses tim, dashboard, transport WhatsApp, atau SLA produksi. Hindari data pelanggan sensitif pada layanan demo gratis.</div></section>
+<section class="card"><h2>Boundary</h2><div class="callout">Tidak termasuk grup Telegram, berbagi catatan, akses tim, dashboard analitik, akun/kata sandi web, transport WhatsApp, atau SLA produksi. Hindari data pelanggan sensitif pada layanan demo gratis.</div></section>
 <p class="foot">Kanonis: <b>devpost/prd.md</b>. Companion ini offline dan menampilkan status draft dokumen.</p>
 </main></body></html>

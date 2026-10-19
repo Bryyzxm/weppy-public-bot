@@ -30,8 +30,18 @@ Build mode: fast
   Learner check: After owner deployment, try two private Telegram accounts; record an item in account A and confirm account B can't see it through recap, export, or a foreign note callback. Test Skip, voice, CSV, and scheduled delivery.
   Commit: `Deploy private Telegram sales bot on Cloudflare Workers and D1`
 
-- [x] Local Worker smoke: `/healthz` returned OK; webhook with no Telegram secret returned 403.
-- [ ] Public Worker final kick-the-tires session after owner deployment.
+- [x] **3. Public web app on the same conversation engine**
+  Becomes usable: Anyone can open the Worker URL in a browser, onboard, send text or record a voice note, clarify with Skip, view the pipeline, run a recap, and download CSV — with the same behavior as Telegram. Web data is isolated per browser session and never mixes with Telegram owners.
+  Why now: The learner asked for a website so users can try the bot directly on the web and confirmed it must work as smoothly as Telegram. Reusing the existing engine avoids a second, drifting implementation.
+  PRD ref: `prd.md > Screens and Layout`; `prd.md > Look and Feel`; `prd.md > What We're Building` (2).
+  Spec ref: `spec.md > Components` (Conversation Engine, Web Client); `spec.md > Failure Modes and Limits`.
+  Build: Extract `src/chat.ts` from the Telegram handler so both transports share onboarding, extraction, clarification, recap, follow-up, settings and CSV. Add `/api/session`, `/api/message`, `/api/voice`, `/api/export` with `web:<token>` owners, skip those owners in Cron, and serve `public/index.html`, `public/app.html`, `public/app.js`, `public/styles.css` as Worker assets.
+  Verify (mechanical): `npm run test` (18 tests, including `tests/web.test.ts`); `npm run typecheck`; `npm run smoke` against local and deployed Worker; browser walkthrough of onboarding → report → Skip → recap → detail → settings → CSV on desktop and mobile.
+  Learner check: Open the deployed `/app`, complete onboarding, send a text report and a voice note, Skip a field, run a recap, and download CSV.
+  Commit: `Add public web app sharing the Weppy conversation engine`
+
+- [x] Local Worker smoke: `/healthz` returned OK; webhook with no Telegram secret returned 403; `/`, `/app`, and `/api/session` served.
+- [x] Deployed Worker: pages, `/api/session`, real Groq extraction, and CSV export verified against `https://weppy-public-bot.bryyzxm.workers.dev`.
 
 ## Final Review
 
@@ -43,16 +53,17 @@ Build mode: fast
 - [ ] Optional edit and transfer reflection addressed.
 - [ ] `devpost/app-map.html` generated from the final public Worker and shown.
 
-Activity and evidence: `npm run test` passed 6 Worker/D1 tests, including concurrent per-owner Cron claims; `npm run typecheck` passed; local schema applied; actual local Worker smoke returned health OK and 403 for missing/invalid webhook secrets; deploy dry-run produced a 33.26 KiB bundle (9.09 KiB gzip). The legacy Python suite passed 8/8, but tests only the local prototype. Public Groq/Telegram delivery remains owner setup.
-Route and stops: `src/worker.ts`; `src/delivery.ts`; `schema.sql`; `wrangler.jsonc`; `tests/worker.test.ts`; `tests/delivery.test.ts`; `scripts/smoke-worker.mjs`.
-Edit outcome: No optional app edit attempted.
-Reflection: Not yet offered; public service is not deployed.
-Activity mode: Cloudflare local Worker with D1 emulator; no account credentials.
+Activity and evidence: `npm run test` passed 18 tests (12 Telegram/D1 + 6 web), including concurrent per-owner Cron claims and web session isolation; `npm run typecheck` passed; local schema applied; local and deployed Worker smoke passed for health, webhook rejection, served pages, and web-session startup; deploy produced a 45.90 KiB bundle (11.80 KiB gzip) with 5 uploaded assets. Browser walkthrough on the deployed Worker completed onboarding, a text report, Skip, recap, detail, settings, CSV export, and a real Groq voice upload. The legacy Python suite passed 8/8 but tests only the local prototype. Live Telegram delivery remains owner setup.
+Route and stops: `src/worker.ts`; `src/chat.ts`; `public/`; `src/delivery.ts`; `schema.sql`; `wrangler.jsonc`; `tests/worker.test.ts`; `tests/web.test.ts`; `tests/delivery.test.ts`; `scripts/smoke-worker.mjs`.
+Edit outcome: Added a public web client that shares the conversation engine with Telegram.
+Reflection: Not yet offered.
+Activity mode: Cloudflare local Worker with D1 emulator plus deployed Worker; real Groq calls during QA; no Telegram credentials.
 
 ## Revisions
 
+- Added a public web app: `src/chat.ts` now holds the transport-agnostic conversation engine used by both the Telegram webhook and `/api/session` · `/api/message` · `/api/voice` · `/api/export`. `public/index.html` is the landing page and `public/app.html` + `app.js` + `styles.css` are the chat client (voice recording, note cards, quick actions, pipeline side panel, settings dialog, CSV). Web owners are namespaced `web:<token>` and skipped by Cron. 18 tests pass; deployed and verified end-to-end at the Worker URL.
 - Added real-usage statistics: the Worker records one `user_days` row per private-chat user per WIB day, and `/admin/stats` reports `total_users`, `active_users` (5 min), `active_today`, `active_7d`, `active_30d`, `returning_users`, `note_users`, and a 14-day `daily_active` series. `npm run stats` renders it; `schema.sql` backfills note days so pre-existing history counts. Verified locally (12 Worker tests, local Worker HTTP smoke with real D1 writes) and live after `npx wrangler d1 execute --remote --file schema.sql` + `npx wrangler deploy`.
 - Replaced the local Python/JSON deploy plan with a TypeScript Cloudflare Worker + D1 public-service target after the learner accepted free, best-effort hosting without a payment card. Python remains a local prototype; public notes are owner-isolated.
 - Added conditional D1 schedule claims and a concurrency regression test: overlapping Cron events can claim each owner/kind/date at most once.
 - Verified locally: six Worker/D1 tests pass, typecheck passes, D1 schema applies, health/auth smoke passes, and deploy dry-run packages successfully.
-- Still owner-dependent: Cloudflare signup/account verification, remote D1, secrets, Worker deployment, Telegram webhook registration, public username, and live Telegram/Groq/voice smoke. Do not mark the public slice, final review, or shipping gate complete before those real steps.
+- Still owner-dependent: set real Telegram secrets and register the Telegram webhook to enable live bot delivery. Web delivery is already live.

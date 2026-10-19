@@ -4,13 +4,14 @@ Weppy turns a B2B sales visit message or voice note into a structured personal p
 
 ## Try it
 
+- **Web demo:** <https://weppy-public-bot.bryyzxm.workers.dev/> — chat with the same assistant in the browser, no install. Landing page links to `/app`.
 - **Live demo bot:** [@recap_sales_bot](https://t.me/recap_sales_bot) — private chats only; send `/start`.
 - **Health check:** <https://weppy-public-bot.bryyzxm.workers.dev/healthz> returns `{"ok":true}`.
 - **Status:** best-effort free tier (Cloudflare Workers + D1 free plan, Telegram, Groq). No SLA, no managed backups.
 
 ## Stack
 
-TypeScript Cloudflare Worker (`src/worker.ts`) + Cloudflare D1 (SQLite) + Telegram Bot API + Groq (chat extraction and audio transcription), with a Worker Cron Trigger scheduled in `Asia/Jakarta` (`*/1 * * * *`). Integration tests use Vitest with `@cloudflare/vitest-plugin` against a local D1 emulator (`npm run test`, 12 tests covering owner isolation, webhook-secret rejection, atomic Cron claims, and usage statistics). The earlier Flask/polling prototype (`app.py`, `telegram_poll.py`) is kept as a local demo only.
+TypeScript Cloudflare Worker (`src/worker.ts`) + Cloudflare D1 (SQLite) + Telegram Bot API + Groq (chat extraction and audio transcription), with a Worker Cron Trigger scheduled in `Asia/Jakarta` (`*/1 * * * *`). One shared conversation engine (`src/chat.ts`) powers both transports: the Telegram webhook and the browser app (`public/`, served as static assets). The web app stores its session token in `localStorage` and sends it with each request; the Worker maps it to a `web:<token>` owner so web and Telegram data never mix and the Cron sender only pushes Telegram chat IDs. Integration tests use Vitest with `@cloudflare/vitest-plugin` against a local D1 emulator (`npm run test`, 18 tests covering owner isolation, web session/report/voice/export, webhook-secret rejection, atomic Cron claims, and usage statistics). The earlier Flask/polling prototype (`app.py`, `telegram_poll.py`) is kept as a local demo only.
 
 ## Public deployment (Cloudflare Workers + D1)
 
@@ -37,7 +38,7 @@ This repository contains no credentials or API keys. Deploying a separate instan
    npx wrangler d1 execute weppy-public-bot --local --file schema.sql
    npm run dev -- --local
    ```
-4. Health is available at `http://localhost:8787/healthz`; run `node scripts/smoke-worker.mjs` to verify health and webhook-secret rejection. A reachable HTTPS tunnel is needed to receive real Telegram webhooks locally.
+4. Health is available at `http://localhost:8787/healthz`; the web app runs at `http://localhost:8787/` and `/app`. Run `node scripts/smoke-worker.mjs` to verify health, webhook-secret rejection, the served pages, and web-session startup. A reachable HTTPS tunnel is needed to receive real Telegram webhooks locally; the web app works locally without one.
 
 
 ### Public deploy (owner-authenticated)
@@ -85,17 +86,18 @@ Jika token dibuat ulang, simpan token barunya di file tersebut sebelum memakai p
 Response shape:
 
 ```json
-{"active_users":0,"active_window_minutes":5,"total_users":2,"active_today":1,"active_7d":2,"active_30d":2,"returning_users":1,"note_users":2,"daily_active":[{"day":"2026-10-14","users":2},{"day":"2026-10-18","users":1}],"generated_at":"2026-10-18T11:10:50.484Z"}
+{"active_users":0,"active_window_minutes":5,"total_users":2,"web_users":1,"active_today":1,"active_7d":2,"active_30d":2,"returning_users":1,"note_users":2,"daily_active":[{"day":"2026-10-14","users":2},{"day":"2026-10-18","users":1}],"generated_at":"2026-10-18T11:10:50.484Z"}
 ```
 
-- `active_users` — distinct private-chat users who sent a message or callback in the last five minutes. Telegram offers no online/presence signal, so this is recent activity, not a live-online count.
-- `total_users` — distinct users with a stored profile or recorded activity, i.e. everyone who ever contacted the bot.
-- `active_today` / `active_7d` / `active_30d` — distinct users with at least one message or callback on the current WIB day, or within the last 7 / 30 days.
-- `returning_users` — distinct users active on two or more different WIB days, i.e. people who came back.
-- `note_users` — distinct users with at least one stored pipeline note, i.e. people who used the core flow rather than only `/start`.
-- `daily_active` — per-day distinct users for the last 14 WIB days, oldest first.
+- `active_users` — distinct owners (Telegram private chats and web sessions) who sent a message or callback in the last five minutes. Telegram offers no online/presence signal, so this is recent activity, not a live-online count.
+- `total_users` — distinct owners with a stored profile or recorded activity, i.e. everyone who ever contacted the service.
+- `web_users` — distinct browser sessions that recorded activity. Useful to see how many people tried the web app rather than the bot.
+- `active_today` / `active_7d` / `active_30d` — distinct owners with at least one message or callback on the current WIB day, or within the last 7 / 30 days.
+- `returning_users` — distinct owners active on two or more different WIB days, i.e. people who came back.
+- `note_users` — distinct owners with at least one stored pipeline note, i.e. people who used the core flow rather than only `/start`.
+- `daily_active` — per-day distinct owners for the last 14 WIB days, oldest first.
 
-`user_days` stores one row per user per active WIB day; applying `schema.sql` also backfills note-creation days, so history from before that table existed stays countable. No chat IDs, names, or note contents are returned. Keep the token private. Omitting `ANALYTICS_ADMIN_TOKEN` disables the endpoint, and unauthorized requests return 403.
+`user_days` stores one row per owner per active WIB day; applying `schema.sql` also backfills note-creation days, so history from before that table existed stays countable. No chat IDs, session tokens, names, or note contents are returned. Keep the token private. Omitting `ANALYTICS_ADMIN_TOKEN` disables the endpoint, and unauthorized requests return 403.
 
 Never put a token directly into command history. If a bot or API token was exposed, revoke/rotate it at its provider; rotate `ANALYTICS_ADMIN_TOKEN` with `npx wrangler secret put ANALYTICS_ADMIN_TOKEN`.
 

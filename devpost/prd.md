@@ -20,20 +20,22 @@ Source: `scope.md > The Unique Kernel`, `scope.md > The Core Loop`, `scope.md > 
 
 ## Screens and Layout
 
-Satu permukaan: thread chat Telegram per pengguna pada satu bot publik.
+Dua permukaan yang memakai satu percakapan yang sama: thread chat Telegram per pengguna, dan aplikasi web publik yang dapat dibuka siapa pun di browser.
 
-- Histori mengikuti perilaku bawaan Telegram; agent membalas pesan, voice note, dan tombol inline.
-- Kartu laporan berupa pesan teks dengan empat field, status lengkap/belum, tanggal follow-up, dan instruksi melengkapi.
-- Tombol menu, Skip, pemilihan tahap, detail rekap, dan ekspor tetap berada di chat.
-- Tidak ada dashboard web, daftar terpisah, Flows/webview, atau layar pengaturan.
-- `chat_id` Telegram menetapkan batas kepemilikan: data pengguna lain tidak boleh dibaca, diubah, ditampilkan, atau diekspor.
+- **Telegram:** histori mengikuti perilaku bawaan Telegram; agent membalas pesan, voice note, dan tombol inline. Kartu laporan berupa pesan teks dengan empat field, status lengkap/belum, tanggal follow-up, dan instruksi melengkapi.
+- **Web (`/`):** halaman arahan yang menjelaskan produk dan menautkan ke `/app` serta bot Telegram.
+- **Web (`/app`):** permukaan chat satu kolom dengan kartu catatan, tombol aksi inline, aksi cepat, perekam voice note di browser, serta panel samping pipeline berisi profil, statistik (catatan/draf/jatuh tempo), daftar catatan, ekspor CSV, dan dialog pengaturan. Pada layar sempit panel samping menjadi laci yang dibuka lewat tombol.
+- Tombol menu, Skip, pemilihan tahap, detail rekap, dan ekspor tetap berada di percakapan pada kedua permukaan.
+- Tidak ada akun, daftar terpisah, atau webview Telegram. Sesi web memakai token acak di `localStorage` yang dipetakan ke pemilik `web:<token>` di D1, terpisah dari `chat_id` Telegram.
+- `chat_id` Telegram dan token sesi web menetapkan batas kepemilikan: data pengguna lain tidak boleh dibaca, diubah, ditampilkan, atau diekspor.
 
 ## Look and Feel
 
 - Nada singkat, praktis, membantu; bukan formulir CRM. Source: `scope.md > Inspiration & Identity`.
 - Proaktif saat informasi kurang, tetapi selalu menawarkan Skip.
 - Kartu mudah dipindai; nilai yang tidak disebut tidak dikarang.
-- Bahasa Indonesia/Inggris mengikuti pilihan profil dan dapat diganti lewat chat.
+- Bahasa Indonesia/Inggris mengikuti pilihan profil dan dapat diganti lewat chat atau dialog pengaturan web.
+- Web memakai satu sistem warna hijau netral, mendukung mode gelap sistem, target sentuh ≥ 32px, dan menghormati `prefers-reduced-motion`.
 
 ## Features and Behavior
 
@@ -106,31 +108,33 @@ Satu permukaan: thread chat Telegram per pengguna pada satu bot publik.
 - **Unclear audio** — Agent meminta teks/rekaman ulang; tidak menyimpan data karangan.
 - **Pending clarification** — Draf tersimpan dan hanya pemiliknya yang dapat melanjutkan.
 - **Persists** — Profil, catatan, draf dan update dedupe bertahan di database D1 setelah restart/deploy.
-- **Isolation boundary** — Telegram `chat_id` adalah pemilik profil, catatan, draf, rekap, detail dan CSV. Tidak ada berbagi atau akses tim.
-- **Public best-effort service** — Bot terbuka untuk dicoba, tetapi kuota Worker/D1/API atau gangguan provider dapat membuatnya tidak tersedia sementara.
-- **Out of scope** — Telegram group chat, WhatsApp, dashboard, akses tim, dan SLA produksi.
+- **Isolation boundary** — Telegram `chat_id` dan token sesi web adalah pemilik profil, catatan, draf, rekap, detail dan CSV. Tidak ada berbagi atau akses tim.
+- **Public best-effort service** — Bot dan web terbuka untuk dicoba, tetapi kuota Worker/D1/API atau gangguan provider dapat membuatnya tidak tersedia sementara.
+- **Out of scope** — Telegram group chat, WhatsApp, dashboard analitik, akses tim, dan SLA produksi.
 
 ## Product Decisions
 
-- Telegram adalah satu-satunya transport pada layanan publik ini; username bot dibagikan kepada pengguna.
-- Satu bot melayani banyak akun, dengan profil/catatan terpisah berdasarkan `chat_id`.
+- Telegram dan aplikasi web adalah dua transport pada satu layanan publik; keduanya memanggil mesin percakapan yang sama (`src/chat.ts`).
+- Satu bot dan satu Worker melayani banyak akun, dengan profil/catatan terpisah berdasarkan `chat_id` Telegram atau token sesi web.
 - Data tersimpan terpusat dan persisten di Cloudflare D1; tidak menggunakan JSON lokal untuk layanan publik.
 - Cloudflare Workers + D1 dipilih untuk menghindari server/VM yang meminta kartu. POC memakai Worker berbasis TypeScript; Python prototype tetap sebagai demo lokal. Batas gratis berlaku; layanan best-effort.
 - Ekstraksi dan transkripsi memakai Groq API; batas kuota Groq berlaku dan API key disimpan sebagai secret deployment.
 - Jam rekap mengikuti `Asia/Jakarta`; default 17:00 dan bahasa Indonesia.
+- Sesi web disimpan di `localStorage` browser dan tidak dapat memicu push terjadwal; pengingat otomatis tetap jalur Telegram.
 
 ## What We're Building
 
 1. Bot Telegram publik dengan onboarding per pengguna.
-2. Laporan teks/voice note → ekstraksi empat field → kartu tanpa data karangan.
-3. Klarifikasi bertahap dengan Skip dan draf yang persisten.
-4. Pengingat, rekap, tombol detail, menu, dan ekspor CSV yang dibatasi ke pemilik.
-5. Penyimpanan profil/catatan/dedupe di D1 setelah restart/redeploy.
-6. Setup deploy gratis best-effort dan peringatan kuota/ketersediaan yang jujur.
+2. Aplikasi web publik yang menjalankan percakapan, kartu, klarifikasi, rekap, dan ekspor yang sama di browser.
+3. Laporan teks/voice note → ekstraksi empat field → kartu tanpa data karangan.
+4. Klarifikasi bertahap dengan Skip dan draf yang persisten.
+5. Pengingat, rekap, tombol detail, menu, dan ekspor CSV yang dibatasi ke pemilik.
+6. Penyimpanan profil/catatan/dedupe di D1 setelah restart/redeploy.
+7. Setup deploy gratis best-effort dan peringatan kuota/ketersediaan yang jujur.
 
 ## Deferred From the POC
 
-- Dashboard, fitur tim/berbagi, integrasi CRM, sinkronisasi kalender, multi-channel, atau aturan follow-up kompleks.
+- Dashboard analitik, fitur tim/berbagi, integrasi CRM, sinkronisasi kalender, multi-channel, atau aturan follow-up kompleks.
 - SLA, redundansi failover, backup terkelola, dan operasi on-call.
 
 ## Non-Goals
@@ -138,7 +142,7 @@ Satu permukaan: thread chat Telegram per pengguna pada satu bot publik.
 - Sistem CRM lengkap, lead scoring, rekomendasi harga/prediksi closing.
 - SLA produksi atau uptime tanpa gangguan.
 - Jalur WhatsApp dan akses grup Telegram.
-- Dashboard atau klien selain thread bot.
+- Akun pengguna, kata sandi, atau sinkronisasi lintas perangkat untuk sesi web.
 
 ## Open Questions
 
