@@ -11,7 +11,7 @@ Source: `scope.md > The Unique Kernel`, `scope.md > The Core Loop`, `scope.md > 
 ## The Core Journey
 
 1. Pengguna membuka bot Telegram publik dan mengirim `/start` atau sapaan.
-2. Untuk pengguna baru, agent melakukan onboarding singkat: nama panggilan, bahasa (Indonesia/Inggris), jam rekap sore. Setiap pertanyaan dapat di-skip.
+2. Untuk pengguna baru, agent melakukan onboarding singkat: bahasa balasan lebih dulu (Inggris/Indonesia, default Inggris), lalu nama panggilan, lalu jam rekap sore. Setiap pertanyaan dapat di-skip. Semua balasan mengikuti bahasa yang dipilih.
 3. Pengguna mengirim laporan kunjungan melalui teks atau voice note.
 4. Agent mentranskripsi suara bila perlu, mengekstrak empat informasi pipeline, lalu membalas kartu teks. Field yang tidak disebut tetap kosong.
 5. Jika field kurang, agent menanyakannya satu per satu; pengguna dapat menjawab atau memilih Skip. Catatan pribadi disimpan setelahnya.
@@ -41,8 +41,9 @@ Dua permukaan yang memakai satu percakapan yang sama: thread chat Telegram per p
 
 ### 0. Onboarding per pengguna
 
-- [ ] Pesan pertama dari akun baru memulai onboarding nama, bahasa pilihan, dan jam rekap, satu per satu.
-- [ ] Semua pertanyaan dapat di-skip; default bahasa Indonesia dan jam 17:00 waktu Asia/Jakarta.
+- [ ] Pesan pertama dari akun baru menanyakan bahasa balasan lebih dulu, lalu nama, lalu jam rekap, satu per satu.
+- [ ] Semua pertanyaan dapat di-skip; default bahasa Inggris (landing dan onboarding) dan jam 17:00 waktu Asia/Jakarta.
+- [ ] Semua balasan memakai bahasa pilihan profil; jika Inggris dipilih, tidak ada balasan berbahasa Indonesia.
 - [ ] Profil tersimpan untuk `chat_id` tersebut dan tidak berbagi dengan akun lain.
 - [ ] Perintah ubah nama, bahasa, dan jam hanya mengubah profil peminta.
 

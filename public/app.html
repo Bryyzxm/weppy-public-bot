@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Weppy — Coba langsung</title>
-<meta name="description" content="Chat dengan Weppy di browser: ubah laporan kunjungan jadi catatan pipeline, lengkapi dengan Skip, lalu rekap dan ekspor CSV.">
+<title>Weppy: Try it now</title>
+<meta name="description" content="Chat with Weppy in your browser: turn a visit report into a pipeline note, fill the gaps with Skip, then recap and export CSV. Replies follow the language you pick.">
 <meta name="theme-color" content="#16a34a">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/styles.css">
@@ -12,35 +12,35 @@
 <body class="app-body">
 <div class="app-shell">
   <header class="app-topbar">
-    <a class="brand" href="/" aria-label="Kembali ke beranda Weppy">
+    <a class="brand" href="/" data-i18n-attr="aria-label:ariaHome">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="2.4" fill="currentColor" stroke="none"/></svg>
       </span>
-      <span>Weppy<small>Web demo</small></span>
+      <span>Weppy<small data-i18n="brandSub">Web demo</small></span>
     </a>
-    <nav class="topnav" aria-label="Aksi">
-      <a class="btn btn-ghost btn-small" href="https://t.me/recap_sales_bot" target="_blank" rel="noreferrer">
+    <nav class="topnav" data-i18n-attr="aria-label:ariaActions">
+      <a class="btn btn-ghost btn-small" href="https://t.me/recap_sales_bot" target="_blank" rel="noreferrer" aria-label="Telegram">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3c.3-1.2-.9-2.1-2-1.6L2.6 9.6c-1.3.5-1.2 2.3.1 2.7l4.6 1.4 1.8 5.4c.4 1.2 1.9 1.5 2.7.6l2.5-2.7 4.6 3.4c1 .7 2.4.2 2.7-1l3.3-15.1ZM9.8 13.1l8.4-5.1-6.7 6.4-.3 3.2-1.4-4.5Z"/></svg>
-        <span>Telegram</span>
+        <span class="btn-label">Telegram</span>
       </a>
-      <button class="icon-btn side-toggle" type="button" id="sideToggle" aria-label="Buka panel pipeline" aria-controls="side" aria-expanded="false">
+      <button class="icon-btn side-toggle" type="button" id="sideToggle" data-i18n-attr="aria-label:sideToggleAria" aria-controls="side" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </nav>
   </header>
 
   <main class="app-main">
-    <section class="chat-panel" aria-label="Percakapan dengan Weppy">
+    <section class="chat-panel" data-i18n-attr="aria-label:chatAria">
       <div class="chat-head">
         <span class="avatar" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="2.4" fill="currentColor" stroke="none"/></svg>
         </span>
         <div class="chat-head-text">
           <b>Weppy</b>
-          <span><span class="live-dot" aria-hidden="true"></span><span id="headStatus">menyiapkan…</span></span>
+          <span><span class="live-dot" aria-hidden="true"></span><span id="headStatus">connecting…</span></span>
         </div>
         <div class="chat-head-actions">
-          <button class="icon-btn" type="button" id="settingsBtn" aria-label="Pengaturan">
+          <button class="icon-btn" type="button" id="settingsBtn" data-i18n-attr="aria-label:settingsAria">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
           </button>
         </div>
@@ -49,85 +49,93 @@
       <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text"></div>
 
       <div class="composer-wrap">
-        <div class="quick-actions" id="quickActions" aria-label="Aksi cepat"></div>
+        <div class="quick-actions" id="quickActions" data-i18n-attr="aria-label:quickActionsAria"></div>
         <div class="recording-bar" id="recordingBar" hidden>
           <span class="rec-dot" aria-hidden="true"></span>
-          <span>Merekam…</span>
+          <span id="recLabel">Recording…</span>
           <span id="recTimer" class="nums">0:00</span>
-          <span style="color:var(--muted);font-weight:500">— tekan mic untuk selesai</span>
+          <span id="recHint" style="color:var(--muted);font-weight:500">tap the mic to finish</span>
         </div>
         <form class="composer" id="composer" autocomplete="off">
-          <label class="visually-hidden" for="input">Tulis laporan kunjungan atau balasan</label>
-          <textarea id="input" rows="1" placeholder="Ceritakan hasil kunjungan… (mis. ketemu Bu Sari dari PT Maju Jaya, bahas kopi 100 kg, minta penawaran)" maxlength="4000"></textarea>
-          <button class="mic-btn" type="button" id="micBtn" aria-label="Rekam voice note" aria-pressed="false">
+          <label class="visually-hidden" for="input" data-i18n="inputLabel">Write a visit report or reply</label>
+          <textarea id="input" rows="1" data-i18n-attr="placeholder:inputPlaceholder" placeholder="Describe the visit…" maxlength="4000"></textarea>
+          <button class="mic-btn" type="button" id="micBtn" data-i18n-attr="aria-label:micAria" aria-pressed="false">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
           </button>
-          <button class="send-btn" type="submit" id="sendBtn" aria-label="Kirim pesan" disabled>
+          <button class="send-btn" type="submit" id="sendBtn" data-i18n-attr="aria-label:sendAria" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
           </button>
         </form>
         <div class="footnote">
-          <span>Enter untuk kirim · Shift+Enter baris baru</span>
-          <span id="sessionNote">Sesi tersimpan di browser ini</span>
+          <span data-i18n="footnoteKeys">Enter to send · Shift+Enter for a new line</span>
+          <span id="sessionNote" data-i18n="sessionNote">Session stored in this browser</span>
         </div>
       </div>
     </section>
 
-    <aside class="side" id="side" aria-label="Pipeline dan pengaturan">
+    <aside class="side" id="side" data-i18n-attr="aria-label:sideAria">
+      <div class="side-head">
+        <h2 data-i18n="sidePanelTitle">Pipeline &amp; settings</h2>
+        <button class="icon-btn side-close" type="button" id="sideClose" data-i18n-attr="aria-label:closeSideAria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
       <section class="panel profile-panel">
         <span class="avatar" id="profileAvatar" aria-hidden="true">W</span>
         <div style="min-width:0">
-          <b id="profileName">Tamu</b>
-          <span id="profileMeta">Bahasa Indonesia · rekap 17:00 WIB</span>
+          <b id="profileName" data-i18n="guest">Guest</b>
+          <span id="profileMeta">English · recap 17:00 WIB</span>
         </div>
       </section>
 
       <section class="panel">
         <div class="stat-grid">
-          <div class="stat"><b id="statTotal" class="nums">0</b><span>Catatan</span></div>
-          <div class="stat"><b id="statDraft" class="nums">0</b><span>Draf</span></div>
-          <div class="stat"><b id="statDue" class="nums">0</b><span>Jatuh tempo</span></div>
+          <div class="stat"><b id="statTotal" class="nums">0</b><span data-i18n="statNotes">Notes</span></div>
+          <div class="stat"><b id="statDraft" class="nums">0</b><span data-i18n="statDrafts">Drafts</span></div>
+          <div class="stat"><b id="statDue" class="nums">0</b><span data-i18n="statDue">Due</span></div>
         </div>
         <div class="side-actions">
           <button class="btn btn-small" type="button" id="exportBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10m0 0 3.5-3.5M12 13 8.5 9.5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
-            Ekspor CSV
+            <span data-i18n="exportCsv">Export CSV</span>
           </button>
         </div>
       </section>
 
       <section class="panel">
         <div class="panel-head">
-          <h2>Pipeline</h2>
+          <h2 data-i18n="pipelineTitle">Pipeline</h2>
           <span class="count" id="noteCount">0</span>
         </div>
         <ul class="note-list" id="noteList"></ul>
       </section>
 
       <section class="panel">
-        <div class="panel-head"><h2>Tentang demo</h2></div>
-        <p style="color:var(--muted);font-size:0.82rem">Sesi web disimpan di browser ini saja. Bot Telegram tetap jalur utama dengan pengingat terjadwal. Layanan gratis best-effort.</p>
+        <div class="panel-head"><h2 data-i18n="aboutTitle">About the demo</h2></div>
+        <p style="color:var(--muted);font-size:0.82rem" data-i18n="aboutBody">The web session lives only in this browser. The Telegram bot remains the main path with scheduled reminders. Free, best-effort service.</p>
       </section>
     </aside>
   </main>
 </div>
 
+<button class="side-scrim" type="button" id="sideScrim" tabindex="-1" aria-hidden="true"></button>
+
 <dialog id="settingsDialog" aria-labelledby="settingsTitle">
   <div class="dialog-head">
-    <h2 id="settingsTitle">Pengaturan</h2>
-    <button class="icon-btn" type="button" id="closeSettings" aria-label="Tutup pengaturan">
+    <h2 id="settingsTitle" data-i18n="settingsTitle">Settings</h2>
+    <button class="icon-btn" type="button" id="closeSettings" data-i18n-attr="aria-label:closeSettingsAria">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
   </div>
   <div class="dialog-body">
-    <div class="dialog-row"><div><b>Nama panggilan</b><span id="dlgName">—</span></div><button class="btn btn-small" type="button" data-setting="nickname">Ubah</button></div>
-    <div class="dialog-row"><div><b>Bahasa</b><span id="dlgLang">Indonesia</span></div><button class="btn btn-small" type="button" data-setting="language">Ganti</button></div>
-    <div class="dialog-row"><div><b>Jam rekap</b><span id="dlgTime">17:00 WIB</span></div><button class="btn btn-small" type="button" data-setting="recap_time">Ubah</button></div>
-    <p>Perubahan hanya berlaku untuk sesi browser ini. Buka bot Telegram untuk pengingat otomatis terjadwal.</p>
+    <div class="dialog-row"><div><b data-i18n="nameLabel">Nickname</b><span id="dlgName">Not set</span></div><button class="btn btn-small" type="button" data-setting="nickname" data-i18n="changeName">Change</button></div>
+    <div class="dialog-row"><div><b data-i18n="langLabel">Language</b><span id="dlgLang">English</span></div><button class="btn btn-small" type="button" data-setting="language" data-i18n="changeLang">Change</button></div>
+    <div class="dialog-row"><div><b data-i18n="recapTimeLabel">Recap time</b><span id="dlgTime">17:00 WIB</span></div><button class="btn btn-small" type="button" data-setting="recap_time" data-i18n="changeTime">Change</button></div>
+    <p data-i18n="settingsNote">Changes apply to this browser session only. Open the Telegram bot for scheduled reminders.</p>
   </div>
   <div class="dialog-foot">
-    <button class="btn btn-small" type="button" id="newSessionBtn">Mulai sesi baru</button>
-    <button class="btn btn-primary btn-small" type="button" id="doneSettings">Selesai</button>
+    <button class="btn btn-small" type="button" id="newSessionBtn" data-i18n="newSession">Start new session</button>
+    <button class="btn btn-primary btn-small" type="button" id="doneSettings" data-i18n="done">Done</button>
   </div>
 </dialog>
 

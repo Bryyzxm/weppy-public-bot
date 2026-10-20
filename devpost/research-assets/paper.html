@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Weppy — Eurekadev 2026 Research Track Submission</title>
+<style>
+  :root{
+    --ink:#16211b; --muted:#4f5d54; --faint:#7d8a82;
+    --accent:#15803d; --accent-soft:#eaf6ee; --accent-ink:#0f4d28;
+    --line:#d7e2da; --line-soft:#e8efe9; --paper:#ffffff;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family: Georgia, "Times New Roman", "Songti SC", serif;
+    color:var(--ink); font-size:10.6pt; line-height:1.52;
+    background:var(--paper);
+  }
+  .page{ padding:0; }
+
+  /* ---------- Cover ---------- */
+  .cover{ padding: 4mm 2mm 0; page-break-after: always; }
+  .kicker{
+    display:inline-block; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.2pt; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+    color:var(--accent-ink); background:var(--accent-soft);
+    border:1px solid #c9e6d2; border-radius:999px; padding:4px 11px;
+  }
+  .cover h1{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:26pt; line-height:1.16; font-weight:800; letter-spacing:-0.01em;
+    margin:16px 0 10px; color:#101a14;
+  }
+  .cover h1 .accent{ color:var(--accent); }
+  .cover .subtitle{
+    font-size:12.2pt; color:var(--muted); font-style:italic; margin:0 0 20px; line-height:1.45;
+  }
+  .meta{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:9.4pt; color:var(--muted); line-height:1.7;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:11px 0; margin-bottom:20px;
+  }
+  .meta b{ color:var(--ink); }
+  .meta a{ color:var(--accent-ink); text-decoration:none; }
+  .abstract{
+    background:linear-gradient(180deg,#f4faf6,#ffffff);
+    border:1px solid #cfe7d7; border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 17px 15px; margin-bottom:16px;
+  }
+  .abstract h2{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:10.5pt; letter-spacing:.1em; text-transform:uppercase; margin:0 0 7px;
+    color:var(--accent-ink); font-weight:800;
+  }
+  .abstract p{ margin:0; font-size:10pt; line-height:1.55; text-align:justify; }
+  .keywords{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.8pt; color:var(--muted); line-height:1.6;
+  }
+  .keywords b{ color:var(--ink); }
+  .cover-foot{
+    margin-top:18px; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.4pt; color:var(--faint); border-top:1px dashed var(--line); padding-top:9px;
+  }
+
+  /* ---------- Sections ---------- */
+  h2.sec{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:14.6pt; font-weight:800; color:#101a14; letter-spacing:-0.01em;
+    margin:22px 0 3px; padding-bottom:5px; border-bottom:2px solid var(--accent);
+    page-break-after:avoid;
+  }
+  h2.sec .num{ color:var(--accent); margin-right:8px; }
+  h3{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:11.4pt; font-weight:700; color:var(--accent-ink);
+    margin:15px 0 4px; page-break-after:avoid;
+  }
+  h4{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:10pt; font-weight:700; color:#28352d; margin:11px 0 3px;
+    page-break-after:avoid;
+  }
+  p{ margin:0 0 7px; text-align:justify; }
+  ul,ol{ margin:3px 0 8px; padding-left:20px; }
+  li{ margin:2px 0; }
+  a{ color:var(--accent-ink); text-decoration:none; border-bottom:1px solid #bcdcc7; }
+  .lead{ font-size:10.9pt; }
+  em.term{ font-style:italic; }
+  strong{ color:#101a14; }
+
+  /* ---------- Callout ---------- */
+  .callout{
+    background:var(--accent-soft); border:1px solid #cbe7d4; border-radius:9px;
+    padding:11px 15px; margin:10px 0 12px;
+  }
+  .callout p{ margin:0; font-size:10pt; }
+  .callout .lbl{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.4pt; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent-ink); display:block; margin-bottom:3px;
+  }
+
+  /* ---------- Tables ---------- */
+  table{
+    width:100%; border-collapse:collapse; margin:9px 0 13px;
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.7pt; page-break-inside:avoid;
+  }
+  caption{
+    caption-side:top; text-align:left; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.6pt; color:var(--muted); font-style:normal; font-weight:600; margin-bottom:4px;
+  }
+  th,td{ border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
+  thead th{ background:#eef7f1; color:#123a24; font-weight:700; }
+  tbody tr:nth-child(even){ background:#fafcfb; }
+  td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .ok{ color:#15803d; font-weight:700; }
+  .bad{ color:#b91c1c; font-weight:700; }
+
+  /* ---------- Figures ---------- */
+  figure{ margin:12px 0 14px; page-break-inside:avoid; text-align:center; }
+  figure img{ width:100%; border:1px solid var(--line); border-radius:8px; }
+  figure.narrow img{ width:88%; }
+  figcaption{
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.5pt; color:var(--muted); margin-top:6px; text-align:center; line-height:1.45;
+  }
+  figcaption b{ color:var(--ink); }
+
+  .code{
+    font-family:"SF Mono",Menlo,Consolas,monospace; font-size:8.2pt; line-height:1.5;
+    background:#f6f9f7; border:1px solid var(--line); border-radius:8px;
+    padding:10px 13px; margin:8px 0 12px; white-space:pre; color:#20302a; overflow:hidden;
+  }
+
+  .refs{ font-size:9.4pt; line-height:1.5; }
+  .refs p{ text-indent:-20px; padding-left:20px; margin:0 0 6px; text-align:left; }
+  .section-break{ page-break-before: always; }
+  .small{ font-size:9pt; color:var(--muted); }
+  .twocol{ display:flex; gap:16px; }
+  .twocol figure{ flex:1; margin:0; }
+  .badge-row{ margin:8px 0 12px; }
+  .badge{
+    display:inline-block; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:8.2pt; font-weight:700; color:#123a24; background:#eef7f1;
+    border:1px solid #cbe7d4; border-radius:6px; padding:3px 9px; margin:0 6px 6px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================= COVER ============================= -->
+<div class="cover">
+  <span class="kicker">Eurekadev 2026 · Research Track</span>
+  <h1>Weppy: Turning Unstructured Sales&#8209;Visit Notes into Private, Owner&#8209;Scoped Pipeline Records with a <span class="accent">Guardrailed</span> Conversational Agent</h1>
+  <p class="subtitle">A capture-first alternative to manual CRM entry — and what happens when an AI agent is allowed to say “I don’t know.”</p>
+
+  <div class="meta">
+    <b>Author:</b> Bryyzxm &nbsp;·&nbsp; Independent Researcher<br/>
+    <b>Track:</b> Research Track &nbsp;·&nbsp; <b>Date:</b> October 2026<br/>
+    <b>Artifact:</b> Live web app <a href="https://weppy-public-bot.bryyzxm.workers.dev/app">weppy-public-bot.bryyzxm.workers.dev/app</a> &nbsp;·&nbsp;
+    Code <a href="https://github.com/Bryyzxm/weppy-public-bot">github.com/Bryyzxm/weppy-public-bot</a>
+  </div>
+
+  <div class="abstract">
+    <h2>Abstract</h2>
+    <p>B2B sales representatives routinely postpone documenting client visits, and conventional CRM data entry turns that delay into lost detail, stale pipelines, and missed follow-ups. This paper presents <b>Weppy</b>, a conversational agent that inverts the workflow: instead of filling a form, the representative <i>tells the story</i> of a visit by text or voice note, and the agent extracts a structured four-field pipeline record — institution, contact and role, product or service, and deal stage. The central design commitment is <b>capture without fabrication</b>: any field the agent cannot ground in the message is left explicitly empty and requested one at a time with a <i>Skip</i> option, rather than guessed. We frame the problem as an <i>information-fidelity agent</i> whose objective is to maximize grounded, user-confirmed capture per unit of effort under a hard constraint of zero fabrication, and we implement it as a single TypeScript Cloudflare Worker with D1 storage, one shared engine serving both Telegram and a browser client, and structural per-owner data isolation. We report a formative evaluation — an automated suite of 21/21 passing tests covering owner isolation and concurrent scheduling, and a measured comparison of the production extraction model against two third-party alternatives — and a controlled evaluation plan (a counterbalanced within-subjects study) to test the framework’s predictions about completeness, fabrication, and effort.</p>
+  </div>
+
+  <div class="keywords">
+    <b>Keywords:</b> conversational agents · information extraction · human–AI interaction · sales force automation · CRM · hallucination mitigation · speech-to-text · serverless edge computing
+  </div>
+
+  <div class="cover-foot">
+    Word count ≈ 4,900 &nbsp;·&nbsp; Sections: Background · Literature Review · Proposed Solution &amp; Theoretical Framework · Implementation Plan · References · Prototype (Bonus)
+  </div>
+</div>
+
+<!-- ============================= 1. BACKGROUND ============================= -->
+<h2 class="sec"><span class="num">1</span>Background &amp; Problem Definition</h2>
+
+<h3>1.1 The post-visit documentation gap</h3>
+<p class="lead">B2B field sales is a day of movement: a representative drives between client sites, spends forty minutes in a meeting, and is already thinking about the next stop before the car door closes. The five minutes immediately after a visit — while names, quantities, objections, and promises are still fresh — is precisely the moment when almost nobody writes anything down. The administrative task is deferred to the evening, the evening is full, and the details decay. The result is a familiar failure chain: <b>deferred notes → forgotten detail → missed follow-up → stalled deal → a pipeline that no longer reflects reality.</b></p>
+
+<p>The conventional remedy is a Customer Relationship Management (CRM) system. But a CRM is, at the moment of capture, a form: a grid of required fields presented to a person who is tired, in transit, and holding a phone in one hand. The form demands exactly the structured information the representative does not yet have time to organize. Salespeople respond rationally — they avoid it. The pipeline goes stale not because reps are careless but because the tool asks them to do clerical work at the worst possible moment. This paper treats that mismatch, rather than any individual behavior, as the problem to solve.</p>
+
+<h3>1.2 Why it matters</h3>
+<p>The scale of the loss is well documented. Salesforce’s <i>State of Sales</i> survey of 7,775 sales professionals across 38 countries found that reps spend only <b>28% of their week actually selling</b>, with the majority of remaining time consumed by deal management and data entry; 66% report being overwhelmed by the number of tools they must use (Salesforce, 2022). Forrester’s sales-activity research estimates the average rep wastes roughly <b>14 of 51 working hours each week</b> on administrative tasks — about two working days (Forrester, n.d.). Every hour reclaimed from paperwork is an hour available for revenue-generating conversation, and every record captured at the point of the visit is a record that survives to inform forecasting and follow-up.</p>
+
+<p>The stakes are not only economic but epistemic. A CRM exists to answer questions — <i>what is in the pipeline, what is due, what did we promise?</i> — and it can only answer them if the underlying records are complete and trustworthy. Incomplete records distort forecasts; fabricated or guessed records are worse, because they silently inject falsehoods that later decisions treat as fact. For a mobile-first market such as Indonesia, where much field communication already happens through voice and messaging apps, the gap is sharper still: typing a long form on a phone is slow (speech dictation is roughly three times faster than mobile typing; Ruan et al., 2016), so the medium that is easiest to use — voice — is the one the CRM cannot accept.</p>
+
+<h3>1.3 Problem statement</h3>
+<p>We formalize the task as follows. A visit is described by a free-form utterance <i>u</i>, delivered as text or as a voice note that is first transcribed. The goal is to produce a structured record</p>
+<p style="text-align:center; font-style:italic; margin:6px 0 10px;">R = {institution, contact, role, product, stage, follow-up date}</p>
+<p>subject to three coupled requirements: <b>(P1) extraction fidelity</b> — every populated field must be grounded in <i>u</i> or in a later user confirmation, and unmentioned fields must remain visibly empty rather than invented; <b>(P2) minimal-burden disambiguation</b> — the system should ask only for what is missing, one item at a time, and must always allow the user to abstain; and <b>(P3) ownership integrity</b> — the record must be durably stored and readable only by the account that created it, with reminders delivered back to that same owner.</p>
+
+<h3>1.4 Scope</h3>
+<p>This work targets the individual representative’s capture-and-follow-up loop. It is deliberately <i>not</i> a full CRM: it excludes team sharing, lead scoring, price recommendation, and closing prediction. The public artifact is a best-effort, zero-cost service on free tiers, and the paper is explicit that this implies no uptime guarantee, no managed backups, and no production SLA — an honesty constraint we treat as part of the design, not a disclaimer bolted on afterward.</p>
+
+<!-- ============================= 2. LITERATURE ============================= -->
+<h2 class="sec"><span class="num">2</span>Literature Review</h2>
+
+<h3>2.1 Sales force automation and the adoption problem</h3>
+<p>Research on sales force automation (SFA) has long documented that the binding constraint is adoption, not features. Speier and Venkatesh (2002) identify the “hidden minefields” of SFA adoption, showing that systems which increase perceived effort or reduce flexibility are resisted even when mandated. Bush, Moore, and Rocco (2005) report SFA implementation failure rates as high as 55–80% and attribute failure largely to managerial and usability factors rather than to technology gaps. The recurring lesson across this literature is blunt: <b>a tool that adds work gets abandoned.</b> Any credible solution must therefore reduce the effort of capture, not formalize it more aggressively.</p>
+
+<h3>2.2 The cost of non-selling time</h3>
+<p>Industry research quantifies the burden that motivates the problem. Salesforce’s multi-country <i>State of Sales</i> study (2022) places selling time at 28% of the week and highlights data entry and tool sprawl as primary drains; Forrester’s activity studies estimate roughly two days per week lost to administration (Forrester, n.d.). These figures are correlational and vendor-sponsored, and should be read as order-of-magnitude evidence rather than precise measurements, but they converge on a consistent conclusion: post-visit administration is a large, recurring, and widely resented cost.</p>
+
+<h3>2.3 Voice and conversational interfaces for data capture</h3>
+<p>If capture must be effortless, voice is an obvious channel. Ruan, Wobbrock, Liou, Ng, and Landay (2016) found that speech dictation was about three times faster than typing for both English and Mandarin text entry on mobile devices, and more accurate after correction. Yet voice input is not automatically usable: a recent field study of hands-free, eyes-free voice input for nursing records found real barriers around accuracy, integration into existing record systems, and clinician trust (Nishida et al., 2026). The lesson for our design is that voice capture is viable only when paired with a forgiving, editable, and honest interface that surfaces uncertainty instead of hiding it.</p>
+
+<h3>2.4 Information extraction with large language models</h3>
+<p>Large language models have become strong zero- and few-shot information extractors. Xu et al. (2024) survey generative information extraction and show that LLMs handle schema-guided extraction impressively but are prone to schema drift, inconsistent formatting, and unsupported “fill-in” of missing slots. The practical implication is that a production extractor needs more than a good prompt: it needs a strict output contract (JSON mode), schema validation, and an explicit policy for absent information. This is precisely the engineering layer that separates a demo from a dependable record-keeping tool.</p>
+
+<h3>2.5 Hallucination and faithfulness</h3>
+<p>Hallucination — fluent output unsupported by the source — is the central risk for any system that writes records on a user’s behalf. Ji et al. (2023) provide a widely used taxonomy distinguishing <i>intrinsic</i> hallucination (output contradicting the source) from <i>extrinsic</i> hallucination (output adding unsupported content). Koenecke, Choi, Mei, Schellmann, and Sloane (2024), in <i>Careless Whisper</i>, demonstrate that speech-to-text systems hallucinate even on silence and noise, and that a substantial fraction of these fabrications carry explicit harms. In our own measurements (Section 4.4) the production Whisper model transcribed three seconds of silence as the word “you” — a small but concrete instance of the phenomenon. The design response is direct: treat transcription as untrusted, never let a blank become an invented value, and make the system prefer an honest empty field to a confident guess.</p>
+
+<h3>2.6 Clarification and question asking</h3>
+<p>When information is missing, the right move is to ask — but which question, and in what order? Rao and Daumé III (2018) formalize clarification-question ranking using the neural <i>expected value of perfect information</i>: prefer the question whose answer most reduces uncertainty. Weppy does not learn a ranking; it uses a deterministic, ordered clarification policy that asks for the highest-value missing fields first and always offers abstention. The framing nonetheless matches: clarification is treated as an information-acquisition problem with a cost, not as a checklist to be completed by force.</p>
+
+<h3>2.7 Speech recognition and open-weight extraction models</h3>
+<p>Modern speech recognition rests on large-scale weakly supervised training. Radford et al. (2023) introduced Whisper, whose robustness across accents, noise, and languages made high-quality transcription a commodity API; Weppy uses <code>whisper-large-v3</code> for this role. For extraction, Weppy uses an open-weight reasoning model, <code>gpt-oss-20b</code>, whose model card documents its architecture, training, and safety posture (OpenAI, 2025). Using open-weight models keeps cost at zero on free tiers while allowing a strict JSON contract.</p>
+
+<h3>2.8 The gap this work addresses</h3>
+<p>The literatures above study CRM failure, the cost of non-selling time, voice capture, LLM extraction, hallucination, and clarification largely in isolation. Few systems combine them into a single capture-first workflow whose <i>explicit design objective</i> is grounded completeness with abstention, enforced under strict per-owner isolation on a zero-cost serverless deployment — and fewer still report measured extraction reliability across providers as part of the design argument. Weppy contributes (i) an integrated design and theoretical framing, (ii) a working, publicly accessible implementation with structural privacy, and (iii) a measured reliability study plus a controlled evaluation plan.</p>
+
+<!-- ============================= 3. SOLUTION ============================= -->
+<h2 class="sec"><span class="num">3</span>Proposed Solution / Theoretical Framework</h2>
+
+<h3>3.1 Core idea</h3>
+<p>Weppy’s thesis is a single sentence: <b>let the representative tell the story, and let the agent do the paperwork — without ever inventing a fact.</b> A rep sends a text or voice note after a visit (“Visited PT Nusantara Foods today, met procurement manager Budi Santoso, discussed the 200 kg monthly coffee contract, they want pricing by Friday”). The agent transcribes if needed, extracts the four pipeline fields, and returns a scannable card. Any field it cannot ground is shown as explicitly <i>not set</i> and requested one at a time, each with a <b>Skip</b> button. Once saved, the agent computes a follow-up date, sends reminders and a daily recap at the user’s chosen time, and can export the whole pipeline as CSV. The entire interaction lives in the messaging medium the rep already uses, so capture costs a sentence instead of a form.</p>
+
+<h3>3.2 A theoretical framework: the Information-Fidelity Agent</h3>
+<p>We model the system as an <i>Information-Fidelity Agent</i> (IFA) and define four quantities over a visit record with <i>n</i> required fields:</p>
+<ul>
+  <li><b>Grounded capture completeness</b> <i>C</i> = (fields populated <i>and</i> supported by the message or a user confirmation) / <i>n</i>.</li>
+  <li><b>Fabrication rate</b> <i>F</i> = (fields populated without support) / (fields populated).</li>
+  <li><b>Interaction cost</b> <i>E</i> = turns or seconds required to reach a saved record.</li>
+  <li><b>Ownership integrity</b> <i>I</i> ∈ {0,1} = whether the record is readable only by its owner (structural, not probabilistic).</li>
+</ul>
+<p>The framework’s central claim is that record-keeping is not a symmetric trade-off between completeness and speed. It is a <b>constrained</b> optimization:</p>
+<div class="callout">
+  <span class="lbl">Objective</span>
+  <p style="text-align:center; font-style:italic;">maximize <b>C</b> &nbsp; subject to &nbsp; <b>F ≤ ε</b> &nbsp; and &nbsp; <b>E ≤ E<sub>max</sub></b>, &nbsp; with &nbsp; <b>I = 1</b></p>
+</div>
+<p>with ε set to zero in principle. The rationale is asymmetric recoverability: <b>a blank is recoverable; a false value is not.</b> A blank invites a clarification question or a Skip, and the record remains honest. A fabricated value looks identical to a true one, propagates silently into recaps and forecasts, and is discovered — if ever — only after a decision has been made on it. This is why fidelity is modeled as a hard constraint rather than a quantity to trade against speed, and it is the theoretical reason the product refuses to “helpfully” fill gaps.</p>
+
+<h4>Testable hypotheses</h4>
+<ul>
+  <li><b>H1 (abstention reduces fabrication).</b> Grounded-only extraction with blank-not-guess lowers the fabrication rate <i>F</i> relative to unconstrained LLM extraction, without lowering confirmed completeness <i>C</i> after one clarification round.</li>
+  <li><b>H2 (Skip preserves flow).</b> Offering an explicit abstention option yields completion and satisfaction at least as high as forcing an answer, while reducing perceived pressure and drop-off.</li>
+  <li><b>H3 (voice lowers effort).</b> Voice input reduces time-to-record <i>E</i> relative to typing, consistent with the mobile-dictation literature (Ruan et al., 2016).</li>
+</ul>
+
+<h3>3.3 How the variables relate: the capture loop</h3>
+<p>Operationally, the framework is a per-owner state machine that cycles through six stages: <b>(1) input</b> (text or voice) → <b>(2) transcription</b> (untrusted) → <b>(3) grounded extraction</b> into a strict JSON schema → <b>(4) card rendering</b> with explicit blanks → <b>(5) clarification loop</b> (one missing field per turn, always with Skip) → <b>(6) persistence and scheduling</b> (follow-up, recap, CSV). Each transition either increases grounded completeness or leaves it unchanged; no transition may increase fabrication. This invariant — <i>the only path from blank to filled is grounding or explicit user confirmation</i> — is the mechanism by which the theoretical constraint <i>F ≤ ε</i> is enforced in code rather than merely promised in a prompt. Figure 1 shows the deployed architecture that realizes this loop across two transports.</p>
+
+<h3>3.4 Design principles mapped to the literature</h3>
+<table>
+  <caption>Table 1 — Design principles and the evidence that motivates each.</caption>
+  <thead><tr><th style="width:23%">Principle</th><th>What it means in Weppy</th><th style="width:31%">Grounded in</th></tr></thead>
+  <tbody>
+    <tr><td><b>Ground, don’t guess</b></td><td>Strict-JSON prompt told to leave unknown fields blank; UI shows “not set.”</td><td>Ji et al. (2023); Koenecke et al. (2024); Xu et al. (2024)</td></tr>
+    <tr><td><b>Ask minimally, allow Skip</b></td><td>One missing field per turn, ordered by value, with an always-available Skip.</td><td>Rao &amp; Daumé III (2018); Speier &amp; Venkatesh (2002)</td></tr>
+    <tr><td><b>Capture in the native medium</b></td><td>Voice and chat, not a form; voice recording in browser and Telegram.</td><td>Ruan et al. (2016); Nishida et al. (2026)</td></tr>
+    <tr><td><b>Structural privacy</b></td><td>Composite key (owner_id, id); a bare note ID never authorizes access.</td><td>Security engineering practice</td></tr>
+    <tr><td><b>Honest limits</b></td><td>README and UI state best-effort free-tier behavior; no fake uptime claims.</td><td>Research-ethics practice</td></tr>
+    <tr><td><b>Idempotent delivery</b></td><td>Atomic per-owner/per-date D1 claim prevents duplicate reminders under overlapping cron.</td><td>Distributed-systems practice</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================= 4. IMPLEMENTATION ============================= -->
+<h2 class="sec"><span class="num">4</span>Implementation Plan (and Formative Evaluation)</h2>
+<p class="small" style="margin-top:2px;">Per the submission criteria, this section takes the <i>Implementation Plan</i> route — describing the system actually built, the tools and methods, and how it is operated — and additionally reports a formative reliability study already run, plus a controlled experimental design that the framework predicts will validate H1–H3.</p>
+
+<h3>4.1 Architecture</h3>
+<p>Weppy is a single TypeScript Cloudflare Worker (<code>src/worker.ts</code>) that serves three surfaces from one deployment: the Telegram webhook, a JSON web API (<code>/api/session</code>, <code>/api/message</code>, <code>/api/voice</code>, <code>/api/export</code>), and the static browser client in <code>public/</code>. A single transport-agnostic conversation engine (<code>src/chat.ts</code>) drives both Telegram and the web app, so behavior cannot drift between the two. Persistence is Cloudflare D1 (SQLite); model calls go to Groq for transcription and extraction; a Cron Trigger runs every minute and evaluates each user’s schedule in <code>Asia/Jakarta</code>. No server needs to stay awake, and there is no build step for the client.</p>
+
+<figure>
+  <img src="architecture.png" alt="Weppy system architecture" />
+  <figcaption><b>Figure 1 — Deployed architecture.</b> Telegram (and a parallel browser client) reach one Cloudflare Worker that verifies the webhook secret, runs the shared engine, calls Groq for transcription and strict-JSON extraction, persists owner-scoped records in D1, and uses a Cron Trigger with atomic per-day claims to send each owner’s reminders and recap.</figcaption>
+</figure>
+
+<h4>Data model and isolation</h4>
+<p>The schema makes privacy structural rather than procedural. Notes use a composite primary key <code>PRIMARY KEY(owner_id, id)</code>, and <b>every</b> note query includes <code>owner_id</code>; a foreign note ID is simply “not found.” Telegram owners are keyed by private <code>chat_id</code>; web owners are namespaced <code>web:&lt;token&gt;</code> so they can never collide with a numeric chat ID, and the Cron sender skips <code>web:%</code> owners because a browser session cannot receive a push. A separate <code>processed_updates</code> table claims each Telegram <code>update_id</code> once to make webhook retries idempotent, and an atomic conditional update on <code>last_recap_date</code>/<code>last_followup_date</code> guarantees that overlapping Cron invocations cannot send a duplicate recap or reminder.</p>
+
+<div class="code">CREATE TABLE profiles (
+  owner_id TEXT PRIMARY KEY, profile_json TEXT NOT NULL,
+  onboarding_stage TEXT NOT NULL DEFAULT 'new',
+  recap_time TEXT NOT NULL DEFAULT '17:00',
+  last_recap_date TEXT NOT NULL DEFAULT '',
+  last_followup_date TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE notes (
+  owner_id TEXT NOT NULL, id TEXT NOT NULL,
+  created_at TEXT NOT NULL, note_json TEXT NOT NULL,
+  PRIMARY KEY (owner_id, id),
+  FOREIGN KEY (owner_id) REFERENCES profiles(owner_id)
+);
+CREATE TABLE processed_updates ( update_id INTEGER PRIMARY KEY, created_at TEXT NOT NULL );
+CREATE TABLE user_days ( owner_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (owner_id, day) );</div>
+
+<h3>4.2 Build, tools, and methods</h3>
+<p>The stack is deliberately small and reproducible: <b>TypeScript</b> on Cloudflare Workers; <b>Cloudflare D1</b> for storage; the <b>Telegram Bot API</b> and a static browser client for transport; <b>Groq</b> (<code>whisper-large-v3</code> for speech, <code>gpt-oss-20b</code> for extraction); <b>Wrangler</b> for deployment; and <b>Vitest</b> with the <code>@cloudflare/vitest-plugin</code> for tests against a real D1 emulation. Secrets are stored as Cloudflare secrets and never committed. The public artifact runs entirely on free tiers, with the honest caveat that free quotas can interrupt service.</p>
+<div class="badge-row">
+  <span class="badge">TypeScript</span><span class="badge">Cloudflare Workers</span><span class="badge">D1 / SQLite</span><span class="badge">Telegram Bot API</span><span class="badge">Groq · whisper-large-v3</span><span class="badge">gpt-oss-20b</span><span class="badge">Wrangler</span><span class="badge">Vitest</span>
+</div>
+
+<h3>4.3 What was built and verified</h3>
+<p>The implementation was exercised end to end. The automated suite comprises <b>21 tests across three files, all passing</b>, covering: webhook-secret rejection; rejection of another account and of a foreign note-ID callback; web-session isolation between two sessions; the full onboarding → report → clarification → recap path; localized CSV export scoped to the session owner; voice-upload transcription and storage; and concurrent Cron claims proving at most one scheduled recap per owner per date (plus a separate test that reminder and recap claims are tracked independently). Type checking passes, and the deployed web app and landing page return HTTP 200. The public artifact is live at the URL on the cover.</p>
+
+<h3>4.4 Formative reliability study: does the extractor keep the contract?</h3>
+<p>Because the theoretical constraint <i>F ≤ ε</i> depends on the extractor actually returning grounded, schema-valid records, we ran a measured comparison of the production model against two third-party extraction endpoints before committing to it. Using the production prompt unchanged (temperature 0, <code>max_tokens</code> 500, <code>response_format: json_object</code>) over a fixture set of 16 distinct scenarios plus repeats — including complete, incomplete, and fact-free reports; English, Indonesian, and mixed input; relative and explicit dates; corrections; negated deals; and untrusted quoted instructions — we recorded HTTP status, raw JSON validity, schema-and-value agreement, and latency.</p>
+
+<table>
+  <caption>Table 2 — Extraction reliability across providers (main fixture set). Higher is better for validity and accuracy; lower is better for latency.</caption>
+  <thead><tr><th>Provider / label</th><th class="num">Trials</th><th class="num">HTTP 200</th><th class="num">Raw valid JSON</th><th class="num">Schema + value</th><th class="num">Field accuracy</th><th class="num">Median</th><th class="num">P95</th></tr></thead>
+  <tbody>
+    <tr><td><b>Groq · gpt-oss-20b</b> (production)</td><td class="num">20</td><td class="num ok">20/20</td><td class="num ok">20/20</td><td class="num ok">20/20</td><td class="num">120/120</td><td class="num">0.82 s</td><td class="num">0.92 s</td></tr>
+    <tr><td>Third-party “Claude” endpoint</td><td class="num">20</td><td class="num ok">20/20</td><td class="num bad">0/20</td><td class="num bad">0/20</td><td class="num">116/120</td><td class="num">8.94 s</td><td class="num">9.86 s</td></tr>
+    <tr><td>Third-party “GPT-5” endpoint</td><td class="num">10*</td><td class="num ok">10/10</td><td class="num">9/10</td><td class="num">8/10</td><td class="num">59/60</td><td class="num">4.72 s</td><td class="num">6.09 s</td></tr>
+  </tbody>
+</table>
+<p class="small">*Subset of ten scenarios, not the full set; a small sample that does not establish long-run behavior. “Raw valid JSON” means the model’s message content was itself a JSON object, without a Markdown wrapper. Field accuracy is judged after reading any fenced JSON, i.e. the best case for the alternative.</p>
+
+<p>Three findings shaped the design. First, the production model satisfied the JSON contract on every trial and was roughly an order of magnitude faster than the alternatives. Second, the “Claude” endpoint returned its object inside a Markdown fence on <i>all twenty</i> trials and — more seriously — <b>invented a deal stage three times</b> when the fixture stated explicitly that the stage was unknown. That is a direct observation of <i>F &gt; 0</i> under unconstrained generation: the exact failure the IFA constraint exists to prevent, and one that survives format repair because the error is semantic, not syntactic. Third, even the production model is not flawless: a deliberately over-long institution name triggered an HTTP 400 <code>json_validate_failed</code> on one of twenty-four replay cases, so the system must (and does) fail safe — ask the user to retry or type the report rather than store a guess. On the speech side, <code>whisper-large-v3</code> transcribed three speech fixtures with 6/6 key facts preserved at a median of ~0.55 s, but rendered three seconds of silence as the single word “you” — a concrete instance of the hallucination risk documented by Koenecke et al. (2024), and the reason transcription output is treated as untrusted input to the extractor rather than as ground truth.</p>
+
+<div class="callout">
+  <span class="lbl">Interpretation</span>
+  <p>The study does not claim any provider is universally better. It establishes the narrower, decision-relevant point: for this record-keeping task, the chosen model is the most <i>contract-compliant</i> and fastest of those tested, and the alternatives demonstrate why a blank-not-guess policy and schema validation are necessary engineering — not optional polish.</p>
+</div>
+
+<h3>4.5 Proposed controlled evaluation (experimental design)</h3>
+<p>To test H1–H3 under controlled conditions, we specify a <b>counterbalanced within-subjects study</b>.</p>
+<ul>
+  <li><b>Participants.</b> Target N = 24–36 B2B sales representatives, with a subset of at least 8 recruited from real field roles for ecological validity and the remainder drawn from a business-school pool as a controlled proxy.</li>
+  <li><b>Conditions.</b> (A) Weppy via voice; (B) Weppy via text; (C) a form-based CRM baseline (a Salesforce-like required-field form); (D) an unconstrained-LLM baseline that extracts the same input but is allowed to fill missing fields without abstention.</li>
+  <li><b>Task.</b> Each participant watches a scripted three-minute client-visit recording (varied by condition block) and then records the visit in the assigned condition within a five-minute window. Ground-truth facts are fixed per script.</li>
+  <li><b>Measures.</b> Grounded capture completeness <i>C</i> and fabrication rate <i>F</i>, scored against ground truth by two blinded raters (inter-rater reliability via Cohen’s κ); time-to-record <i>E</i> in seconds; workload via NASA-TLX (Hart &amp; Staveland, 1988); usability via the System Usability Scale (Brooke, 1996); and a one-week follow-up measure of whether the participant completed the due follow-up.</li>
+  <li><b>Procedure.</b> Latin-square counterbalancing of condition order with a washout task between blocks; standardized instructions; full debrief. Sessions last ~45 minutes.</li>
+  <li><b>Analysis.</b> Mixed-effects models with condition as a fixed effect and participant as a random intercept; paired comparisons with Holm correction; nonparametric tests where distributions are non-normal. An a-priori power analysis targeting a medium effect (d ≈ 0.6) at α = .05 and power .80 implies roughly 28 participants for the repeated-measures design.</li>
+  <li><b>Predictions.</b> H1: A and B show lower <i>F</i> than D, with <i>C</i> at least equal after one clarification round. H2: A and B show completion and SUS at least as high as C, with lower TLX. H3: A yields lower <i>E</i> than B.</li>
+  <li><b>Threats and mitigations.</b> Order effects (counterbalanced), demand characteristics (blinded scoring, scripted ground truth), and ecological validity (real-rep subset) are each addressed explicitly; we will report all conditions and pre-register the analysis plan before data collection.</li>
+</ul>
+
+<h3>4.6 Deployment and operational plan</h3>
+<p>The service deploys to Cloudflare’s free Workers and D1 plans with no payment card, using Wrangler; the owner supplies a BotFather token, a Telegram webhook secret, and a Groq key as Cloudflare secrets. Operations are transparent about limits: free-tier quota exhaustion or provider outages can interrupt service, there is no managed backup, and the README and UI say so. Aggregate, privacy-preserving usage statistics (distinct users, web users, 7/30-day actives, returning users, note authors) are available to the owner through a token-gated endpoint that never exposes chat IDs or note contents. The roadmap follows the framework: a WhatsApp channel (the transport layer is already abstracted), a shared team view, calendar synchronization, and production-grade reliability beyond the free demo tier.</p>
+
+<!-- ============================= 5. REFERENCES ============================= -->
+<h2 class="sec section-break"><span class="num">5</span>References</h2>
+<div class="refs">
+  <p>Brooke, J. (1996). SUS: A “quick and dirty” usability scale. In P. W. Jordan, B. Thomas, B. A. Weerdmeester, &amp; I. L. McClelland (Eds.), <i>Usability Evaluation in Industry</i> (pp. 189–194). Taylor &amp; Francis.</p>
+  <p>Bush, A. J., Moore, J. B., &amp; Rocco, R. (2005). Understanding sales force automation outcomes: A managerial perspective. <i>Industrial Marketing Management, 34</i>(4), 369–377. https://www.sciencedirect.com/science/article/abs/pii/S0019850104001506</p>
+  <p>Cloudflare. (n.d.). <i>Cloudflare Workers: Runtime APIs and platform limits; Cloudflare D1: Worker API and pricing</i>. https://developers.cloudflare.com/workers/ ; https://developers.cloudflare.com/d1/</p>
+  <p>Forrester Research. (n.d.). <i>Let’s fix the key obstacle to improving your sales productivity</i> [Sales Activity Study]. https://www.forrester.com/resources/sales-productivity/activity-study/</p>
+  <p>Groq. (n.d.). <i>Groq API documentation: Chat completions and audio transcription</i>. https://console.groq.com/docs</p>
+  <p>Hart, S. G., &amp; Staveland, L. E. (1988). Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research. In P. A. Hancock &amp; N. Meshkati (Eds.), <i>Human Mental Workload</i> (Advances in Psychology, Vol. 52, pp. 139–183). North-Holland.</p>
+  <p>Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y. J., Madotto, A., &amp; Fung, P. (2023). Survey of hallucination in natural language generation. <i>ACM Computing Surveys, 55</i>(12), Article 248. https://doi.org/10.1145/3571730</p>
+  <p>Koenecke, A., Choi, A. S. G., Mei, K. X., Schellmann, H., &amp; Sloane, M. (2024). Careless Whisper: Speech-to-text hallucination harms. In <i>Proceedings of the 2024 ACM Conference on Fairness, Accountability, and Transparency (FAccT ’24)</i>. https://doi.org/10.1145/3630106.3658996</p>
+  <p>Nishida, N., Liu, C., Yamamoto, G., &amp; Kuroda, T. (2026). Clinical barriers to hands-free, eyes-free voice input for nursing records: Field usability study. <i>Asian/Pacific Island Nursing Journal, 10</i>, e71462. https://apinj.jmir.org/2026/1/e71462</p>
+  <p>OpenAI. (2025, August 5). <i>gpt-oss-120b &amp; gpt-oss-20b model card</i>. https://openai.com/index/gpt-oss-model-card</p>
+  <p>Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., &amp; Sutskever, I. (2023). Robust speech recognition via large-scale weak supervision. In <i>Proceedings of the 40th International Conference on Machine Learning</i> (PMLR 202, pp. 28492–28518). https://proceedings.mlr.press/v202/radford23a.html</p>
+  <p>Rao, S., &amp; Daumé III, H. (2018). Learning to ask good questions: Ranking clarification questions using neural expected value of perfect information. In <i>Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics</i> (pp. 2737–2746). https://aclanthology.org/P18-1255</p>
+  <p>Ruan, S., Wobbrock, J. O., Liou, K., Ng, A., &amp; Landay, J. A. (2016). Speech is 3× faster than typing for English and Mandarin text entry on mobile devices. <i>arXiv preprint</i> arXiv:1608.07323. https://arxiv.org/abs/1608.07323</p>
+  <p>Salesforce. (2022, December 8). <i>New research reveals sales reps need a productivity overhaul — spend less than 30% of their time actually selling</i> [State of Sales, 5th ed.]. https://www.salesforce.com/in/news/stories/sales-research-2023/</p>
+  <p>Speier, C., &amp; Venkatesh, V. (2002). The hidden minefields in the adoption of sales force automation technologies. <i>Journal of Marketing, 66</i>(3), 98–111. https://doi.org/10.1509/jmkg.66.3.98.18510</p>
+  <p>Telegram. (n.d.). <i>Telegram Bot API</i>. https://core.telegram.org/bots/api</p>
+  <p>Xu, D., Chen, W., Peng, W., Zhang, C., Xu, T., Zhao, X., Wu, X., Zheng, Y., Wang, Y., &amp; Chen, H. (2024). Large language models for generative information extraction: A survey. <i>Frontiers of Computer Science</i>; arXiv:2312.17617. https://arxiv.org/abs/2312.17617</p>
+  <p>Bryyzxm. (2026). <i>weppy-public-bot</i> [Software repository and evaluation artifacts]. GitHub. https://github.com/Bryyzxm/weppy-public-bot</p>
+</div>
+
+<!-- ============================= BONUS ============================= -->
+<h2 class="sec section-break"><span class="num">6</span>Bonus: Prototype, Diagram &amp; Visualization</h2>
+<p>The following figures are captured from the live prototype rather than mocked up. Figure 2 is the public landing page; Figure 3 is the browser client after onboarding, showing the chat thread, inline action buttons, the pipeline side panel with counts and CSV export, and the voice-note recorder. Figure 1 (Section 4.1) is the system diagram.</p>
+
+<figure>
+  <img src="fig-landing.png" alt="Weppy landing page" />
+  <figcaption><b>Figure 2 — Public landing page.</b> The hero explains the capture-first idea in one line (“From a visit story to a tidy pipeline”) and shows a sample visit note and a clarification prompt with Skip, linking directly into the browser chat and the Telegram bot.</figcaption>
+</figure>
+
+<figure>
+  <img src="fig-app.png" alt="Weppy web app after onboarding" />
+  <figcaption><b>Figure 3 — Browser client after onboarding.</b> Language, nickname, and recap-time steps each offer Skip (visible above); the ready menu exposes New report, Recap now, Check follow-ups, Export CSV, and Settings. The side panel holds the profile, note/draft/due counts, CSV export, and the pipeline list — all scoped to this browser session’s owner token.</figcaption>
+</figure>
+
+<p class="small" style="margin-top:14px; border-top:1px dashed var(--line); padding-top:10px;">
+Note on reproduction: all figures and measurements in this paper come from the project’s own artifacts (<code>devpost/kyio-evaluation.md</code> and the JSON result files) and the deployed Worker. The pipeline-card and clarification flow is described in Sections 3.1 and 3.3; at the time of capture the deployed extraction endpoint was returning an honest “service busy” message under free-tier rate limits, which the system surfaces to the user rather than papering over — consistent with the fidelity constraint this paper argues for.
+</p>
+
+</body>
+</html>

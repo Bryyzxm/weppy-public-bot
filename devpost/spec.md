@@ -70,6 +70,7 @@ Cloudflare Workers + D1 avoids a paid VM/card requirement for standard free use,
 ## Look and Feel
 
 - Inline button labels use concise emoji cues for quicker scanning; callback IDs and button actions remain unchanged.
+- Reply language follows the profile choice in both transports; a new chat asks for the language first (default English) and the landing page defaults to English with an EN/ID toggle. When English is chosen no Indonesian copy may appear.
 - Cards show four pipeline fields and explicit missing values; never invent absent facts.
 - Voice, text, details, recap and CSV are scoped to the owning session or Telegram chat.
 - Sub-menu, detail, dan langkah input menyertakan tombol Back yang kembali ke menu utama tanpa menerapkan jawaban atau mengubah catatan yang belum selesai.
@@ -87,13 +88,13 @@ Validates Telegram's secret header in constant time. Parses updates with a priva
 
 Implements `prd.md > 0. Onboarding per pengguna` through `prd.md > 7. Pengaturan, menu, dan ekspor`.
 
-Transport-agnostic: it takes an owner id and input, and returns ordered outbound messages (text, inline buttons, note card, file). It owns profile/note persistence, Groq extraction and transcription, clarification with Skip, recap, follow-ups, settings and CSV generation. Both transports therefore share identical behavior and copy.
+Transport-agnostic: it takes an owner id and input, and returns ordered outbound messages (text, inline buttons, note card, file). It owns profile/note persistence, Groq extraction and transcription, clarification with Skip, recap, follow-ups, settings and CSV generation. Onboarding asks the reply language first (defaulting to English), and deal stages are stored in Indonesian but displayed per profile language. Both transports therefore share identical behavior and copy.
 
 ### Web Client (`public/`)
 
 Implements `prd.md > Screens and Layout` and `prd.md > Look and Feel`.
 
-`public/index.html` is the public landing page; `public/app.html` plus `public/app.js` and `public/styles.css` are the browser app. The client stores the session token in `localStorage`, renders chat bubbles, note cards and action buttons, records voice notes with `MediaRecorder` and uploads them to `/api/voice`, and downloads CSV from `/api/export`. It sends no credentials and holds no conversation logic of its own.
+`public/index.html` is the public landing page (English by default, with an EN/ID toggle that persists the choice in `localStorage` and swaps copy via `public/landing.js`); `public/app.html` plus `public/app.js` and `public/styles.css` are the browser app, whose chrome and widgets relocalize to the profile language. The client stores the session token in `localStorage`, renders chat bubbles, note cards and action buttons, records voice notes with `MediaRecorder` and uploads them to `/api/voice`, and downloads CSV from `/api/export`. It sends no credentials and holds no conversation logic of its own.
 
 ### Telegram Transport
 

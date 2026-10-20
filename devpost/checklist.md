@@ -36,7 +36,7 @@ Build mode: fast
   PRD ref: `prd.md > Screens and Layout`; `prd.md > Look and Feel`; `prd.md > What We're Building` (2).
   Spec ref: `spec.md > Components` (Conversation Engine, Web Client); `spec.md > Failure Modes and Limits`.
   Build: Extract `src/chat.ts` from the Telegram handler so both transports share onboarding, extraction, clarification, recap, follow-up, settings and CSV. Add `/api/session`, `/api/message`, `/api/voice`, `/api/export` with `web:<token>` owners, skip those owners in Cron, and serve `public/index.html`, `public/app.html`, `public/app.js`, `public/styles.css` as Worker assets.
-  Verify (mechanical): `npm run test` (18 tests, including `tests/web.test.ts`); `npm run typecheck`; `npm run smoke` against local and deployed Worker; browser walkthrough of onboarding → report → Skip → recap → detail → settings → CSV on desktop and mobile.
+  Verify (mechanical): `npm run test` (21 tests, including `tests/web.test.ts`); `npm run typecheck`; `npm run smoke` against local and deployed Worker; browser walkthrough of onboarding → report → Skip → recap → detail → settings → CSV on desktop and mobile.
   Learner check: Open the deployed `/app`, complete onboarding, send a text report and a voice note, Skip a field, run a recap, and download CSV.
   Commit: `Add public web app sharing the Weppy conversation engine`
 

@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000" role="img" aria-label="Weppy — from a visit story to a tidy pipeline">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbf9"/>
+      <stop offset="0.55" stop-color="#f3f7f3"/>
+      <stop offset="1" stop-color="#e9f6ee"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22b866"/>
+      <stop offset="1" stop-color="#15803d"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#12261a" flood-opacity="0.13"/>
+    </filter>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#12261a" flood-opacity="0.10"/>
+    </filter>
+    <filter id="blurA" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="70"/>
+    </filter>
+    <clipPath id="chatClip">
+      <rect x="760" y="140" width="650" height="720" rx="30"/>
+    </clipPath>
+  </defs>
+
+  <!-- background -->
+  <rect width="1500" height="1000" fill="url(#bg)"/>
+  <circle cx="1310" cy="90" r="220" fill="#c9efd8" opacity="0.55" filter="url(#blurA)"/>
+  <circle cx="120" cy="930" r="200" fill="#dcf3e4" opacity="0.65" filter="url(#blurA)"/>
+  <g opacity="0.5" fill="#16a34a">
+    <circle cx="118" cy="146" r="2.4"/><circle cx="146" cy="146" r="2.4"/><circle cx="174" cy="146" r="2.4"/>
+    <circle cx="118" cy="174" r="2.4"/><circle cx="146" cy="174" r="2.4"/><circle cx="174" cy="174" r="2.4"/>
+  </g>
+
+  <!-- left column -->
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <!-- eyebrow -->
+    <g transform="translate(92,158)">
+      <rect width="34" height="34" rx="10" fill="url(#accent)"/>
+      <path d="M9 24 C9 15, 13 10, 17 10 C21 10, 25 15, 25 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+      <circle cx="17" cy="25" r="2.6" fill="#ffffff"/>
+      <text x="46" y="23" font-size="14" font-weight="700" letter-spacing="2.6" fill="#15803d">WEPPY · B2B SALES ASSISTANT</text>
+    </g>
+
+    <!-- headline -->
+    <text x="90" y="278" font-size="70" font-weight="700" letter-spacing="-2.4" fill="#14201a">From a visit story</text>
+    <text x="90" y="356" font-size="70" font-weight="700" letter-spacing="-2.4" fill="#14201a">to a tidy <tspan fill="#15803d">pipeline.</tspan></text>
+
+    <!-- sub -->
+    <text x="92" y="428" font-size="23" fill="#5b6b61">Send a voice note after a sales visit. Weppy</text>
+    <text x="92" y="464" font-size="23" fill="#5b6b61">extracts the company, contact, product and deal</text>
+    <text x="92" y="500" font-size="23" fill="#5b6b61">stage — and asks for what’s missing instead of</text>
+    <text x="92" y="536" font-size="23" fill="#5b6b61"><tspan font-weight="700" fill="#14201a">inventing it.</tspan></text>
+
+    <!-- chips -->
+    <g font-size="16" font-weight="600">
+      <g transform="translate(92,592)">
+        <rect width="176" height="46" rx="23" fill="#ffffff" stroke="#dbe9e0" stroke-width="1.5"/>
+        <circle cx="24" cy="23" r="6" fill="#16a34a"/>
+        <text x="42" y="29" fill="#14201a">Voice note in</text>
+      </g>
+      <g transform="translate(282,592)">
+        <rect width="176" height="46" rx="23" fill="#ffffff" stroke="#dbe9e0" stroke-width="1.5"/>
+        <path d="M17 23 l7 7 l12 -14" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="42" y="29" fill="#14201a">Skip allowed</text>
+      </g>
+      <g transform="translate(472,592)">
+        <rect width="132" height="46" rx="23" fill="#e7f6ec"/>
+        <text x="24" y="29" fill="#0f4d28">Recap</text>
+      </g>
+      <g transform="translate(618,592)">
+        <rect width="112" height="46" rx="23" fill="#e7f6ec"/>
+        <text x="26" y="29" fill="#0f4d28">CSV</text>
+      </g>
+    </g>
+
+    <!-- bottom proof line -->
+    <line x1="92" y1="716" x2="668" y2="716" stroke="#14201a" stroke-opacity="0.12" stroke-width="1"/>
+    <g font-size="17" fill="#5b6b61">
+      <g transform="translate(92,748)">
+        <circle cx="10" cy="10" r="10" fill="#e7f6ec"/>
+        <path d="M5.5 10.5 l3.2 3.2 l5.8 -6.6" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="30" y="16">Private per account</text>
+      </g>
+      <g transform="translate(300,748)">
+        <circle cx="10" cy="10" r="10" fill="#e7f6ec"/>
+        <path d="M5.5 10.5 l3.2 3.2 l5.8 -6.6" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="30" y="16">English · Indonesian</text>
+      </g>
+    </g>
+    <g transform="translate(92,800)" font-size="17" font-weight="600" fill="#0f4d28">
+      <rect width="176" height="42" rx="21" fill="#ffffff" stroke="#bfe6cd" stroke-width="1.5"/>
+      <text x="20" y="27">Telegram + Web</text>
+      <rect x="188" width="150" height="42" rx="21" fill="#ffffff" stroke="#bfe6cd" stroke-width="1.5"/>
+      <text x="208" y="27">Free to try</text>
+    </g>
+  </g>
+
+  <!-- chat card -->
+  <g filter="url(#cardShadow)">
+    <rect x="760" y="140" width="650" height="720" rx="30" fill="#ffffff"/>
+  </g>
+  <g clip-path="url(#chatClip)">
+    <rect x="760" y="140" width="650" height="74" fill="#ffffff"/>
+    <line x1="760" y1="214" x2="1410" y2="214" stroke="#14201a" stroke-opacity="0.09" stroke-width="1"/>
+
+    <!-- header -->
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+      <circle cx="800" cy="177" r="21" fill="url(#accent)"/>
+      <path d="M791 188 C791 178, 794 172, 800 172 C806 172, 809 178, 809 188" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="800" cy="189" r="2.4" fill="#ffffff"/>
+      <text x="834" y="181" font-size="21" font-weight="700" fill="#14201a">Weppy</text>
+      <text x="834" y="202" font-size="13" fill="#84948a">sales pipeline assistant</text>
+      <circle cx="1328" cy="177" r="5" fill="#16a34a"/>
+      <text x="1342" y="182" font-size="13" fill="#5b6b61">online</text>
+    </g>
+
+    <!-- user voice bubble -->
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+      <rect x="938" y="238" width="436" height="98" rx="24" fill="#15803d"/>
+      <text x="962" y="274" font-size="17.5" fill="#ffffff">Baru selesai kunjungan ke PT</text>
+      <text x="962" y="298" font-size="17.5" fill="#ffffff">Sinar Abadi. Ketemu Bu Rina.</text>
+      <!-- waveform -->
+      <g fill="#ffffff" opacity="0.92">
+        <rect x="962" y="313" width="3" height="8" rx="1.5"/>
+        <rect x="971" y="309" width="3" height="16" rx="1.5"/>
+        <rect x="980" y="305" width="3" height="24" rx="1.5"/>
+        <rect x="989" y="311" width="3" height="12" rx="1.5"/>
+        <rect x="998" y="307" width="3" height="20" rx="1.5"/>
+        <rect x="1007" y="303" width="3" height="28" rx="1.5"/>
+        <rect x="1016" y="310" width="3" height="14" rx="1.5"/>
+        <rect x="1025" y="306" width="3" height="22" rx="1.5"/>
+        <rect x="1034" y="312" width="3" height="10" rx="1.5"/>
+      </g>
+      <text x="1056" y="324" font-size="13" fill="#d8f3e2">0:12 · voice note</text>
+    </g>
+
+    <!-- note card -->
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+      <rect x="792" y="360" width="586" height="300" rx="18" fill="#ffffff" stroke="#14201a" stroke-opacity="0.10" stroke-width="1.5"/>
+      <text x="816" y="394" font-size="19" font-weight="700" fill="#14201a">Visit note</text>
+      <g transform="translate(1234,376)">
+        <rect width="122" height="28" rx="14" fill="#e7f6ec"/>
+        <text x="18" y="19" font-size="13" font-weight="700" fill="#0f4d28">SAVED</text>
+      </g>
+
+      <!-- rows -->
+      <g font-size="19" fill="#14201a">
+        <text x="816" y="438" font-size="12" font-weight="700" letter-spacing="1.4" fill="#84948a">INSTITUTION</text>
+        <text x="1008" y="438">PT Sinar Abadi</text>
+
+        <text x="816" y="482" font-size="12" font-weight="700" letter-spacing="1.4" fill="#84948a">CONTACT</text>
+        <text x="1008" y="482">Bu Rina</text>
+
+        <text x="816" y="526" font-size="12" font-weight="700" letter-spacing="1.4" fill="#84948a">PRODUCT</text>
+        <text x="1008" y="526">Annual plan · 50 users</text>
+
+        <text x="816" y="570" font-size="12" font-weight="700" letter-spacing="1.4" fill="#84948a">DEAL STAGE</text>
+        <g transform="translate(1008,549)">
+          <rect width="133" height="30" rx="15" fill="#e7f6ec"/>
+          <text x="15" y="20" font-size="15" font-weight="600" fill="#0f4d28">Price quote</text>
+        </g>
+
+        <text x="816" y="614" font-size="12" font-weight="700" letter-spacing="1.4" fill="#84948a">FOLLOW-UP</text>
+        <text x="1008" y="614">26 Oct 2026</text>
+      </g>
+    </g>
+
+    <!-- clarification -->
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+      <rect x="792" y="684" width="586" height="152" rx="18" fill="#f7faf8" stroke="#14201a" stroke-opacity="0.08" stroke-width="1.5"/>
+      <text x="816" y="720" font-size="18.5" fill="#14201a">What is the contact person’s role?</text>
+      <text x="816" y="744" font-size="14" fill="#84948a">Answer it, or pick Skip — nothing is invented.</text>
+
+      <g transform="translate(816,766)">
+        <rect width="188" height="46" rx="23" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+        <text x="20" y="29" font-size="16" font-weight="600" fill="#0f4d28">Sales manager</text>
+      </g>
+      <g transform="translate(1016,766)">
+        <rect width="126" height="46" rx="23" fill="#ffffff" stroke="#14201a" stroke-opacity="0.16" stroke-width="1.5"/>
+        <path d="M18 23 h9" stroke="#5b6b61" stroke-width="2.4" stroke-linecap="round"/>
+        <text x="42" y="29" font-size="16" font-weight="600" fill="#5b6b61">Skip</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- chat card border on top of content -->
+  <rect x="760" y="140" width="650" height="720" rx="30" fill="none" stroke="#14201a" stroke-opacity="0.08" stroke-width="1.5"/>
+
+  <!-- bottom label -->
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" transform="translate(760,916)">
+    <text x="0" y="0" font-size="16" fill="#84948a">Voice note in → structured note out</text>
+    <text x="650" y="0" font-size="16" font-weight="600" fill="#15803d" text-anchor="end">weppy-public-bot.bryyzxm.workers.dev</text>
+  </g>
+</svg>

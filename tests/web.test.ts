@@ -45,8 +45,8 @@ function api(path: string, body: unknown): Promise<Response> {
 
 async function onboard(token: string): Promise<void> {
   await api("/api/session", { token });
-  await api("/api/message", { token, text: "Ayu" });
   await api("/api/message", { token, text: "lang_id" });
+  await api("/api/message", { token, text: "Ayu" });
   await api("/api/message", { token, text: "time_17:00" });
 }
 
@@ -65,13 +65,43 @@ beforeEach(async () => {
 });
 
 describe("web API", () => {
-  it("issues a session token and starts onboarding on first load", async () => {
+  it("issues a session token and asks the reply language first, defaulting to English", async () => {
     const response = await api("/api/session", {});
     expect(response.status).toBe(200);
-    const data = await response.json() as { token: string; profile: { onboarding_stage: string }; messages: { text: string }[] };
+    const data = await response.json() as { token: string; profile: { onboarding_stage: string; language: string }; messages: { text: string }[] };
     expect(data.token).toMatch(/^[A-Za-z0-9_-]{16,64}$/);
-    expect(data.profile.onboarding_stage).toBe("ask_name");
-    expect(data.messages.some((message) => message.text.includes("Nama panggilanmu"))).toBe(true);
+    expect(data.profile.onboarding_stage).toBe("ask_language");
+    expect(data.profile.language).toBe("en");
+    expect(data.messages.some((message) => message.text.includes("Choose your reply language"))).toBe(true);
+    expect(data.messages.some((message) => message.text.includes("Hello! I'm Weppy"))).toBe(true);
+  });
+
+  it("keeps every reply in English once English is chosen", async () => {
+    const token = "english_abcdefghijklmnop";
+    const session = await api("/api/session", { token });
+    const sessionData = await session.json() as { messages: { text: string }[] };
+    expect(sessionData.messages.some((message) => message.text.includes("Choose your reply language"))).toBe(true);
+
+    const language = await api("/api/message", { token, text: "lang_en" });
+    const languageData = await language.json() as { profile: { language: string }; messages: { text: string }[] };
+    expect(languageData.profile.language).toBe("en");
+    expect(languageData.messages.some((message) => message.text.includes("What should I call you"))).toBe(true);
+
+    await api("/api/message", { token, text: "Ayu" });
+    await api("/api/message", { token, text: "time_17:00" });
+
+    const report = await api("/api/message", {
+      token,
+      text: "met Ms Sari at PT Maju Jaya, discussed 100 kg of coffee, asked for a quote",
+    });
+    const reportData = await report.json() as { messages: { text: string }[] };
+    const englishText = reportData.messages.map((message) => message.text).join("\n");
+    expect(englishText).toContain("Visit note");
+    expect(englishText).toContain("Deal stage");
+    // No Indonesian words may leak into an English profile's replies.
+    for (const word of ["Catatan kunjungan", "Institusi", "Tahap deal", "Belum ada", "Apa "]) {
+      expect(englishText).not.toContain(word);
+    }
   });
 
   it("walks a full onboarding, report, clarification and recap in one session", async () => {
@@ -126,6 +156,28 @@ describe("web API", () => {
       body: JSON.stringify({ token: "short" }),
     }), testEnv);
     expect(forbidden.status).toBe(400);
+  });
+
+  it("localizes the CSV export headers and deal stage for an English profile", async () => {
+    const token = "export_en_abcdefghijklmnop";
+    await api("/api/session", { token });
+    await api("/api/message", { token, text: "lang_en" });
+    await api("/api/message", { token, text: "Ayu" });
+    await api("/api/message", { token, text: "time_17:00" });
+    await api("/api/message", { token, text: "met Ms Sari at PT Maju Jaya, discussed 100 kg of coffee" });
+
+    const csv = await worker.fetch(new Request("https://weppy.test/api/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    }), testEnv);
+    expect(csv.status).toBe(200);
+    expect(csv.headers.get("Content-Disposition")).toContain("pipeline-notes.csv");
+    const body = await csv.text();
+    expect(body.split("\r\n")[0]).toBe("id,created_at,institution,contact,role,product,deal_stage,followup_date,status");
+    expect(body).toContain('"Price quote"');
+    expect(body).not.toContain("Penawaran harga");
+    expect(body).not.toContain("institusi");
   });
 
   it("keeps two web sessions isolated", async () => {

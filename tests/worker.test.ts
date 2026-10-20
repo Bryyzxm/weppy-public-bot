@@ -87,6 +87,32 @@ beforeEach(async () => {
 });
 
 describe("public Telegram Worker", () => {
+  it("asks the reply language first, defaults to English, and stays English", async () => {
+    expect((await postUpdate(2, 909, "/start")).status).toBe(200);
+    const startReplies = requests.filter(({ method, payload }) => method === "sendMessage" && payload.chat_id === "909");
+    expect(startReplies.some(({ payload }) => String(payload.text).includes("Hello! I'm Weppy"))).toBe(true);
+    const languagePrompt = startReplies.find(({ payload }) => String(payload.text).includes("Choose your reply language"));
+    expect(languagePrompt?.payload.reply_markup).toEqual({ inline_keyboard: [[
+      { text: "🇮🇩 Indonesia", callback_data: "lang_id" },
+      { text: "🇬🇧 English", callback_data: "lang_en" },
+    ]] });
+
+    expect((await postUpdate(3, 909, "lang_en")).status).toBe(200);
+    const namePrompt = requests.filter(({ method, payload }) => method === "sendMessage" && payload.chat_id === "909").pop()?.payload;
+    expect(namePrompt?.text).toBe("What should I call you?");
+
+    await postUpdate(4, 909, "Ayu");
+    await postUpdate(5, 909, "time_17:00");
+    const doneReplies = requests.filter(({ method, payload }) => method === "sendMessage" && payload.chat_id === "909");
+    expect(doneReplies.some(({ payload }) => String(payload.text).includes("Ready, Ayu!"))).toBe(true);
+    const menu = doneReplies.pop()?.payload;
+    expect(menu?.reply_markup).toEqual({ inline_keyboard: [
+      [{ text: "📝 New report", callback_data: "menu_lapor" }],
+      [{ text: "📊 Recap now", callback_data: "menu_recap" }, { text: "🔔 Check follow-ups", callback_data: "menu_followup" }],
+      [{ text: "📤 Export CSV", callback_data: "menu_export" }, { text: "⚙️ Settings", callback_data: "menu_settings" }],
+    ] });
+  });
+
   it("rejects requests without the Telegram webhook secret", async () => {
     const context = createExecutionContext();
     const response = await worker.fetch(new Request("https://weppy.test/telegram/webhook", {

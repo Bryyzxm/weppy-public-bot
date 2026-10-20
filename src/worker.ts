@@ -1,6 +1,7 @@
 import { isRecord } from "./guards";
 import { claimScheduledDelivery } from "./delivery";
 import {
+  csvContent,
   dueFollowups,
   initialState,
   loadNotes,
@@ -328,14 +329,13 @@ async function handleWebApi(request: Request, env: Env, url: URL): Promise<Respo
   if (path === "/api/export" && request.method === "POST") {
     const body = await readJsonBody(request);
     if (!validWebToken(body.token)) return jsonResponse({ error: "invalid_token" }, 400);
-    const notes = await loadNotes(env.DB, webOwner(body.token));
-    const columns = ["id", "created_at", "institusi", "kontak", "role", "produk", "tahap_deal", "followup_date", "status"] as const;
-    const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-    const csv = [columns.join(","), ...notes.map((note) => columns.map((key) => escape(note[key])).join(","))].join("\r\n");
-    return new Response(csv, {
+    const owner = webOwner(body.token);
+    const profile = await loadProfile(env.DB, owner);
+    const notes = await loadNotes(env.DB, owner);
+    return new Response(csvContent(notes, profile.language), {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="catatan-pipeline.csv"',
+        "Content-Disposition": `attachment; filename="${profile.language === "en" ? "pipeline-notes.csv" : "catatan-pipeline.csv"}"`,
         "Cache-Control": "no-store",
       },
     });

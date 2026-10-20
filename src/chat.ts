@@ -79,11 +79,34 @@ const MONTHS: Record<Language, string[]> = {
   id: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
   en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 };
+// Canonical deal stages are stored in Indonesian for stable grouping. Display
+// translates them per profile language; anything else passes through untouched.
+const STAGE_EN: Record<string, string> = {
+  "Kunjungan awal": "Initial visit",
+  "Penawaran harga": "Price quote",
+  "Negosiasi": "Negotiation",
+  "Deal": "Deal",
+  "Follow-up": "Follow-up",
+};
+const LANGUAGE_BUTTONS: Button[][] = [[{ id: "lang_id", title: "🇮🇩 Indonesia" }, { id: "lang_en", title: "🇬🇧 English" }]];
+
+function stageLabel(stage: string, language: Language): string {
+  const value = (stage || "").trim();
+  if (!value || language === "id") return value;
+  return STAGE_EN[value] ?? value;
+}
+
+function parseLanguageChoice(input: string, fallback: Language): Language {
+  const low = input.trim().toLowerCase();
+  if (low === "lang_en" || low === "en" || low.includes("english") || low.includes("inggris")) return "en";
+  if (low === "lang_id" || low === "id" || low.includes("indonesia") || low.includes("bahasa")) return "id";
+  return fallback;
+}
 const STRINGS = {
   id: {
     welcome: "Halo! Aku Weppy, asisten pipeline sales. Catat hasil kunjungan lewat teks atau voice note.",
     askName: "Nama panggilanmu?",
-    askLanguage: "Pilih bahasa balasan:",
+    askLanguage: "Pilih bahasa balasan / Choose your reply language:",
     askTime: "Jam berapa kamu ingin menerima rekap harian? (WIB)",
     onboardingDone: "Siap, {name}! Kirim laporan kunjungan lewat teks atau voice note.",
     menu: "Apa yang ingin kamu lakukan?",
@@ -112,11 +135,29 @@ const STRINGS = {
     timeSaved: "Jam rekap diperbarui ke {time} WIB.",
     langSaved: "Bahasa diperbarui.",
     contact: "Kontak",
+    noteTitle: "*Catatan kunjungan*",
+    institution: "Institusi/perusahaan",
+    product: "Produk/layanan",
+    dealStage: "Tahap deal",
+    back: "⬅️ Kembali",
+    greeting: "Halo {name}! Tersimpan {count} catatan.",
+    stageNone: "Belum ada tahap",
+    recapTitle: "*Rekap pipeline*",
+    followupTomorrow: "*Follow-up besok:*",
+    followupTitle: "*Pengingat follow-up*",
+    viewNote: "Lihat catatan lengkap:",
+    detailFallback: "Detail",
+    settingsName: "👤 Ubah nama",
+    settingsLanguage: "🌐 Bahasa",
+    settingsTime: "🕒 Jam rekap",
+    exportTitle: "Catatan pipeline: {count}",
+    exportCaption: "Catatan pipeline: {count}",
+    exportFilename: "catatan-pipeline.csv",
   },
   en: {
     welcome: "Hello! I'm Weppy, your sales pipeline assistant. Send a visit report as text or a voice note.",
     askName: "What should I call you?",
-    askLanguage: "Choose your reply language:",
+    askLanguage: "Choose your reply language / Pilih bahasa balasan:",
     askTime: "What time should I send your daily recap? (WIB)",
     onboardingDone: "Ready, {name}! Send a visit report as text or a voice note.",
     menu: "What would you like to do?",
@@ -145,13 +186,31 @@ const STRINGS = {
     timeSaved: "Recap time updated to {time} WIB.",
     langSaved: "Language updated.",
     contact: "Contact",
+    noteTitle: "*Visit note*",
+    institution: "Institution/company",
+    product: "Product/service",
+    dealStage: "Deal stage",
+    back: "⬅️ Back",
+    greeting: "Hello {name}! {count} note(s) stored.",
+    stageNone: "No stage yet",
+    recapTitle: "*Pipeline recap*",
+    followupTomorrow: "*Follow-ups tomorrow:*",
+    followupTitle: "*Follow-up reminders*",
+    viewNote: "View a full note:",
+    detailFallback: "Detail",
+    settingsName: "👤 Change name",
+    settingsLanguage: "🌐 Language",
+    settingsTime: "🕒 Recap time",
+    exportTitle: "Pipeline notes: {count}",
+    exportCaption: "Pipeline notes: {count}",
+    exportFilename: "pipeline-notes.csv",
   },
 };
 
 function defaultProfile(): Profile {
   return {
     nickname: "",
-    language: "id",
+    language: "en",
     recap_time: "17:00",
     onboarding_stage: "new",
     pending_setting: "",
@@ -354,11 +413,11 @@ function renderCard(note: Note, profile: Profile): string {
   const field = (label: string, value: string) => `${label}: ${value || copy.missing}`;
   const contact = [note.kontak, note.role].filter(Boolean).join(" — ");
   return [
-    profile.language === "en" ? "*Visit note*" : "*Catatan kunjungan*",
-    field(profile.language === "en" ? "Institution/company" : "Institusi/perusahaan", note.institusi),
+    copy.noteTitle,
+    field(copy.institution, note.institusi),
     field(copy.contact, contact),
-    field(profile.language === "en" ? "Product/service" : "Produk/layanan", note.produk),
-    field(profile.language === "en" ? "Deal stage" : "Tahap deal", note.tahap_deal),
+    field(copy.product, note.produk),
+    field(copy.dealStage, stageLabel(note.tahap_deal, profile.language)),
     `Follow-up: ${note.followup_date ? formatDate(note.followup_date, profile.language) : copy.missing}`,
   ].join("\n");
 }
@@ -370,7 +429,7 @@ export function noteCard(note: Note, profile: Profile): NoteCard {
     kontak: note.kontak,
     role: note.role,
     produk: note.produk,
-    tahap_deal: note.tahap_deal,
+    tahap_deal: stageLabel(note.tahap_deal, profile.language),
     followup: note.followup_date ? formatDate(note.followup_date, profile.language) : text(profile, "missing"),
     status: note.status,
     filled: MISSING_FIELDS.length - missingFields(note).length,
@@ -379,7 +438,7 @@ export function noteCard(note: Note, profile: Profile): NoteCard {
 }
 
 function withBack(profile: Profile, buttons: Button[][]): Button[][] {
-  return [...buttons, [{ id: "menu_main", title: profile.language === "en" ? "⬅️ Back" : "⬅️ Kembali" }]];
+  return [...buttons, [{ id: "menu_main", title: text(profile, "back") }]];
 }
 
 function menuMessage(profile: Profile): OutMessage {
@@ -394,33 +453,48 @@ function menuMessage(profile: Profile): OutMessage {
   };
 }
 
+function askNameMessage(profile: Profile): OutMessage {
+  return { text: text(profile, "askName"), buttons: [[{ id: "skip", title: text(profile, "skip") }]] };
+}
+
+function askTimeMessage(profile: Profile): OutMessage {
+  return {
+    text: text(profile, "askTime"),
+    buttons: [[
+      { id: "time_08:00", title: "🕗 08:00" },
+      { id: "time_17:00", title: "🕔 17:00" },
+      { id: "skip", title: text(profile, "skip") },
+    ]],
+  };
+}
+
 function recapMessages(profile: Profile, notes: Note[]): OutMessage[] {
   if (!notes.length) {
     return [{ text: text(profile, "noNotes"), buttons: withBack(profile, []) }];
   }
   const groups = new Map<string, Note[]>();
   for (const note of notes) {
-    const stage = note.tahap_deal || (profile.language === "en" ? "No stage yet" : "Belum ada tahap");
+    const stage = stageLabel(note.tahap_deal, profile.language) || text(profile, "stageNone");
     const group = groups.get(stage) || [];
     group.push(note);
     groups.set(stage, group);
   }
   const tomorrow = dateAfter(localDateString(), 1);
-  const lines = [profile.language === "en" ? "*Pipeline recap*" : "*Rekap pipeline*"];
+  const lines = [text(profile, "recapTitle")];
   for (const [stage, items] of groups) {
     lines.push(`*${stage} (${items.length}):*`);
     for (const note of items) lines.push(`• ${note.institusi || "—"} — ${note.kontak || "—"} | ${note.produk || "—"} | ${note.followup_date ? formatDate(note.followup_date, profile.language) : "—"}`);
   }
   const due = notes.filter((note) => note.followup_date === tomorrow);
   if (due.length) {
-    lines.push(profile.language === "en" ? "*Follow-ups tomorrow:*" : "*Follow-up besok:*");
+    lines.push(text(profile, "followupTomorrow"));
     for (const note of due) lines.push(`• ${note.institusi || "—"} — ${note.kontak || "—"}`);
   }
-  const detailButtons = notes.slice(0, 20).map((note) => [{ id: `view_${note.id}`, title: `🔎 ${(note.institusi || "Detail").slice(0, 20)}` }]);
+  const detailButtons = notes.slice(0, 20).map((note) => [{ id: `view_${note.id}`, title: `🔎 ${(note.institusi || text(profile, "detailFallback")).slice(0, 20)}` }]);
   return [
     { text: lines.join("\n") },
     {
-      text: profile.language === "en" ? "View a full note:" : "Lihat catatan lengkap:",
+      text: text(profile, "viewNote"),
       buttons: withBack(profile, detailButtons),
     },
   ];
@@ -432,8 +506,7 @@ function followupMessages(profile: Profile, notes: Note[]): OutMessage[] {
   if (!due.length) {
     return [{ text: text(profile, "noFollowups", { date: formatDate(today, profile.language) }), buttons: withBack(profile, []) }];
   }
-  const header = profile.language === "en" ? "*Follow-up reminders*" : "*Pengingat follow-up*";
-  const lines = [header];
+  const lines = [text(profile, "followupTitle")];
   for (const note of due) lines.push(`• ${note.institusi || "—"} — ${note.kontak || "—"} | ${note.produk || "—"} | ${formatDate(note.followup_date, profile.language)}`);
   return [{ text: lines.join("\n"), buttons: withBack(profile, []) }];
 }
@@ -448,15 +521,23 @@ function askFieldMessage(profile: Profile, field: Note["pending_clarify"][number
   };
   const prompt = profile.language === "en" ? `What is the ${label[field][1]}?` : `Apa ${label[field][0]}?`;
   const options: Button[][] = field === "tahap_deal"
-    ? DEAL_STAGES.map((stage, index) => [{ id: `stage_${index}`, title: `📌 ${stage}` }])
+    ? DEAL_STAGES.map((stage, index) => [{ id: `stage_${index}`, title: `📌 ${stageLabel(stage, profile.language)}` }])
     : [[{ id: "skip", title: text(profile, "skip") }]];
   return { text: prompt, buttons: withBack(profile, options) };
 }
 
-function csvContent(notes: Note[]): string {
-  const columns = ["id", "created_at", "institusi", "kontak", "role", "produk", "tahap_deal", "followup_date", "status"] as const;
+const CSV_FIELDS = ["id", "created_at", "institusi", "kontak", "role", "produk", "tahap_deal", "followup_date", "status"] as const;
+const CSV_HEADERS: Record<Language, string[]> = {
+  id: ["id", "created_at", "institusi", "kontak", "role", "produk", "tahap_deal", "followup_date", "status"],
+  en: ["id", "created_at", "institution", "contact", "role", "product", "deal_stage", "followup_date", "status"],
+};
+
+export function csvContent(notes: Note[], language: Language): string {
   const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-  return [columns.join(","), ...notes.map((note) => columns.map((key) => escape(note[key])).join(","))].join("\r\n");
+  return [
+    CSV_HEADERS[language].join(","),
+    ...notes.map((note) => CSV_FIELDS.map((key) => escape(key === "tahap_deal" ? stageLabel(note[key], language) : note[key])).join(",")),
+  ].join("\r\n");
 }
 
 async function handleReport(env: CoreEnv, owner: string, profile: Profile, report: string): Promise<OutMessage[]> {
@@ -539,34 +620,27 @@ export async function processInput(env: CoreEnv, owner: string, rawInput: string
 
   if (profile.onboarding_stage !== "done") {
     if (profile.onboarding_stage === "new") {
-      profile.onboarding_stage = "ask_name";
+      profile.language = "en";
+      profile.onboarding_stage = "ask_language";
       await saveProfile(env.DB, owner, profile);
       return [
         { text: text(profile, "welcome") },
-        { text: text(profile, "askName"), buttons: [[{ id: "skip", title: text(profile, "skip") }]] },
+        { text: text(profile, "askLanguage"), buttons: LANGUAGE_BUTTONS },
       ];
+    }
+    if (profile.onboarding_stage === "ask_language") {
+      profile.language = parseLanguageChoice(input, profile.language);
+      // A legacy profile may already have a nickname from the previous
+      // name-first flow, so do not ask for it twice.
+      profile.onboarding_stage = profile.nickname ? "ask_time" : "ask_name";
+      await saveProfile(env.DB, owner, profile);
+      return [profile.onboarding_stage === "ask_time" ? askTimeMessage(profile) : askNameMessage(profile)];
     }
     if (profile.onboarding_stage === "ask_name") {
       profile.nickname = input.toLowerCase() === "skip" ? "" : input.slice(0, 30);
-      profile.onboarding_stage = "ask_language";
-      await saveProfile(env.DB, owner, profile);
-      return [{
-        text: text(profile, "askLanguage"),
-        buttons: [[{ id: "lang_id", title: "🇮🇩 Indonesia" }, { id: "lang_en", title: "🇬🇧 English" }]],
-      }];
-    }
-    if (profile.onboarding_stage === "ask_language") {
-      profile.language = input === "lang_en" || input.toLowerCase() === "english" ? "en" : "id";
       profile.onboarding_stage = "ask_time";
       await saveProfile(env.DB, owner, profile);
-      return [{
-        text: text(profile, "askTime"),
-        buttons: [[
-          { id: "time_08:00", title: "🕗 08:00" },
-          { id: "time_17:00", title: "🕔 17:00" },
-          { id: "skip", title: text(profile, "skip") },
-        ]],
-      }];
+      return [askTimeMessage(profile)];
     }
     const time = input.match(/(?:time_)?(\d{1,2}):(\d{2})/);
     if (time && Number(time[1]) < 24 && Number(time[2]) < 60) {
@@ -583,10 +657,7 @@ export async function processInput(env: CoreEnv, owner: string, rawInput: string
   const low = input.toLowerCase();
   if (["/start", "halo", "hello", "hi"].includes(low)) {
     const notes = await loadNotes(env.DB, owner);
-    const greeting = profile.language === "en"
-      ? `Hello ${profile.nickname}! ${notes.length} note(s) stored.`
-      : `Halo ${profile.nickname}! Tersimpan ${notes.length} catatan.`;
-    return [{ text: greeting }, menuMessage(profile)];
+    return [{ text: text(profile, "greeting", { name: profile.nickname, count: String(notes.length) }) }, menuMessage(profile)];
   }
   if (["/help", "bantuan", "help"].includes(low)) {
     return [{ text: text(profile, "help") }, menuMessage(profile)];
@@ -602,9 +673,9 @@ export async function processInput(env: CoreEnv, owner: string, rawInput: string
     return [{
       text: text(profile, "settings"),
       buttons: withBack(profile, [[
-        { id: "settings_name", title: profile.language === "en" ? "👤 Change name" : "👤 Ubah nama" },
-        { id: "settings_lang", title: profile.language === "en" ? "🌐 Language" : "🌐 Bahasa" },
-        { id: "settings_time", title: profile.language === "en" ? "🕒 Recap time" : "🕒 Jam rekap" },
+        { id: "settings_name", title: text(profile, "settingsName") },
+        { id: "settings_lang", title: text(profile, "settingsLanguage") },
+        { id: "settings_time", title: text(profile, "settingsTime") },
       ]]),
     }];
   }
@@ -618,10 +689,10 @@ export async function processInput(env: CoreEnv, owner: string, rawInput: string
     await saveProfile(env.DB, owner, profile);
     return [{ text: text(profile, "changeTime") }];
   }
-  if (input === "settings_lang" || low === "ganti bahasa") {
+  if (input === "settings_lang" || ["ganti bahasa", "change language"].includes(low)) {
     return [{
       text: text(profile, "askLanguage"),
-      buttons: withBack(profile, [[{ id: "lang_id", title: "🇮🇩 Indonesia" }, { id: "lang_en", title: "🇬🇧 English" }]]),
+      buttons: withBack(profile, LANGUAGE_BUTTONS),
     }];
   }
   if (profile.pending_setting === "nickname") {
@@ -672,12 +743,12 @@ export async function processInput(env: CoreEnv, owner: string, rawInput: string
   if (input === "menu_export" || ["ekspor csv", "export csv", "csv"].includes(low)) {
     if (!notes.length) return [{ text: text(profile, "exportEmpty"), buttons: withBack(profile, []) }];
     return [{
-      text: `${profile.language === "en" ? "Pipeline notes" : "Catatan pipeline"}: ${notes.length}`,
+      text: text(profile, "exportTitle", { count: String(notes.length) }),
       file: {
-        filename: "catatan-pipeline.csv",
+        filename: text(profile, "exportFilename"),
         mime: "text/csv",
-        content: csvContent(notes),
-        caption: `Pipeline notes: ${notes.length}`,
+        content: csvContent(notes, profile.language),
+        caption: text(profile, "exportCaption", { count: String(notes.length) }),
       },
     }];
   }
@@ -696,25 +767,11 @@ export async function processInput(env: CoreEnv, owner: string, rawInput: string
 }
 
 function onboardingPrompt(profile: Profile): OutMessage[] {
-  if (profile.onboarding_stage === "ask_name") {
-    return [{ text: text(profile, "askName"), buttons: [[{ id: "skip", title: text(profile, "skip") }]] }];
-  }
   if (profile.onboarding_stage === "ask_language") {
-    return [{
-      text: text(profile, "askLanguage"),
-      buttons: [[{ id: "lang_id", title: "🇮🇩 Indonesia" }, { id: "lang_en", title: "🇬🇧 English" }]],
-    }];
+    return [{ text: text(profile, "askLanguage"), buttons: LANGUAGE_BUTTONS }];
   }
-  if (profile.onboarding_stage === "ask_time") {
-    return [{
-      text: text(profile, "askTime"),
-      buttons: [[
-        { id: "time_08:00", title: "🕗 08:00" },
-        { id: "time_17:00", title: "🕔 17:00" },
-        { id: "skip", title: text(profile, "skip") },
-      ]],
-    }];
-  }
+  if (profile.onboarding_stage === "ask_name") return [askNameMessage(profile)];
+  if (profile.onboarding_stage === "ask_time") return [askTimeMessage(profile)];
   return [];
 }
 
