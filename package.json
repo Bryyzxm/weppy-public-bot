@@ -2,6 +2,7 @@
   "name": "weppy-public-bot",
   "type": "module",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
